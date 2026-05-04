@@ -199,7 +199,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const Text(
             "What's your name?",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.text),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark),
           ),
           const SizedBox(height: 24),
           TextField(
@@ -232,7 +232,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const Text(
             "Preferences",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.text),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -325,7 +325,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const Text(
             "Your Accounts",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.text),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -443,7 +443,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const Text(
             "Set Categories",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.text),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark),
           ),
           const SizedBox(height: 8),
           const Text(
