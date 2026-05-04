@@ -11,6 +11,7 @@ import 'package:spendly/core/models/account.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class NewTransactionScreen extends ConsumerStatefulWidget {
   /// Pass an existing transaction to enter edit mode.
@@ -104,16 +105,17 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   }
 
   Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: const Text('Are you sure you want to delete this transaction?'),
+        title: Text(l10n.deleteConfirmTitle),
+        content: Text(l10n.deleteConfirmMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('DELETE', style: TextStyle(color: AppColors.expense)),
+            child: Text(l10n.delete, style: const TextStyle(color: AppColors.expense)),
           ),
         ],
       ),
@@ -149,9 +151,9 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'SELECT CURRENCY',
-                  style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.textDark, letterSpacing: 1.2),
+                Text(
+                  AppLocalizations.of(context)!.currency.toUpperCase(),
+                  style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.textDark, letterSpacing: 1.2),
                 ),
                 const SizedBox(height: 8),
                 ..._currencies.map((c) {
@@ -182,6 +184,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final accountsAsync = ref.watch(accountsStreamProvider(userId));
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
@@ -209,7 +212,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppHeader(
-            title: _isEditing ? 'Edit Transaction' : 'New Transaction',
+            title: _isEditing ? l10n.editTransaction : l10n.newTransaction,
             showBackButton: true,
             showDatePicker: false,
             showActions: false,
@@ -285,8 +288,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('ACCOUNT',
-                          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
+                      Text(l10n.accounts,
+                          style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
                       const SizedBox(height: 8),
                       accountsAsync.when(
                         data: (accounts) {
@@ -314,8 +317,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.primaryLight),
                       const SizedBox(height: 24),
-                      const Text('CATEGORY',
-                          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
+                      Text(l10n.category,
+                          style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
                       const SizedBox(height: 8),
                       categoriesAsync.when(
                         data: (categories) {
@@ -337,8 +340,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.primaryLight),
                       const SizedBox(height: 24),
-                      const Text('AMOUNT',
-                          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
+                      Text(l10n.amount,
+                          style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -377,16 +380,16 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.primaryLight),
                       const SizedBox(height: 24),
-                      const Text('PAYEE / NOTE',
-                          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
+                      Text(l10n.payeeNote,
+                          style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _payeeController,
                         style: const TextStyle(
                             color: AppColors.textDark, fontSize: 20, fontWeight: FontWeight.w900),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Who or what for?',
+                          hintText: l10n.payeeHint,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -414,7 +417,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : Text(
-                              _isEditing ? 'UPDATE TRANSACTION' : 'SAVE TRANSACTION',
+                              _isEditing ? l10n.updateTransaction : l10n.saveTransaction,
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.1),
                             ),
                     ),
@@ -427,9 +430,9 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                   Center(
                     child: TextButton(
                       onPressed: _isLoading ? null : _delete,
-                      child: const Text(
-                        'DELETE TRANSACTION',
-                        style: TextStyle(color: AppColors.expense, fontWeight: FontWeight.bold),
+                      child: Text(
+                        l10n.deleteTransaction,
+                        style: const TextStyle(color: AppColors.expense, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

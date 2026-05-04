@@ -8,6 +8,7 @@ import 'package:spendly/core/providers/date_provider.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/category.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
@@ -19,9 +20,11 @@ class ReportsScreen extends ConsumerWidget {
     final transactionsAsync = ref.watch(transactionsStreamProvider(userId));
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
 
+    final l10n = AppLocalizations.of(context)!;
+
     return CustomScrollView(
       slivers: [
-        const SliverAppHeader(title: 'Reports'),
+        SliverAppHeader(title: l10n.reports),
         SliverToBoxAdapter(
           child: transactionsAsync.when(
             loading: () => const Padding(
@@ -65,12 +68,12 @@ class ReportsScreen extends ConsumerWidget {
                   MainCard(
                     child: Column(
                       children: [
-                        _buildSummaryItem('INCOME', totalIncome, AppColors.income, Icons.trending_up),
+                        _buildSummaryItem(l10n.income, totalIncome, AppColors.income, Icons.trending_up),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
                           child: Divider(color: AppColors.primaryLight, height: 1),
                         ),
-                        _buildSummaryItem('EXPENSE', totalExpense, AppColors.expense, Icons.trending_down),
+                        _buildSummaryItem(l10n.expense, totalExpense, AppColors.expense, Icons.trending_down),
                         const SizedBox(height: 32),
 
                         // Net Amount Box
@@ -83,9 +86,9 @@ class ReportsScreen extends ConsumerWidget {
                           ),
                           child: Column(
                             children: [
-                              const Text(
-                                'NET',
-                                style: TextStyle(
+                              Text(
+                                l10n.net,
+                                style: const TextStyle(
                                   color: AppColors.textDark,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 11,
@@ -128,9 +131,9 @@ class ReportsScreen extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'SPENDING BY CATEGORY',
-                                style: TextStyle(
+                              Text(
+                                l10n.spendingByCategory,
+                                style: const TextStyle(
                                   color: AppColors.textLight,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 11,
@@ -161,10 +164,10 @@ class ReportsScreen extends ConsumerWidget {
                             children: [
                               Icon(Icons.bar_chart_outlined, color: AppColors.textLight, size: 48),
                               const SizedBox(height: 16),
-                              const Text(
-                                'No transactions found for this month.',
+                              Text(
+                                l10n.noTransactionsMonth,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: AppColors.textLight, height: 1.5),
+                                style: const TextStyle(color: AppColors.textLight, height: 1.5),
                               ),
                             ],
                           ),

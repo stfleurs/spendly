@@ -10,6 +10,7 @@ import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/features/transactions/view/new_transaction_screen.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class TransactionsScreen extends ConsumerWidget {
   const TransactionsScreen({super.key});
@@ -21,9 +22,11 @@ class TransactionsScreen extends ConsumerWidget {
     final transactionsAsync = ref.watch(transactionsStreamProvider(userId));
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
 
+    final l10n = AppLocalizations.of(context)!;
+
     return CustomScrollView(
       slivers: [
-        const SliverAppHeader(title: 'Activity'),
+        SliverAppHeader(title: l10n.activity),
         SliverToBoxAdapter(
           child: transactionsAsync.when(
             loading: () => const Padding(
@@ -47,20 +50,20 @@ class TransactionsScreen extends ConsumerWidget {
                   child: Center(
                     child: Column(
                       children: [
-                        const Icon(Icons.receipt_long_outlined, color: AppColors.textLight, size: 56),
+                        Icon(Icons.receipt_long_outlined, color: AppColors.textLight, size: 56),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No transactions this month.',
-                          style: TextStyle(
+                        Text(
+                          l10n.noTransactions,
+                          style: const TextStyle(
                             color: AppColors.textLight,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Tap the + button to add one.',
-                          style: TextStyle(color: AppColors.textLight),
+                        Text(
+                          l10n.tapToAdd,
+                          style: const TextStyle(color: AppColors.textLight),
                         ),
                       ],
                     ),
@@ -113,9 +116,13 @@ class TransactionsScreen extends ConsumerWidget {
     final categoryName = catMap[transaction.categoryId]?.name ?? transaction.type.toUpperCase();
     final amountStr = '${isExpense ? '-' : isIncome ? '+' : ''}${transaction.currency == 'HTG' ? 'G' : transaction.currency == 'EUR' ? '€' : '\$'}${(transaction.amount / 100).toStringAsFixed(2)}';
 
+    final l10n = AppLocalizations.of(context)!;
     final day = transaction.date.day.toString().padLeft(2, '0');
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final dateStr = '${months[transaction.date.month - 1]} $day • ${categoryName.toUpperCase()}';
+    final monthNames = [
+      l10n.jan, l10n.feb, l10n.mar, l10n.apr, l10n.may, l10n.jun,
+      l10n.jul, l10n.aug, l10n.sep, l10n.oct, l10n.nov, l10n.dec
+    ];
+    final dateStr = '${monthNames[transaction.date.month - 1]} $day • ${categoryName.toUpperCase()}';
 
     final amountColor = isExpense ? AppColors.expense : isIncome ? AppColors.income : AppColors.textDark;
     final iconBg = isExpense ? AppColors.expense.withValues(alpha: 0.1) : isIncome ? AppColors.income.withValues(alpha: 0.1) : AppColors.primaryLight;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
+import 'package:spendly/features/auth/services/user_seeder.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/features/auth/view/login_screen.dart';
@@ -37,10 +38,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await ref.read(authRepositoryProvider).signUp(
+      final credential = await ref.read(authRepositoryProvider).signUp(
             _emailController.text.trim(),
             _passwordController.text.trim(),
           );
+      
+      if (credential.user != null) {
+        await ref.read(userSeederProvider).seedUser(credential.user!.uid);
+      }
       // AuthGate in main.dart will handle navigation
     } catch (e) {
       if (mounted) {

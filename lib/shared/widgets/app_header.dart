@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
-import 'package:spendly/features/auth/repository/auth_repository.dart';
 import 'package:spendly/core/providers/date_provider.dart';
+import 'package:spendly/core/providers/currency_provider.dart';
+import 'package:spendly/features/settings/view/settings_screen.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class AppHeader extends StatelessWidget {
   final String title;
@@ -152,6 +154,7 @@ class HeaderActions extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).value;
     final initials = user?.email?.substring(0, 2).toUpperCase() ?? '??';
+    final currency = ref.watch(currencyProvider);
 
     return Row(
       children: [
@@ -170,48 +173,31 @@ class HeaderActions extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white24,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.public, color: Colors.white, size: 14),
-              SizedBox(width: 4),
-              Text(
-                'USD',
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 14),
-            ],
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SettingsScreen())),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.public, color: Colors.white, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  currency,
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 14),
+              ],
+            ),
           ),
         ),
         const SizedBox(width: 8),
         IconButton(
           icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) => Container(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.logout, color: AppColors.expense),
-                      title: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
-                      onTap: () {
-                        ref.read(authRepositoryProvider).signOut();
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SettingsScreen())),
         ),
       ],
     );
@@ -227,8 +213,12 @@ class DatePickerBar extends ConsumerWidget {
     final now = DateTime.now();
     final isCurrentMonth = selectedDate.year == now.year && selectedDate.month == now.month;
     
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final label = isCurrentMonth ? 'THIS MONTH' : '${months[selectedDate.month - 1]} ${selectedDate.year}'.toUpperCase();
+    final l10n = AppLocalizations.of(context)!;
+    final monthNames = [
+      l10n.jan, l10n.feb, l10n.mar, l10n.apr, l10n.may, l10n.jun,
+      l10n.jul, l10n.aug, l10n.sep, l10n.oct, l10n.nov, l10n.dec
+    ];
+    final label = isCurrentMonth ? l10n.thisMonth : '${monthNames[selectedDate.month - 1]} ${selectedDate.year}'.toUpperCase();
 
     return GestureDetector(
       onTap: () {
@@ -239,34 +229,38 @@ class DatePickerBar extends ConsumerWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           builder: (context) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('SELECT MONTH', style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.textDark, letterSpacing: 1.2)),
-                    const SizedBox(height: 16),
-                    ...List.generate(6, (index) {
-                      final date = DateTime(now.year, now.month - index, 1);
-                      final isSelected = date.year == selectedDate.year && date.month == selectedDate.month;
-                      final text = index == 0 ? 'This Month' : '${months[date.month - 1]} ${date.year}';
-                      return ListTile(
-                        title: Text(
-                          text,
-                          style: TextStyle(
-                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
-                            color: isSelected ? AppColors.primary : AppColors.textDark,
+            return Material(
+              color: AppColors.background,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(l10n.selectMonth, style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.textDark, letterSpacing: 1.2)),
+                      const SizedBox(height: 16),
+                      ...List.generate(6, (index) {
+                        final date = DateTime(now.year, now.month - index, 1);
+                        final isSelected = date.year == selectedDate.year && date.month == selectedDate.month;
+                        final text = index == 0 ? l10n.thisMonth : '${monthNames[date.month - 1]} ${date.year}';
+                        return ListTile(
+                          title: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                              color: isSelected ? AppColors.primary : AppColors.textDark,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        onTap: () {
-                          ref.read(selectedDateProvider.notifier).select(date);
-                          Navigator.pop(context);
-                        },
-                      );
-                    }),
-                  ],
+                          onTap: () {
+                            ref.read(selectedDateProvider.notifier).select(date);
+                            Navigator.pop(context);
+                          },
+                        );
+                      }),
+                    ],
+                  ),
                 ),
               ),
             );

@@ -154,6 +154,12 @@ abstract class AppLocalizations {
   /// **'LOG IN'**
   String get logIn;
 
+  /// No description provided for @logOut.
+  ///
+  /// In en, this message translates to:
+  /// **'LOG OUT'**
+  String get logOut;
+
   /// No description provided for @signUp.
   ///
   /// In en, this message translates to:
@@ -256,6 +262,192 @@ abstract class AppLocalizations {
   /// **'THIS MONTH'**
   String get thisMonth;
 
+  /// No description provided for @selectMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT MONTH'**
+  String get selectMonth;
+
+  /// No description provided for @income.
+  ///
+  /// In en, this message translates to:
+  /// **'INCOME'**
+  String get income;
+
+  /// No description provided for @expense.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPENSE'**
+  String get expense;
+
+  /// No description provided for @net.
+  ///
+  /// In en, this message translates to:
+  /// **'NET'**
+  String get net;
+
+  /// No description provided for @spendingByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'SPENDING BY CATEGORY'**
+  String get spendingByCategory;
+
+  /// No description provided for @noTransactionsMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions found for this month.'**
+  String get noTransactionsMonth;
+
+  /// No description provided for @noTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions this month.'**
+  String get noTransactions;
+
+  /// No description provided for @tapToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the + button to add one.'**
+  String get tapToAdd;
+
+  /// No description provided for @assigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get assigned;
+
+  /// No description provided for @spent.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent'**
+  String get spent;
+
+  /// No description provided for @overspent.
+  ///
+  /// In en, this message translates to:
+  /// **'OVERSPENT'**
+  String get overspent;
+
+  /// No description provided for @leftToSpend.
+  ///
+  /// In en, this message translates to:
+  /// **'Left to spend'**
+  String get leftToSpend;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'CATEGORY'**
+  String get category;
+
+  /// No description provided for @group.
+  ///
+  /// In en, this message translates to:
+  /// **'GROUP'**
+  String get group;
+
+  /// No description provided for @targetAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'TARGET AMOUNT'**
+  String get targetAmount;
+
+  /// No description provided for @recurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'RECURRENCE'**
+  String get recurrence;
+
+  /// No description provided for @weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @yearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get yearly;
+
+  /// No description provided for @selectAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Account'**
+  String get selectAccount;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Category'**
+  String get selectCategory;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'AMOUNT'**
+  String get amount;
+
+  /// No description provided for @payeeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'PAYEE / NOTE'**
+  String get payeeNote;
+
+  /// No description provided for @payeeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Who or what for?'**
+  String get payeeHint;
+
+  /// No description provided for @editTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Transaction'**
+  String get editTransaction;
+
+  /// No description provided for @updateTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'UPDATE TRANSACTION'**
+  String get updateTransaction;
+
+  /// No description provided for @deleteTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE TRANSACTION'**
+  String get deleteTransaction;
+
+  /// No description provided for @deleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Transaction'**
+  String get deleteConfirmTitle;
+
+  /// No description provided for @deleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this transaction?'**
+  String get deleteConfirmMessage;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCEL'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE'**
+  String get delete;
+
   /// No description provided for @usd.
   ///
   /// In en, this message translates to:
@@ -279,6 +471,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'CAD'**
   String get cad;
+
+  /// No description provided for @jan.
+  ///
+  /// In en, this message translates to:
+  /// **'Jan'**
+  String get jan;
+
+  /// No description provided for @feb.
+  ///
+  /// In en, this message translates to:
+  /// **'Feb'**
+  String get feb;
+
+  /// No description provided for @mar.
+  ///
+  /// In en, this message translates to:
+  /// **'Mar'**
+  String get mar;
+
+  /// No description provided for @apr.
+  ///
+  /// In en, this message translates to:
+  /// **'Apr'**
+  String get apr;
+
+  /// No description provided for @may.
+  ///
+  /// In en, this message translates to:
+  /// **'May'**
+  String get may;
+
+  /// No description provided for @jun.
+  ///
+  /// In en, this message translates to:
+  /// **'Jun'**
+  String get jun;
+
+  /// No description provided for @jul.
+  ///
+  /// In en, this message translates to:
+  /// **'Jul'**
+  String get jul;
+
+  /// No description provided for @aug.
+  ///
+  /// In en, this message translates to:
+  /// **'Aug'**
+  String get aug;
+
+  /// No description provided for @sep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sep'**
+  String get sep;
+
+  /// No description provided for @oct.
+  ///
+  /// In en, this message translates to:
+  /// **'Oct'**
+  String get oct;
+
+  /// No description provided for @nov.
+  ///
+  /// In en, this message translates to:
+  /// **'Nov'**
+  String get nov;
+
+  /// No description provided for @dec.
+  ///
+  /// In en, this message translates to:
+  /// **'Dec'**
+  String get dec;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @preferredCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred Currency'**
+  String get preferredCurrency;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @french.
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get french;
+
+  /// No description provided for @haitianCreole.
+  ///
+  /// In en, this message translates to:
+  /// **'Haitian Creole'**
+  String get haitianCreole;
+
+  /// No description provided for @welcomeSpendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Spendly'**
+  String get welcomeSpendly;
+
+  /// No description provided for @onboardingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s set up your financial workspace in just a few steps.'**
+  String get onboardingSubtitle;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'GET STARTED'**
+  String get getStarted;
+
+  /// No description provided for @chooseCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'CHOOSE YOUR CURRENCY'**
+  String get chooseCurrency;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT'**
+  String get next;
+
+  /// No description provided for @yourFirstAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR FIRST ACCOUNT'**
+  String get yourFirstAccount;
+
+  /// No description provided for @accountNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. My Wallet, Bank'**
+  String get accountNameHint;
+
+  /// No description provided for @completeSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETE SETUP'**
+  String get completeSetup;
+
+  /// No description provided for @addAnotherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'ADD ANOTHER ACCOUNT'**
+  String get addAnotherAccount;
+
+  /// No description provided for @atLeastOneAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please add at least one account'**
+  String get atLeastOneAccount;
 }
 
 class _AppLocalizationsDelegate

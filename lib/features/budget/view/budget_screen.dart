@@ -7,6 +7,7 @@ import 'package:spendly/features/budget/providers/budget_provider.dart';
 import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/models/category.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class MyBudgetScreen extends ConsumerWidget {
   const MyBudgetScreen({super.key});
@@ -16,9 +17,11 @@ class MyBudgetScreen extends ConsumerWidget {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final budgetAsync = ref.watch(budgetProvider(userId));
 
+    final l10n = AppLocalizations.of(context)!;
+
     return CustomScrollView(
       slivers: [
-        const SliverAppHeader(title: 'My Budget'),
+        SliverAppHeader(title: l10n.myBudget),
         SliverToBoxAdapter(
           child: Column(
             children: [
@@ -37,9 +40,9 @@ class MyBudgetScreen extends ConsumerWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'CATEGORY BUDGETS',
-                                style: TextStyle(
+                              Text(
+                                l10n.spendingByCategory,
+                                style: const TextStyle(
                                   color: AppColors.textLight,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 12,
@@ -79,14 +82,14 @@ class MyBudgetScreen extends ConsumerWidget {
                             decoration: const BoxDecoration(
                               border: Border(top: BorderSide(color: AppColors.primaryLight, width: 1)),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_circle_outline, color: AppColors.primary),
-                                SizedBox(width: 12),
+                                const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                                const SizedBox(width: 12),
                                 Text(
-                                  'ADD CATEGORY',
-                                  style: TextStyle(
+                                  l10n.category.toUpperCase(),
+                                  style: const TextStyle(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 1.1,
@@ -122,6 +125,7 @@ class MyBudgetScreen extends ConsumerWidget {
   }
 
   Widget _buildBudgetItem(BuildContext context, CategoryBudgetItem item) {
+    final l10n = AppLocalizations.of(context)!;
     final category = item.category;
     
     String currencySymbol = '\$';
@@ -185,9 +189,9 @@ class MyBudgetScreen extends ConsumerWidget {
                             color: const Color(0xFFE2E5FF),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'OVERSPENT',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.overspent,
+                            style: const TextStyle(
                               color: Color(0xFF5A67D8),
                               fontWeight: FontWeight.w900,
                               fontSize: 9,
@@ -224,7 +228,7 @@ class MyBudgetScreen extends ConsumerWidget {
             Row(
               children: [
                 Text(
-                  'ASSIGNED: $assignedStr',
+                  '${l10n.assigned.toUpperCase()}: $assignedStr',
                   style: const TextStyle(
                     color: AppColors.textLight,
                     fontWeight: FontWeight.w900,
@@ -234,7 +238,7 @@ class MyBudgetScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  'SPENT: $spentStr',
+                  '${l10n.spent.toUpperCase()}: $spentStr',
                   style: const TextStyle(
                     color: AppColors.textLight,
                     fontWeight: FontWeight.w900,
