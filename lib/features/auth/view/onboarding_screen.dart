@@ -6,7 +6,6 @@ import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/account.dart';
 import 'package:spendly/core/models/category.dart';
-import 'package:spendly/generated/l10n/app_localizations.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/core/providers/locale_provider.dart';
 import 'package:spendly/features/home/view/main_screen.dart';
@@ -358,7 +357,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -418,7 +417,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withOpacity(0.3), style: BorderStyle.solid, width: 2),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), style: BorderStyle.solid, width: 2),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -473,7 +472,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -564,7 +563,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+                    BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8)),
                   ],
                 ),
                 alignment: Alignment.center,
