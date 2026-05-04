@@ -11,6 +11,8 @@ abstract class Category with _$Category {
     required String name,
     required String group,
     int? monthlyTarget,
+    @Default('USD') String currency,
+    @Default('Monthly') String recurrence,
   }) = _Category;
 
   const Category._();

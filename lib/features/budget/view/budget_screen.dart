@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/shared/widgets/app_header.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
+import 'package:spendly/features/budget/providers/budget_provider.dart';
+import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
+import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:spendly/core/models/category.dart';
 
-class MyBudgetScreen extends StatelessWidget {
+class MyBudgetScreen extends ConsumerWidget {
   const MyBudgetScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(authStateProvider).value?.uid ?? '';
+    final budgetAsync = ref.watch(budgetProvider(userId));
+
     return CustomScrollView(
       slivers: [
         const SliverAppHeader(title: 'My Budget'),
@@ -16,68 +24,84 @@ class MyBudgetScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               
-              // Budget Summary Card
-              MainCard(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  children: [
-                    const Text(
-                      'LEFT TO SPEND',
-                      style: TextStyle(
-                        color: AppColors.textLight,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      r'$1,438.89',
-                      style: TextStyle(
-                        color: AppColors.income,
-                        fontSize: 40,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Divider(color: AppColors.primaryLight),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+              // Category Budgets
+              budgetAsync.when(
+                data: (state) {
+                  return MainCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSummaryStat('BUDGET', r'$2,500.00'),
-                        Container(width: 1, height: 40, color: AppColors.primaryLight),
-                        _buildSummaryStat('SPENT', r'$1,061.11'),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 24, top: 24, right: 24, bottom: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'CATEGORY BUDGETS',
+                                style: TextStyle(
+                                  color: AppColors.textLight,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                '${state.items.length} ACTIVE',
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 10,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (state.items.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: Center(
+                              child: Text(
+                                'No categories yet. Tap the button below to create your first budget category!',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: AppColors.textLight, height: 1.5),
+                              ),
+                            ),
+                          ),
+                        ...state.items.map((item) => _buildBudgetItem(context, item)),
+                        
+                        // Add Category Button
+                        InkWell(
+                          onTap: () => _showCategoryForm(context, null),
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: const BoxDecoration(
+                              border: Border(top: BorderSide(color: AppColors.primaryLight, width: 1)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_circle_outline, color: AppColors.primary),
+                                SizedBox(width: 12),
+                                Text(
+                                  'ADD CATEGORY',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Category Budgets
-              MainCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'CATEGORY BUDGETS',
-                      style: TextStyle(
-                        color: AppColors.textLight,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    _buildBudgetItem('Food & Dining', r'$400.00', r'$250.00', 0.625, AppColors.primary),
-                    _buildBudgetItem('Transport', r'$200.00', r'$150.00', 0.75, Colors.orange),
-                    _buildBudgetItem('Entertainment', r'$150.00', r'$37.04', 0.25, Colors.blue),
-                    _buildBudgetItem('Housing', r'$1,000.00', r'$800.00', 0.8, Colors.purple),
-                    _buildBudgetItem('Services', r'$500.00', r'$150.00', 0.3, Colors.teal),
-                  ],
-                ),
+                  );
+                },
+                loading: () => const MainCard(child: Center(child: CircularProgressIndicator())),
+                error: (e, s) => MainCard(child: Center(child: Text('Error: $e'))),
               ),
               
               const SizedBox(height: 40),
@@ -88,82 +112,154 @@ class MyBudgetScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryStat(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textLight,
-            fontWeight: FontWeight.w900,
-            fontSize: 10,
-            letterSpacing: 1.1,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppColors.textDark,
-            fontWeight: FontWeight.w900,
-            fontSize: 16,
-          ),
-        ),
-      ],
+  void _showCategoryForm(BuildContext context, Category? category) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CategoryFormBottomSheet(category: category),
     );
   }
 
-  Widget _buildBudgetItem(String category, String budget, String spent, double progress, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 28),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                category,
-                style: const TextStyle(
-                  color: AppColors.textDark,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
+  Widget _buildBudgetItem(BuildContext context, CategoryBudgetItem item) {
+    final category = item.category;
+    
+    String currencySymbol = '\$';
+    if (category.currency == 'HTG') currencySymbol = 'G';
+    if (category.currency == 'EUR') currencySymbol = '€';
+    
+    final spentStr = '$currencySymbol${(item.spentAmount / 100).toStringAsFixed(2)}';
+    
+    String assignedStr = 'No limit';
+    int leftToSpend = 0;
+    bool hasTarget = category.monthlyTarget != null && category.monthlyTarget! > 0;
+    bool isOverspent = false;
+
+    if (hasTarget) {
+      assignedStr = '$currencySymbol${(category.monthlyTarget! / 100).toStringAsFixed(2)}';
+      leftToSpend = category.monthlyTarget! - item.spentAmount;
+      if (leftToSpend < 0) isOverspent = true;
+    }
+    
+    final pillText = hasTarget 
+        ? '$currencySymbol${(leftToSpend.abs() / 100).toStringAsFixed(2)}'
+        : spentStr;
+    
+    final pillColor = hasTarget 
+        ? (isOverspent ? const Color(0xFFFFE5E5) : const Color(0xFFD4F7E2)) 
+        : const Color(0xFFE2E8F0); // Neutral color if no target
+    final pillTextColor = hasTarget 
+        ? (isOverspent ? AppColors.expense : AppColors.income) 
+        : AppColors.textDark;
+
+    return InkWell(
+      onTap: () => _showCategoryForm(context, category),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row 1: Name, Overspent Badge, Pill
+            Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          category.name,
+                          style: const TextStyle(
+                            color: AppColors.textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isOverspent) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E5FF),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'OVERSPENT',
+                            style: TextStyle(
+                              color: Color(0xFF5A67D8),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 9,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: spent,
-                      style: const TextStyle(
-                        color: AppColors.textDark,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                      ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: pillColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    pillText,
+                    style: TextStyle(
+                      color: pillTextColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
                     ),
-                    TextSpan(
-                      text: ' of $budget',
-                      style: const TextStyle(
-                        color: AppColors.textLight,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // Row 2: Assigned & Spent
+            Row(
+              children: [
+                Text(
+                  'ASSIGNED: $assignedStr',
+                  style: const TextStyle(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  'SPENT: $spentStr',
+                  style: const TextStyle(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+
+            // Row 3: Progress Bar
+            if (hasTarget) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: item.progress,
+                  backgroundColor: AppColors.primaryLight,
+                  color: isOverspent ? AppColors.expense : const Color(0xFFF6C022),
+                  minHeight: 8,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: AppColors.primaryLight,
-              color: color,
-              minHeight: 10,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

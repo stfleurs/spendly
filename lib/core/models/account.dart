@@ -12,6 +12,7 @@ abstract class Account with _$Account {
     required String type,
     required String currency,
     required int balance,
+    String? color,
   }) = _Account;
 
   const Account._();

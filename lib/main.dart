@@ -5,10 +5,16 @@ import 'package:spendly/features/transactions/view/transactions_screen.dart';
 import 'package:spendly/features/reports/view/reports_screen.dart';
 import 'package:spendly/features/transactions/view/new_transaction_screen.dart';
 import 'package:spendly/features/budget/view/budget_screen.dart';
+import 'package:spendly/features/auth/view/login_screen.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
+import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const ProviderScope(child: SpendlyApp()));
 }
 
@@ -21,7 +27,42 @@ class SpendlyApp extends StatelessWidget {
       title: 'Spendly',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const MainScreen(),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('fr'),
+        Locale('ht'),
+      ],
+      home: const AuthGate(),
+    );
+  }
+}
+
+class AuthGate extends ConsumerWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+
+    return authState.when(
+      data: (user) {
+        if (user != null) {
+          return const MainScreen();
+        }
+        return const LoginScreen();
+      },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, s) => Scaffold(
+        body: Center(child: Text('Error: $e')),
+      ),
     );
   }
 }
@@ -45,6 +86,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -70,7 +113,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -5),
                   ),
@@ -81,26 +124,26 @@ class _MainScreenState extends State<MainScreen> {
                 children: [
                   _NavBarItem(
                     icon: Icons.home_outlined,
-                    label: 'MY BUDGET',
+                    label: l10n.myBudget,
                     isSelected: _selectedIndex == 0,
                     onTap: () => setState(() => _selectedIndex = 0),
                   ),
                   _NavBarItem(
                     icon: Icons.account_balance_wallet_outlined,
-                    label: 'ACCOUNTS',
+                    label: l10n.accounts,
                     isSelected: _selectedIndex == 1,
                     onTap: () => setState(() => _selectedIndex = 1),
                   ),
                   const SizedBox(width: 40), // Space for FAB
                   _NavBarItem(
                     icon: Icons.pie_chart_outline,
-                    label: 'REPORTS',
+                    label: l10n.reports,
                     isSelected: _selectedIndex == 2,
                     onTap: () => setState(() => _selectedIndex = 2),
                   ),
                   _NavBarItem(
                     icon: Icons.list_alt_outlined,
-                    label: 'ACTIVITY',
+                    label: l10n.activity,
                     isSelected: _selectedIndex == 3,
                     onTap: () => setState(() => _selectedIndex = 3),
                   ),
@@ -127,7 +170,7 @@ class _MainScreenState extends State<MainScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.4),
+                      color: AppColors.primary.withValues(alpha: 0.4),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -181,15 +224,5 @@ class _NavBarItem extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const PlaceholderScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text(title));
   }
 }

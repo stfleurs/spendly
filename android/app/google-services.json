@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "589283175661",
+    "project_id": "receetpro",
+    "storage_bucket": "receetpro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589283175661:android:c2b533367548e1800130e4",
+        "android_client_info": {
+          "package_name": "receet.pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxHpUr9NOOngzQBhkVwHl9KPMUZSl8yqE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

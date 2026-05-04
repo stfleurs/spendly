@@ -1,4 +1,4 @@
-package com.steeve47.spendly.spendly
+package receet.pro
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Category {
 
- String get id; String get userId; String get name; String get group; int? get monthlyTarget;
+ String get id; String get userId; String get name; String get group; int? get monthlyTarget; String get currency; String get recurrence;
 /// Create a copy of Category
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CategoryCopyWith<Category> get copyWith => _$CategoryCopyWithImpl<Category>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Category&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.group, group) || other.group == group)&&(identical(other.monthlyTarget, monthlyTarget) || other.monthlyTarget == monthlyTarget));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Category&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.group, group) || other.group == group)&&(identical(other.monthlyTarget, monthlyTarget) || other.monthlyTarget == monthlyTarget)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.recurrence, recurrence) || other.recurrence == recurrence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,group,monthlyTarget);
+int get hashCode => Object.hash(runtimeType,id,userId,name,group,monthlyTarget,currency,recurrence);
 
 @override
 String toString() {
-  return 'Category(id: $id, userId: $userId, name: $name, group: $group, monthlyTarget: $monthlyTarget)';
+  return 'Category(id: $id, userId: $userId, name: $name, group: $group, monthlyTarget: $monthlyTarget, currency: $currency, recurrence: $recurrence)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CategoryCopyWith<$Res>  {
   factory $CategoryCopyWith(Category value, $Res Function(Category) _then) = _$CategoryCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String name, String group, int? monthlyTarget
+ String id, String userId, String name, String group, int? monthlyTarget, String currency, String recurrence
 });
 
 
@@ -65,14 +65,16 @@ class _$CategoryCopyWithImpl<$Res>
 
 /// Create a copy of Category
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? group = null,Object? monthlyTarget = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? group = null,Object? monthlyTarget = freezed,Object? currency = null,Object? recurrence = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,group: null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as String,monthlyTarget: freezed == monthlyTarget ? _self.monthlyTarget : monthlyTarget // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,recurrence: null == recurrence ? _self.recurrence : recurrence // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -157,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String group,  int? monthlyTarget)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String group,  int? monthlyTarget,  String currency,  String recurrence)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Category() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget);case _:
+return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget,_that.currency,_that.recurrence);case _:
   return orElse();
 
 }
@@ -178,10 +180,10 @@ return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String group,  int? monthlyTarget)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String group,  int? monthlyTarget,  String currency,  String recurrence)  $default,) {final _that = this;
 switch (_that) {
 case _Category():
-return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget);case _:
+return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget,_that.currency,_that.recurrence);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +200,10 @@ return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String group,  int? monthlyTarget)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String group,  int? monthlyTarget,  String currency,  String recurrence)?  $default,) {final _that = this;
 switch (_that) {
 case _Category() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget);case _:
+return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget,_that.currency,_that.recurrence);case _:
   return null;
 
 }
@@ -213,7 +215,7 @@ return $default(_that.id,_that.userId,_that.name,_that.group,_that.monthlyTarget
 @JsonSerializable()
 
 class _Category extends Category {
-  const _Category({required this.id, required this.userId, required this.name, required this.group, this.monthlyTarget}): super._();
+  const _Category({required this.id, required this.userId, required this.name, required this.group, this.monthlyTarget, this.currency = 'USD', this.recurrence = 'Monthly'}): super._();
   factory _Category.fromJson(Map<String, dynamic> json) => _$CategoryFromJson(json);
 
 @override final  String id;
@@ -221,6 +223,8 @@ class _Category extends Category {
 @override final  String name;
 @override final  String group;
 @override final  int? monthlyTarget;
+@override@JsonKey() final  String currency;
+@override@JsonKey() final  String recurrence;
 
 /// Create a copy of Category
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Category&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.group, group) || other.group == group)&&(identical(other.monthlyTarget, monthlyTarget) || other.monthlyTarget == monthlyTarget));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Category&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.group, group) || other.group == group)&&(identical(other.monthlyTarget, monthlyTarget) || other.monthlyTarget == monthlyTarget)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.recurrence, recurrence) || other.recurrence == recurrence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,group,monthlyTarget);
+int get hashCode => Object.hash(runtimeType,id,userId,name,group,monthlyTarget,currency,recurrence);
 
 @override
 String toString() {
-  return 'Category(id: $id, userId: $userId, name: $name, group: $group, monthlyTarget: $monthlyTarget)';
+  return 'Category(id: $id, userId: $userId, name: $name, group: $group, monthlyTarget: $monthlyTarget, currency: $currency, recurrence: $recurrence)';
 }
 
 
@@ -255,7 +259,7 @@ abstract mixin class _$CategoryCopyWith<$Res> implements $CategoryCopyWith<$Res>
   factory _$CategoryCopyWith(_Category value, $Res Function(_Category) _then) = __$CategoryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String name, String group, int? monthlyTarget
+ String id, String userId, String name, String group, int? monthlyTarget, String currency, String recurrence
 });
 
 
@@ -272,14 +276,16 @@ class __$CategoryCopyWithImpl<$Res>
 
 /// Create a copy of Category
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? group = null,Object? monthlyTarget = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? group = null,Object? monthlyTarget = freezed,Object? currency = null,Object? recurrence = null,}) {
   return _then(_Category(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,group: null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as String,monthlyTarget: freezed == monthlyTarget ? _self.monthlyTarget : monthlyTarget // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,recurrence: null == recurrence ? _self.recurrence : recurrence // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

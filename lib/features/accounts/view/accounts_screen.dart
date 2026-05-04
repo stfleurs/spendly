@@ -1,62 +1,111 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/shared/widgets/app_header.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
+import 'package:spendly/features/accounts/repository/account_repository.dart';
+import 'package:spendly/features/accounts/view/new_account_screen.dart';
+import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:spendly/core/models/account.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
-class AccountsScreen extends StatelessWidget {
+class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final userId = ref.watch(authStateProvider).value?.uid ?? '';
+    final accountsAsync = ref.watch(accountsStreamProvider(userId));
+
     return CustomScrollView(
       slivers: [
-        const SliverAppHeader(title: 'Accounts'),
+        SliverAppHeader(title: l10n.accounts),
         SliverToBoxAdapter(
           child: Column(
             children: [
               const SizedBox(height: 24),
               
               // Net Worth Card
-              MainCard(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: const Column(
-                  children: [
-                    Text(
-                      'NET WORTH',
-                      style: TextStyle(
-                        color: AppColors.textLight,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        letterSpacing: 1.2,
-                      ),
+              accountsAsync.when(
+                data: (accounts) {
+                  final totalCents = accounts.fold(0, (sum, acc) => sum + acc.balance);
+                  return MainCard(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: Column(
+                      children: [
+                        Text(
+                          l10n.netWorth,
+                          style: const TextStyle(
+                            color: AppColors.textLight,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '\$${(totalCents / 100).toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 40,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 12),
-                    Text(
-                      r'$11,081.49',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 40,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
+                loading: () => const MainCard(child: Center(child: CircularProgressIndicator())),
+                error: (e, s) => MainCard(child: Center(child: Text('Error: $e'))),
               ),
               
               const SizedBox(height: 24),
               
               // Accounts List Card
-              MainCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    _buildAccountItem('Sogebank (USD)', 'CHECKING', r'$34,200.00'),
-                    _buildAccountItem('Unibank (HTG)', 'CHECKING', r'-HTG 1,040,000.00', secondaryAmount: r'-$7,703.70'),
-                    _buildAccountItem('BNC (HTG)', 'CHECKING', r'-HTG 520,000.00', secondaryAmount: r'-$3,851.85'),
-                    _buildAccountItem('BUH (USD)', 'CHECKING', r'-$9,600.00'),
-                    _buildAccountItem('MonCash', 'CASH', r'-HTG 265,000.00', secondaryAmount: r'-$1,962.96'),
-                  ],
-                ),
+              accountsAsync.when(
+                data: (accounts) {
+                  return MainCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        if (accounts.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: Text('No accounts yet. Tap the button below to add one!'),
+                          ),
+                        ...accounts.map((acc) => _buildAccountItem(context, acc)),
+                        
+                        // Add Account Button at the end of list
+                        InkWell(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => const NewAccountScreen()),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                                const SizedBox(width: 12),
+                                Text(
+                                  l10n.createAccount.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                loading: () => const MainCard(child: Center(child: CircularProgressIndicator())),
+                error: (e, s) => MainCard(child: Center(child: Text('Error: $e'))),
               ),
               
               const SizedBox(height: 40),
@@ -67,73 +116,99 @@ class AccountsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAccountItem(String name, String type, String amount, {String? secondaryAmount}) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.primaryLight, width: 1)),
+  Widget _buildAccountItem(BuildContext context, Account account) {
+    final l10n = AppLocalizations.of(context)!;
+    // Parse color from hex string
+    Color accountColor = AppColors.primary;
+    if (account.color != null && account.color!.startsWith('#')) {
+      try {
+        final hex = account.color!.substring(1);
+        accountColor = Color(int.parse('FF$hex', radix: 16));
+      } catch (_) {}
+    }
+
+    // Map type to icon and localized name
+    IconData accountIcon = Icons.account_balance_wallet;
+    String typeName = account.type;
+    switch (account.type) {
+      case 'CHECKING':
+        accountIcon = Icons.account_balance;
+        typeName = l10n.checking;
+        break;
+      case 'SAVINGS':
+        accountIcon = Icons.savings;
+        typeName = l10n.savings;
+        break;
+      case 'CASH':
+        accountIcon = Icons.payments;
+        typeName = l10n.cash;
+        break;
+      case 'CREDIT CARD':
+        accountIcon = Icons.credit_card;
+        typeName = l10n.creditCard;
+        break;
+    }
+
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => NewAccountScreen(account: account)),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.primaryLight, width: 1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: accountColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(accountIcon, color: accountColor, size: 24),
             ),
-            child: const Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    account.name,
+                    style: const TextStyle(
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    typeName.toUpperCase(),
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 10,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  name,
+                  '${account.currency == 'USD' ? r'$ ' : '${account.currency} '}${(account.balance / 100).toStringAsFixed(2)}',
                   style: const TextStyle(
                     color: AppColors.textDark,
                     fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  type,
-                  style: const TextStyle(
-                    color: AppColors.textLight,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 10,
-                    letterSpacing: 1.1,
+                    fontSize: 16,
                   ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                amount,
-                style: const TextStyle(
-                  color: AppColors.textDark,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                ),
-              ),
-              if (secondaryAmount != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  secondaryAmount,
-                  style: const TextStyle(
-                    color: AppColors.textLight,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
