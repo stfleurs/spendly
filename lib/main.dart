@@ -39,7 +39,7 @@ class SpendlyApp extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp(
-      title: 'Spendly',
+      title: 'Receet Pro',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       locale: locale,
