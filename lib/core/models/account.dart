@@ -11,7 +11,8 @@ abstract class Account with _$Account {
     required String name,
     required String type,
     required String currency,
-    required int balance,
+    required int balance, // This represents the INITIAL starting balance of the account
+    @Default(0) int creditLimit,
     String? color,
   }) = _Account;
 

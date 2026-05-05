@@ -13,6 +13,7 @@ _Account _$AccountFromJson(Map<String, dynamic> json) => _Account(
   type: json['type'] as String,
   currency: json['currency'] as String,
   balance: (json['balance'] as num).toInt(),
+  creditLimit: (json['creditLimit'] as num?)?.toInt() ?? 0,
   color: json['color'] as String?,
 );
 
@@ -23,5 +24,6 @@ Map<String, dynamic> _$AccountToJson(_Account instance) => <String, dynamic>{
   'type': instance.type,
   'currency': instance.currency,
   'balance': instance.balance,
+  'creditLimit': instance.creditLimit,
   'color': instance.color,
 };

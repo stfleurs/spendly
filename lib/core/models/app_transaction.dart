@@ -14,8 +14,8 @@ abstract class AppTransaction with _$AppTransaction {
     required DateTime date,
     required String accountId,
     required String categoryId,
-    String? receiptId,
     String? note,
+    String? receiptUrl,
   }) = _AppTransaction;
 
   const AppTransaction._();

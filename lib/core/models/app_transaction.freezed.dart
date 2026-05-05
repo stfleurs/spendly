@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$AppTransaction {
 
  String get id; String get userId; String get type;// income | expense | transfer
- int get amount; String get currency; DateTime get date; String get accountId; String get categoryId; String? get receiptId; String? get note;
+ int get amount; String get currency; DateTime get date; String get accountId; String get categoryId; String? get note; String? get receiptUrl;
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $AppTransactionCopyWith<AppTransaction> get copyWith => _$AppTransactionCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.note, note) || other.note == note)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,receiptId,note);
+int get hashCode => Object.hash(runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,note,receiptUrl);
 
 @override
 String toString() {
-  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, receiptId: $receiptId, note: $note)';
+  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, note: $note, receiptUrl: $receiptUrl)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $AppTransactionCopyWith<$Res>  {
   factory $AppTransactionCopyWith(AppTransaction value, $Res Function(AppTransaction) _then) = _$AppTransactionCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String type, int amount, String currency, DateTime date, String accountId, String categoryId, String? receiptId, String? note
+ String id, String userId, String type, int amount, String currency, DateTime date, String accountId, String categoryId, String? note, String? receiptUrl
 });
 
 
@@ -66,7 +66,7 @@ class _$AppTransactionCopyWithImpl<$Res>
 
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? receiptId = freezed,Object? note = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? note = freezed,Object? receiptUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -76,8 +76,8 @@ as int,currency: null == currency ? _self.currency : currency // ignore: cast_nu
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,accountId: null == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
-as String,receiptId: freezed == receiptId ? _self.receiptId : receiptId // ignore: cast_nullable_to_non_nullable
-as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,receiptUrl: freezed == receiptUrl ? _self.receiptUrl : receiptUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -163,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency,  DateTime date,  String accountId,  String categoryId,  String? receiptId,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency,  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppTransaction() when $default != null:
-return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.receiptId,_that.note);case _:
+return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl);case _:
   return orElse();
 
 }
@@ -184,10 +184,10 @@ return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency,  DateTime date,  String accountId,  String categoryId,  String? receiptId,  String? note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency,  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl)  $default,) {final _that = this;
 switch (_that) {
 case _AppTransaction():
-return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.receiptId,_that.note);case _:
+return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +204,10 @@ return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String type,  int amount,  String currency,  DateTime date,  String accountId,  String categoryId,  String? receiptId,  String? note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String type,  int amount,  String currency,  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _AppTransaction() when $default != null:
-return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.receiptId,_that.note);case _:
+return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl);case _:
   return null;
 
 }
@@ -219,7 +219,7 @@ return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_th
 @JsonSerializable()
 
 class _AppTransaction extends AppTransaction {
-  const _AppTransaction({required this.id, required this.userId, required this.type, required this.amount, required this.currency, required this.date, required this.accountId, required this.categoryId, this.receiptId, this.note}): super._();
+  const _AppTransaction({required this.id, required this.userId, required this.type, required this.amount, required this.currency, required this.date, required this.accountId, required this.categoryId, this.note, this.receiptUrl}): super._();
   factory _AppTransaction.fromJson(Map<String, dynamic> json) => _$AppTransactionFromJson(json);
 
 @override final  String id;
@@ -231,8 +231,8 @@ class _AppTransaction extends AppTransaction {
 @override final  DateTime date;
 @override final  String accountId;
 @override final  String categoryId;
-@override final  String? receiptId;
 @override final  String? note;
+@override final  String? receiptUrl;
 
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.note, note) || other.note == note)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,receiptId,note);
+int get hashCode => Object.hash(runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,note,receiptUrl);
 
 @override
 String toString() {
-  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, receiptId: $receiptId, note: $note)';
+  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, note: $note, receiptUrl: $receiptUrl)';
 }
 
 
@@ -267,7 +267,7 @@ abstract mixin class _$AppTransactionCopyWith<$Res> implements $AppTransactionCo
   factory _$AppTransactionCopyWith(_AppTransaction value, $Res Function(_AppTransaction) _then) = __$AppTransactionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String type, int amount, String currency, DateTime date, String accountId, String categoryId, String? receiptId, String? note
+ String id, String userId, String type, int amount, String currency, DateTime date, String accountId, String categoryId, String? note, String? receiptUrl
 });
 
 
@@ -284,7 +284,7 @@ class __$AppTransactionCopyWithImpl<$Res>
 
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? receiptId = freezed,Object? note = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? note = freezed,Object? receiptUrl = freezed,}) {
   return _then(_AppTransaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -294,8 +294,8 @@ as int,currency: null == currency ? _self.currency : currency // ignore: cast_nu
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,accountId: null == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
-as String,receiptId: freezed == receiptId ? _self.receiptId : receiptId // ignore: cast_nullable_to_non_nullable
-as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,receiptUrl: freezed == receiptUrl ? _self.receiptUrl : receiptUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

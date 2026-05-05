@@ -16,8 +16,8 @@ _AppTransaction _$AppTransactionFromJson(Map<String, dynamic> json) =>
       date: DateTime.parse(json['date'] as String),
       accountId: json['accountId'] as String,
       categoryId: json['categoryId'] as String,
-      receiptId: json['receiptId'] as String?,
       note: json['note'] as String?,
+      receiptUrl: json['receiptUrl'] as String?,
     );
 
 Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
@@ -30,6 +30,6 @@ Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
       'date': instance.date.toIso8601String(),
       'accountId': instance.accountId,
       'categoryId': instance.categoryId,
-      'receiptId': instance.receiptId,
       'note': instance.note,
+      'receiptUrl': instance.receiptUrl,
     };

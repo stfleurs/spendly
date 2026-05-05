@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:spendly/shared/widgets/app_header.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
@@ -50,7 +51,7 @@ class ReportsScreen extends ConsumerWidget {
               for (final t in transactions) {
                 if (t.type.toLowerCase() == 'income') {
                   totalIncome += t.amount;
-                } else if (t.type.toLowerCase() == 'expense') {
+                } else if (t.type.toLowerCase() == 'expense' && t.type.toLowerCase() != 'transfer') {
                   totalExpense += t.amount;
                   spentByCategory[t.categoryId] =
                       (spentByCategory[t.categoryId] ?? 0) + t.amount;
@@ -110,6 +111,33 @@ class ReportsScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: 24),
+
+                  // Spending Breakdown (Pie Chart)
+                  if (spentByCategory.isNotEmpty)
+                    MainCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.spendingByCategory,
+                            style: const TextStyle(
+                              color: AppColors.textLight,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          SizedBox(
+                            height: 200,
+                            child: _buildPieChart(spentByCategory, categoriesAsync),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
 
                   const SizedBox(height: 24),
 
@@ -182,6 +210,73 @@ class ReportsScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPieChart(Map<String, int> spentByCategory, AsyncValue<List<Category>> categoriesAsync) {
+    return categoriesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => const SizedBox.shrink(),
+      data: (categories) {
+        final Map<String, Category> catMap = {for (final c in categories) c.id: c};
+        final sortedEntries = spentByCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+        
+        final List<Color> sectionColors = [
+          AppColors.primary,
+          const Color(0xFFF6C022),
+          const Color(0xFF4FD1C5),
+          const Color(0xFF63B3ED),
+          const Color(0xFFB794F4),
+          const Color(0xFFCBD5E0),
+        ];
+
+        return PieChart(
+          PieChartData(
+            sectionsSpace: 4,
+            centerSpaceRadius: 40,
+            sections: sortedEntries.asMap().entries.map((entry) {
+              final index = entry.key;
+              final categoryId = entry.value.key;
+              final amount = entry.value.value;
+              final cat = catMap[categoryId];
+              
+              return PieChartSectionData(
+                color: sectionColors[index % sectionColors.length],
+                value: amount.toDouble(),
+                title: '', // Hide title on segments
+                radius: 60,
+                badgeWidget: index < 3 ? _buildPieBadge(cat?.name ?? '?') : null,
+                badgePositionPercentageOffset: 1.3,
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPieBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.textDark,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 

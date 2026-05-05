@@ -19,6 +19,7 @@ class NewAccountScreen extends ConsumerStatefulWidget {
 class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _balanceController;
+  late final TextEditingController _creditLimitController;
   late String _selectedType;
   late String _selectedCurrency;
   late Color _selectedColor;
@@ -42,6 +43,9 @@ class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
     _balanceController = TextEditingController(
       text: widget.account != null ? (widget.account!.balance / 100).toStringAsFixed(2) : '0.00',
     );
+    _creditLimitController = TextEditingController(
+      text: widget.account != null ? (widget.account!.creditLimit / 100).toStringAsFixed(2) : '0.00',
+    );
     _selectedType = widget.account?.type ?? 'CHECKING';
     _selectedCurrency = widget.account?.currency ?? 'USD';
     
@@ -59,6 +63,7 @@ class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
   void dispose() {
     _nameController.dispose();
     _balanceController.dispose();
+    _creditLimitController.dispose();
     super.dispose();
   }
 
@@ -73,6 +78,7 @@ class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
     setState(() => _isLoading = true);
     final userId = ref.read(authStateProvider).value?.uid ?? '';
     final balanceValue = double.tryParse(_balanceController.text) ?? 0.0;
+    final creditLimitValue = double.tryParse(_creditLimitController.text) ?? 0.0;
 
     final account = Account(
       id: widget.account?.id ?? '',
@@ -80,6 +86,7 @@ class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
       name: _nameController.text.trim(),
       type: _selectedType,
       balance: (balanceValue * 100).toInt(),
+      creditLimit: (creditLimitValue * 100).toInt(),
       currency: _selectedCurrency,
       color: '#${_selectedColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}',
     );
@@ -246,6 +253,21 @@ class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
                             border: InputBorder.none,
                           ),
                         ),
+                        if (_selectedType == 'CREDIT CARD') ...[
+                          const SizedBox(height: 24),
+                          const Divider(color: AppColors.primaryLight),
+                          const SizedBox(height: 24),
+                          _buildLabel('CREDIT LIMIT'),
+                          TextField(
+                            controller: _creditLimitController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 32, color: AppColors.expense),
+                            decoration: const InputDecoration(
+                              prefixText: r'$ ',
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

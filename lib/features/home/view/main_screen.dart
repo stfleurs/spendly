@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
-import 'package:spendly/features/budget/view/budget_screen.dart';
+import 'package:spendly/features/home/view/dashboard_screen.dart';
 import 'package:spendly/features/accounts/view/accounts_screen.dart';
 import 'package:spendly/features/reports/view/reports_screen.dart';
 import 'package:spendly/features/transactions/view/transactions_screen.dart';
@@ -18,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 2; // Default to Reports
 
   final List<Widget> _screens = [
-    const MyBudgetScreen(),
+    const DashboardScreen(),
     const AccountsScreen(),
     const ReportsScreen(),
     const TransactionsScreen(),
@@ -63,8 +63,8 @@ class _MainScreenState extends State<MainScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _NavBarItem(
-                    icon: Icons.home_outlined,
-                    label: l10n.myBudget,
+                    icon: Icons.dashboard_outlined,
+                    label: 'Home',
                     isSelected: _selectedIndex == 0,
                     onTap: () => setState(() => _selectedIndex = 0),
                   ),

@@ -11,11 +11,24 @@ import 'package:spendly/core/localization/ht_localizations.dart';
 import 'package:spendly/features/auth/view/onboarding_screen.dart';
 import 'package:spendly/features/home/view/main_screen.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
+import 'package:spendly/shared/widgets/lock_screen.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spendly/core/providers/security_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const ProviderScope(child: SpendlyApp()));
+  final sharedPrefs = await SharedPreferences.getInstance();
+  
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+      ],
+      child: const SpendlyApp(),
+    ),
+  );
 }
 
 class SpendlyApp extends ConsumerWidget {
@@ -61,21 +74,7 @@ class AuthGate extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user != null) {
-          final accountsAsync = ref.watch(accountsStreamProvider(user.uid));
-          return accountsAsync.when(
-            data: (accounts) {
-              if (accounts.isEmpty) {
-                return const OnboardingScreen();
-              }
-              return const MainScreen();
-            },
-            loading: () => const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            ),
-            error: (e, s) => Scaffold(
-              body: Center(child: Text('Error: $e')),
-            ),
-          );
+          return const SecurityGate();
         }
         return const LoginScreen();
       },
@@ -85,6 +84,49 @@ class AuthGate extends ConsumerWidget {
       error: (e, s) => Scaffold(
         body: Center(child: Text('Error: $e')),
       ),
+    );
+  }
+}
+
+class SecurityGate extends ConsumerStatefulWidget {
+  const SecurityGate({super.key});
+
+  @override
+  ConsumerState<SecurityGate> createState() => _SecurityGateState();
+}
+
+class _SecurityGateState extends ConsumerState<SecurityGate> {
+  bool _isUnlocked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final security = ref.watch(securityProvider);
+    final userId = ref.watch(authStateProvider).value?.uid;
+
+    if (userId == null) return const LoginScreen();
+
+    // If security is disabled or already unlocked, show the app
+    if (!security.isPinEnabled || _isUnlocked) {
+      final accountsAsync = ref.watch(accountsStreamProvider(userId));
+      return accountsAsync.when(
+        data: (accounts) {
+          if (accounts.isEmpty) return const OnboardingScreen();
+          return const MainScreen();
+        },
+        loading: () => const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+        error: (e, s) => Scaffold(
+          body: Center(child: Text('Error: $e')),
+        ),
+      );
+    }
+
+    // Show lock screen
+    return LockScreen(
+      onAuthenticated: () {
+        setState(() => _isUnlocked = true);
+      },
     );
   }
 }

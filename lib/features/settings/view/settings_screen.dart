@@ -10,6 +10,10 @@ import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
 import 'package:spendly/features/auth/view/onboarding_screen.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
+import 'package:spendly/features/transactions/repository/transaction_repository.dart';
+import 'package:spendly/features/budget/repository/category_repository.dart';
+import 'package:spendly/core/providers/security_provider.dart';
+import 'package:spendly/core/providers/export_provider.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -102,6 +106,72 @@ class SettingsScreen extends ConsumerWidget {
                           title: 'CAD (\$)',
                           isSelected: currentCurrency == 'CAD',
                           onTap: () => ref.read(currencyProvider.notifier).setCurrency('CAD'),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Security Settings
+                  MainCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionHeader('SECURITY'),
+                        const SizedBox(height: 16),
+                        _buildSecuritySwitch(
+                          context,
+                          title: 'App PIN Lock',
+                          value: ref.watch(securityProvider).isPinEnabled,
+                          onChanged: (enabled) {
+                            if (enabled) {
+                              _showSetupPinDialog(context, ref);
+                            } else {
+                              ref.read(securityProvider.notifier).disablePin();
+                            }
+                          },
+                        ),
+                        _buildDivider(),
+                        _buildSecuritySwitch(
+                          context,
+                          title: 'Biometric Unlock',
+                          value: ref.watch(securityProvider).isBiometricEnabled,
+                          onChanged: (enabled) async {
+                            try {
+                              await ref.read(securityProvider.notifier).toggleBiometric(enabled);
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Data & Backup Settings
+                  MainCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionHeader('DATA & BACKUP'),
+                        const SizedBox(height: 16),
+                        _buildSettingTile(
+                          context,
+                          title: 'Export to CSV',
+                          isSelected: false,
+                          onTap: () => _handleExport(context, ref, format: 'csv'),
+                        ),
+                        _buildDivider(),
+                        _buildSettingTile(
+                          context,
+                          title: 'Backup to JSON',
+                          isSelected: false,
+                          onTap: () => _handleExport(context, ref, format: 'json'),
                         ),
                       ],
                     ),
@@ -230,5 +300,108 @@ class SettingsScreen extends ConsumerWidget {
 
   Widget _buildDivider() {
     return const Divider(color: AppColors.primaryLight, height: 1);
+  }
+
+  Widget _buildSecuritySwitch(
+    BuildContext context, {
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColors.textDark,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          Switch.adaptive(
+            value: value,
+            onChanged: onChanged,
+            activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+            activeThumbColor: AppColors.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSetupPinDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Setup App PIN'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          maxLength: 4,
+          obscureText: true,
+          decoration: const InputDecoration(
+            hintText: 'Enter 4-digit PIN',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.length == 4) {
+                ref.read(securityProvider.notifier).setPin(controller.text);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('SAVE'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleExport(
+    BuildContext context,
+    WidgetRef ref, {
+    required String format,
+  }) async {
+    final userId = ref.read(authStateProvider).value?.uid;
+    if (userId == null) return;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.showSnackBar(
+      SnackBar(content: Text('Generating ${format.toUpperCase()} export...')),
+    );
+
+    try {
+      final accounts = await ref.read(accountRepositoryProvider).watchAccounts(userId).first;
+      final transactions = await ref.read(transactionRepositoryProvider).watchTransactions(userId).first;
+      final categories = await ref.read(categoryRepositoryProvider).watchCategories(userId).first;
+      
+      final catMap = {for (final c in categories) c.id: c};
+
+      if (format == 'csv') {
+        await ref.read(dataExportServiceProvider).exportToCsv(
+              transactions: transactions,
+              accounts: accounts,
+              catMap: catMap,
+            );
+      } else {
+        await ref.read(dataExportServiceProvider).exportToJson(
+              transactions: transactions,
+              accounts: accounts,
+            );
+      }
+    } catch (e) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 }

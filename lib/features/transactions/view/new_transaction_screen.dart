@@ -11,6 +11,7 @@ import 'package:spendly/core/models/account.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
+import 'package:spendly/core/providers/balance_provider.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class NewTransactionScreen extends ConsumerStatefulWidget {
@@ -65,9 +66,33 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     }
 
     final amountValue = double.tryParse(_amountController.text) ?? 0.0;
+    final amountCents = (amountValue * 100).toInt();
+
     if (amountValue <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid amount')),
+      );
+      return;
+    }
+
+    final userId = ref.read(authRepositoryProvider).currentUser?.uid ?? '';
+    int available = ref.read(availableFundsProvider((userId: userId, accountId: _selectedAccount!.id)));
+
+    // If editing, add back the current transaction amount to available funds for validation
+    if (_isEditing && widget.transaction!.accountId == _selectedAccount!.id) {
+      if (widget.transaction!.type.toLowerCase() == 'expense') {
+        available += widget.transaction!.amount;
+      } else if (widget.transaction!.type.toLowerCase() == 'income') {
+        available -= widget.transaction!.amount;
+      }
+    }
+
+    if (_selectedType.toUpperCase() == 'EXPENSE' && amountCents > available) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Insufficient funds. Available: ${_selectedAccount!.currency} ${(available / 100).toStringAsFixed(2)}'),
+          backgroundColor: AppColors.expense,
+        ),
       );
       return;
     }
@@ -188,6 +213,9 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final accountsAsync = ref.watch(accountsStreamProvider(userId));
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
+    final availableFunds = _selectedAccount != null
+        ? ref.watch(availableFundsProvider((userId: userId, accountId: _selectedAccount!.id)))
+        : 0;
 
     // Pre-select account/category when stream data arrives (edit mode)
     if (_isEditing && _selectedAccount == null && accountsAsync.value != null) {
@@ -300,9 +328,25 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                             underline: const SizedBox(),
                             hint: const Text('Select Account'),
                             items: accounts.map((acc) {
+                              final balance = ref.watch(accountBalanceProvider((userId: userId, accountId: acc.id)));
+                              final isNegative = balance < 0;
                               return DropdownMenuItem(
                                 value: acc,
-                                child: Text('${acc.name} (${acc.currency})'),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(acc.name,
+                                        style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      '${acc.currency == 'USD' ? r'$ ' : '${acc.currency} '}${(balance / 100).toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        color: isNegative ? AppColors.expense : AppColors.textLight,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             }).toList(),
                             onChanged: (val) => setState(() {
@@ -314,6 +358,19 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                         loading: () => const LinearProgressIndicator(),
                         error: (e, s) => Text('Error: $e'),
                       ),
+                      if (_selectedAccount != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            'Available: ${_selectedAccount!.currency == 'USD' ? r'$ ' : '${_selectedAccount!.currency} '}${(availableFunds / 100).toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: availableFunds < 0 ? AppColors.expense : AppColors.textLight,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.primaryLight),
                       const SizedBox(height: 24),

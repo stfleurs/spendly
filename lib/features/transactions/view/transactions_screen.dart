@@ -10,13 +10,29 @@ import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/features/transactions/view/new_transaction_screen.dart';
+import 'package:spendly/features/ocr/view/receipt_viewer_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
-class TransactionsScreen extends ConsumerWidget {
+class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TransactionsScreen> createState() => _TransactionsScreenState();
+}
+
+class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  bool _showOnlyReceipts = false;
+  String _selectedType = 'All'; // All, Expense, Income
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final selectedDate = ref.watch(selectedDateProvider);
     final transactionsAsync = ref.watch(transactionsStreamProvider(userId));
@@ -38,55 +54,141 @@ class TransactionsScreen extends ConsumerWidget {
               child: Center(child: Text('Error loading transactions: $e')),
             ),
             data: (allTransactions) {
-              // Filter to selected month
+              final categories = categoriesAsync.value ?? [];
+              final Map<String, Category> catMap = {for (final c in categories) c.id: c};
+
+              // Apply Filters
               final transactions = allTransactions.where((t) {
-                return t.date.year == selectedDate.year &&
-                    t.date.month == selectedDate.month;
+                // Month Filter
+                final isSameMonth = t.date.year == selectedDate.year && t.date.month == selectedDate.month;
+                if (!isSameMonth) return false;
+
+                // Type Filter
+                if (_selectedType != 'All' && t.type.toLowerCase() != _selectedType.toLowerCase()) return false;
+
+                // Receipt Filter
+                if (_showOnlyReceipts && t.receiptUrl == null) return false;
+
+                // Search Filter
+                final query = _searchController.text.toLowerCase().trim();
+                if (query.isNotEmpty) {
+                  final merchant = t.note?.toLowerCase() ?? '';
+                  final category = catMap[t.categoryId]?.name.toLowerCase() ?? '';
+                  final amount = (t.amount / 100).toString();
+                  if (!merchant.contains(query) && !category.contains(query) && !amount.contains(query)) {
+                    return false;
+                  }
+                }
+
+                return true;
               }).toList();
 
-              if (transactions.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(Icons.receipt_long_outlined, color: AppColors.textLight, size: 56),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.noTransactions,
-                          style: const TextStyle(
-                            color: AppColors.textLight,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+              return Column(
+                children: [
+                  // Search Bar
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => setState(() {}),
+                        decoration: InputDecoration(
+                          hintText: 'Search merchant, category...',
+                          hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
+                          prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                          suffixIcon: _searchController.text.isNotEmpty 
+                            ? IconButton(icon: const Icon(Icons.clear, size: 18), onPressed: () => setState(() => _searchController.clear())) 
+                            : null,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.tapToAdd,
-                          style: const TextStyle(color: AppColors.textLight),
+                      ),
+                    ),
+                  ),
+
+                  // Filter Chips
+                  SizedBox(
+                    height: 50,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      children: [
+                        _buildFilterChip('All'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip('Expense'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip('Income'),
+                        const SizedBox(width: 16),
+                        FilterChip(
+                          label: const Text('WITH RECEIPT'),
+                          labelStyle: TextStyle(
+                            color: _showOnlyReceipts ? Colors.white : AppColors.primary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.1,
+                          ),
+                          selected: _showOnlyReceipts,
+                          onSelected: (val) => setState(() => _showOnlyReceipts = val),
+                          backgroundColor: Colors.white,
+                          selectedColor: AppColors.primary,
+                          checkmarkColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30), side: BorderSide(color: AppColors.primary.withValues(alpha: 0.2))),
+                          elevation: 0,
+                          pressElevation: 0,
                         ),
                       ],
                     ),
                   ),
-                );
-              }
+                  const SizedBox(height: 16),
 
-              final categories = categoriesAsync.value ?? [];
-              final Map<String, Category> catMap = {
-                for (final c in categories) c.id: c
-              };
-
-              return Column(
-                children: [
-                  const SizedBox(height: 24),
-                  MainCard(
-                    padding: EdgeInsets.zero,
-                    child: Column(
-                      children: transactions.map((t) {
-                        return _buildTransactionItem(context, ref, t, catMap);
-                      }).toList(),
+                  if (transactions.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(40),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(Icons.receipt_long_outlined, color: AppColors.textLight, size: 56),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchController.text.isNotEmpty || _showOnlyReceipts || _selectedType != 'All'
+                                ? 'No results found'
+                                : l10n.noTransactions,
+                              style: const TextStyle(
+                                color: AppColors.textLight,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _searchController.text.isNotEmpty || _showOnlyReceipts || _selectedType != 'All'
+                                ? 'Try adjusting your filters'
+                                : l10n.tapToAdd,
+                              style: const TextStyle(color: AppColors.textLight),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: MainCard(
+                        padding: EdgeInsets.zero,
+                        child: Column(
+                          children: transactions.map((t) {
+                            return _buildTransactionItem(context, t, catMap);
+                          }).toList(),
+                        ),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 40),
                 ],
               );
@@ -94,6 +196,28 @@ class TransactionsScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFilterChip(String label) {
+    final isSelected = _selectedType == label;
+    return ChoiceChip(
+      label: Text(label.toUpperCase()),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : AppColors.primary,
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 1.1,
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) setState(() => _selectedType = label);
+      },
+      backgroundColor: Colors.white,
+      selectedColor: AppColors.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30), side: BorderSide(color: AppColors.primary.withValues(alpha: 0.2))),
+      elevation: 0,
+      pressElevation: 0,
     );
   }
 
@@ -107,7 +231,6 @@ class TransactionsScreen extends ConsumerWidget {
 
   Widget _buildTransactionItem(
     BuildContext context,
-    WidgetRef ref,
     AppTransaction transaction,
     Map<String, Category> catMap,
   ) {
@@ -180,13 +303,55 @@ class TransactionsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            amountStr,
-            style: TextStyle(
-              color: amountColor,
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                amountStr,
+                style: TextStyle(
+                  color: amountColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
+              if (transaction.receiptUrl != null) ...[
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ReceiptViewerScreen(
+                          imageUrl: transaction.receiptUrl!,
+                          merchantName: transaction.note ?? categoryName,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.receipt_long, size: 10, color: AppColors.primary),
+                        SizedBox(width: 2),
+                        Text(
+                          'RECEIPT',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(width: 8),
           const Icon(Icons.chevron_right, color: AppColors.textLight, size: 20),

@@ -7,6 +7,7 @@ import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/features/accounts/view/new_account_screen.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/models/account.dart';
+import 'package:spendly/core/providers/balance_provider.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class AccountsScreen extends ConsumerWidget {
@@ -29,7 +30,9 @@ class AccountsScreen extends ConsumerWidget {
               // Net Worth Card
               accountsAsync.when(
                 data: (accounts) {
-                  final totalCents = accounts.fold(0, (sum, acc) => sum + acc.balance);
+                  final totalCents = accounts.fold(0, (sum, acc) {
+                    return sum + ref.watch(accountBalanceProvider((userId: userId, accountId: acc.id)));
+                  });
                   return MainCard(
                     padding: const EdgeInsets.symmetric(vertical: 32),
                     child: Column(
@@ -74,7 +77,7 @@ class AccountsScreen extends ConsumerWidget {
                             padding: EdgeInsets.all(32.0),
                             child: Text('No accounts yet. Tap the button below to add one!'),
                           ),
-                        ...accounts.map((acc) => _buildAccountItem(context, acc)),
+                        ...accounts.map((acc) => _buildAccountItem(context, ref, userId, acc)),
                         
                         // Add Account Button at the end of list
                         InkWell(
@@ -116,7 +119,8 @@ class AccountsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAccountItem(BuildContext context, Account account) {
+  Widget _buildAccountItem(BuildContext context, WidgetRef ref, String userId, Account account) {
+    final currentBalance = ref.watch(accountBalanceProvider((userId: userId, accountId: account.id)));
     final l10n = AppLocalizations.of(context)!;
     // Parse color from hex string
     Color accountColor = AppColors.primary;
@@ -197,16 +201,36 @@ class AccountsScreen extends ConsumerWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                if (account.type.toUpperCase() == 'CREDIT CARD') ...[
+                  Text(
+                    'Limit: ${(account.creditLimit / 100).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    'Available: ${(ref.watch(availableFundsProvider((userId: userId, accountId: account.id))) / 100).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: AppColors.income,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
                 Text(
-                  '${account.currency == 'USD' ? r'$ ' : '${account.currency} '}${(account.balance / 100).toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: AppColors.textDark,
+                  '${account.currency == 'USD' ? r'$ ' : '${account.currency} '}${(currentBalance / 100).toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: currentBalance < 0 ? AppColors.expense : AppColors.textDark,
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
                   ),
                 ),
               ],
             ),
+
           ],
         ),
       ),
