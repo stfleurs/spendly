@@ -14,3 +14,7 @@
 -keep class receet.pro.** { *; }
 -keepattributes Signature
 -keepattributes *Annotation*
+
+# Suppress warnings for missing classes during R8 shrinking
+-dontwarn com.google.android.play.core.**
+-dontwarn com.google.mlkit.vision.text.**
