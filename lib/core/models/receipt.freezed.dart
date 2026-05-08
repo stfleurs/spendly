@@ -13,9 +13,552 @@ part of 'receipt.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
+mixin _$OCRLine {
+
+ String get text;@RectConverter() Rect get bounds;
+/// Create a copy of OCRLine
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OCRLineCopyWith<OCRLine> get copyWith => _$OCRLineCopyWithImpl<OCRLine>(this as OCRLine, _$identity);
+
+  /// Serializes this OCRLine to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OCRLine&&(identical(other.text, text) || other.text == text)&&(identical(other.bounds, bounds) || other.bounds == bounds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,text,bounds);
+
+@override
+String toString() {
+  return 'OCRLine(text: $text, bounds: $bounds)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OCRLineCopyWith<$Res>  {
+  factory $OCRLineCopyWith(OCRLine value, $Res Function(OCRLine) _then) = _$OCRLineCopyWithImpl;
+@useResult
+$Res call({
+ String text,@RectConverter() Rect bounds
+});
+
+
+
+
+}
+/// @nodoc
+class _$OCRLineCopyWithImpl<$Res>
+    implements $OCRLineCopyWith<$Res> {
+  _$OCRLineCopyWithImpl(this._self, this._then);
+
+  final OCRLine _self;
+  final $Res Function(OCRLine) _then;
+
+/// Create a copy of OCRLine
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? bounds = null,}) {
+  return _then(_self.copyWith(
+text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
+as String,bounds: null == bounds ? _self.bounds : bounds // ignore: cast_nullable_to_non_nullable
+as Rect,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [OCRLine].
+extension OCRLinePatterns on OCRLine {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _OCRLine value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _OCRLine() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _OCRLine value)  $default,){
+final _that = this;
+switch (_that) {
+case _OCRLine():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _OCRLine value)?  $default,){
+final _that = this;
+switch (_that) {
+case _OCRLine() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text, @RectConverter()  Rect bounds)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _OCRLine() when $default != null:
+return $default(_that.text,_that.bounds);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text, @RectConverter()  Rect bounds)  $default,) {final _that = this;
+switch (_that) {
+case _OCRLine():
+return $default(_that.text,_that.bounds);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text, @RectConverter()  Rect bounds)?  $default,) {final _that = this;
+switch (_that) {
+case _OCRLine() when $default != null:
+return $default(_that.text,_that.bounds);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _OCRLine extends OCRLine {
+  const _OCRLine({required this.text, @RectConverter() required this.bounds}): super._();
+  factory _OCRLine.fromJson(Map<String, dynamic> json) => _$OCRLineFromJson(json);
+
+@override final  String text;
+@override@RectConverter() final  Rect bounds;
+
+/// Create a copy of OCRLine
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$OCRLineCopyWith<_OCRLine> get copyWith => __$OCRLineCopyWithImpl<_OCRLine>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$OCRLineToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OCRLine&&(identical(other.text, text) || other.text == text)&&(identical(other.bounds, bounds) || other.bounds == bounds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,text,bounds);
+
+@override
+String toString() {
+  return 'OCRLine(text: $text, bounds: $bounds)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$OCRLineCopyWith<$Res> implements $OCRLineCopyWith<$Res> {
+  factory _$OCRLineCopyWith(_OCRLine value, $Res Function(_OCRLine) _then) = __$OCRLineCopyWithImpl;
+@override @useResult
+$Res call({
+ String text,@RectConverter() Rect bounds
+});
+
+
+
+
+}
+/// @nodoc
+class __$OCRLineCopyWithImpl<$Res>
+    implements _$OCRLineCopyWith<$Res> {
+  __$OCRLineCopyWithImpl(this._self, this._then);
+
+  final _OCRLine _self;
+  final $Res Function(_OCRLine) _then;
+
+/// Create a copy of OCRLine
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? bounds = null,}) {
+  return _then(_OCRLine(
+text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
+as String,bounds: null == bounds ? _self.bounds : bounds // ignore: cast_nullable_to_non_nullable
+as Rect,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$ReceiptItem {
+
+ String get description; int get amount;// Cents
+ int? get quantity; int? get unitPrice;
+/// Create a copy of ReceiptItem
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ReceiptItemCopyWith<ReceiptItem> get copyWith => _$ReceiptItemCopyWithImpl<ReceiptItem>(this as ReceiptItem, _$identity);
+
+  /// Serializes this ReceiptItem to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptItem&&(identical(other.description, description) || other.description == description)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,description,amount,quantity,unitPrice);
+
+@override
+String toString() {
+  return 'ReceiptItem(description: $description, amount: $amount, quantity: $quantity, unitPrice: $unitPrice)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ReceiptItemCopyWith<$Res>  {
+  factory $ReceiptItemCopyWith(ReceiptItem value, $Res Function(ReceiptItem) _then) = _$ReceiptItemCopyWithImpl;
+@useResult
+$Res call({
+ String description, int amount, int? quantity, int? unitPrice
+});
+
+
+
+
+}
+/// @nodoc
+class _$ReceiptItemCopyWithImpl<$Res>
+    implements $ReceiptItemCopyWith<$Res> {
+  _$ReceiptItemCopyWithImpl(this._self, this._then);
+
+  final ReceiptItem _self;
+  final $Res Function(ReceiptItem) _then;
+
+/// Create a copy of ReceiptItem
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? description = null,Object? amount = null,Object? quantity = freezed,Object? unitPrice = freezed,}) {
+  return _then(_self.copyWith(
+description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,quantity: freezed == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
+as int?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ReceiptItem].
+extension ReceiptItemPatterns on ReceiptItem {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ReceiptItem value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ReceiptItem() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ReceiptItem value)  $default,){
+final _that = this;
+switch (_that) {
+case _ReceiptItem():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ReceiptItem value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ReceiptItem() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String description,  int amount,  int? quantity,  int? unitPrice)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ReceiptItem() when $default != null:
+return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String description,  int amount,  int? quantity,  int? unitPrice)  $default,) {final _that = this;
+switch (_that) {
+case _ReceiptItem():
+return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String description,  int amount,  int? quantity,  int? unitPrice)?  $default,) {final _that = this;
+switch (_that) {
+case _ReceiptItem() when $default != null:
+return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ReceiptItem implements ReceiptItem {
+  const _ReceiptItem({required this.description, required this.amount, this.quantity, this.unitPrice});
+  factory _ReceiptItem.fromJson(Map<String, dynamic> json) => _$ReceiptItemFromJson(json);
+
+@override final  String description;
+@override final  int amount;
+// Cents
+@override final  int? quantity;
+@override final  int? unitPrice;
+
+/// Create a copy of ReceiptItem
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ReceiptItemCopyWith<_ReceiptItem> get copyWith => __$ReceiptItemCopyWithImpl<_ReceiptItem>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ReceiptItemToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptItem&&(identical(other.description, description) || other.description == description)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,description,amount,quantity,unitPrice);
+
+@override
+String toString() {
+  return 'ReceiptItem(description: $description, amount: $amount, quantity: $quantity, unitPrice: $unitPrice)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ReceiptItemCopyWith<$Res> implements $ReceiptItemCopyWith<$Res> {
+  factory _$ReceiptItemCopyWith(_ReceiptItem value, $Res Function(_ReceiptItem) _then) = __$ReceiptItemCopyWithImpl;
+@override @useResult
+$Res call({
+ String description, int amount, int? quantity, int? unitPrice
+});
+
+
+
+
+}
+/// @nodoc
+class __$ReceiptItemCopyWithImpl<$Res>
+    implements _$ReceiptItemCopyWith<$Res> {
+  __$ReceiptItemCopyWithImpl(this._self, this._then);
+
+  final _ReceiptItem _self;
+  final $Res Function(_ReceiptItem) _then;
+
+/// Create a copy of ReceiptItem
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? description = null,Object? amount = null,Object? quantity = freezed,Object? unitPrice = freezed,}) {
+  return _then(_ReceiptItem(
+description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,quantity: freezed == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
+as int?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$Receipt {
 
- String get id; String get userId; String get imageUrl; String get extractedText; List<String> get rawLines; String? get merchant; int? get total; DateTime? get date; double get confidence; DateTime get createdAt; bool get processed;
+ String get id; String get userId; String get imageUrl; String get extractedText; List<OCRLine> get lines; String? get merchant; String? get address; String? get phone; String? get email; int? get subtotal;// Cents
+ int? get tax;// Cents
+ int? get total;// Cents
+ DateTime? get date; String? get paymentMethod; String? get receiptNumber; double get confidence; DateTime get createdAt; bool get processed; List<ReceiptItem>? get items;
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +571,16 @@ $ReceiptCopyWith<Receipt> get copyWith => _$ReceiptCopyWithImpl<Receipt>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other.rawLines, rawLines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other.lines, lines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.address, address) || other.address == address)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed)&&const DeepCollectionEquality().equals(other.items, items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(rawLines),merchant,total,date,confidence,createdAt,processed);
+int get hashCode => Object.hashAll([runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(lines),merchant,address,phone,email,subtotal,tax,total,date,paymentMethod,receiptNumber,confidence,createdAt,processed,const DeepCollectionEquality().hash(items)]);
 
 @override
 String toString() {
-  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, rawLines: $rawLines, merchant: $merchant, total: $total, date: $date, confidence: $confidence, createdAt: $createdAt, processed: $processed)';
+  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, lines: $lines, merchant: $merchant, address: $address, phone: $phone, email: $email, subtotal: $subtotal, tax: $tax, total: $total, date: $date, paymentMethod: $paymentMethod, receiptNumber: $receiptNumber, confidence: $confidence, createdAt: $createdAt, processed: $processed, items: $items)';
 }
 
 
@@ -48,7 +591,7 @@ abstract mixin class $ReceiptCopyWith<$Res>  {
   factory $ReceiptCopyWith(Receipt value, $Res Function(Receipt) _then) = _$ReceiptCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String imageUrl, String extractedText, List<String> rawLines, String? merchant, int? total, DateTime? date, double confidence, DateTime createdAt, bool processed
+ String id, String userId, String imageUrl, String extractedText, List<OCRLine> lines, String? merchant, String? address, String? phone, String? email, int? subtotal, int? tax, int? total, DateTime? date, String? paymentMethod, String? receiptNumber, double confidence, DateTime createdAt, bool processed, List<ReceiptItem>? items
 });
 
 
@@ -65,20 +608,28 @@ class _$ReceiptCopyWithImpl<$Res>
 
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? rawLines = null,Object? merchant = freezed,Object? total = freezed,Object? date = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? lines = null,Object? merchant = freezed,Object? address = freezed,Object? phone = freezed,Object? email = freezed,Object? subtotal = freezed,Object? tax = freezed,Object? total = freezed,Object? date = freezed,Object? paymentMethod = freezed,Object? receiptNumber = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,Object? items = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,extractedText: null == extractedText ? _self.extractedText : extractedText // ignore: cast_nullable_to_non_nullable
-as String,rawLines: null == rawLines ? _self.rawLines : rawLines // ignore: cast_nullable_to_non_nullable
-as List<String>,merchant: freezed == merchant ? _self.merchant : merchant // ignore: cast_nullable_to_non_nullable
-as String?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
+as String,lines: null == lines ? _self.lines : lines // ignore: cast_nullable_to_non_nullable
+as List<OCRLine>,merchant: freezed == merchant ? _self.merchant : merchant // ignore: cast_nullable_to_non_nullable
+as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,subtotal: freezed == subtotal ? _self.subtotal : subtotal // ignore: cast_nullable_to_non_nullable
+as int?,tax: freezed == tax ? _self.tax : tax // ignore: cast_nullable_to_non_nullable
+as int?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as int?,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime?,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as DateTime?,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as String?,receiptNumber: freezed == receiptNumber ? _self.receiptNumber : receiptNumber // ignore: cast_nullable_to_non_nullable
+as String?,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
 as double,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,processed: null == processed ? _self.processed : processed // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,items: freezed == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<ReceiptItem>?,
   ));
 }
 
@@ -163,10 +714,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<String> rawLines,  String? merchant,  int? total,  DateTime? date,  double confidence,  DateTime createdAt,  bool processed)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Receipt() when $default != null:
-return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.rawLines,_that.merchant,_that.total,_that.date,_that.confidence,_that.createdAt,_that.processed);case _:
+return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items);case _:
   return orElse();
 
 }
@@ -184,10 +735,10 @@ return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<String> rawLines,  String? merchant,  int? total,  DateTime? date,  double confidence,  DateTime createdAt,  bool processed)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items)  $default,) {final _that = this;
 switch (_that) {
 case _Receipt():
-return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.rawLines,_that.merchant,_that.total,_that.date,_that.confidence,_that.createdAt,_that.processed);case _:
+return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +755,10 @@ return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String imageUrl,  String extractedText,  List<String> rawLines,  String? merchant,  int? total,  DateTime? date,  double confidence,  DateTime createdAt,  bool processed)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items)?  $default,) {final _that = this;
 switch (_that) {
 case _Receipt() when $default != null:
-return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.rawLines,_that.merchant,_that.total,_that.date,_that.confidence,_that.createdAt,_that.processed);case _:
+return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items);case _:
   return null;
 
 }
@@ -219,26 +770,45 @@ return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.r
 @JsonSerializable()
 
 class _Receipt extends Receipt {
-  const _Receipt({required this.id, required this.userId, required this.imageUrl, required this.extractedText, required final  List<String> rawLines, this.merchant, this.total, this.date, required this.confidence, required this.createdAt, this.processed = false}): _rawLines = rawLines,super._();
+  const _Receipt({required this.id, required this.userId, required this.imageUrl, required this.extractedText, required final  List<OCRLine> lines, this.merchant, this.address, this.phone, this.email, this.subtotal, this.tax, this.total, this.date, this.paymentMethod, this.receiptNumber, required this.confidence, required this.createdAt, this.processed = false, final  List<ReceiptItem>? items}): _lines = lines,_items = items,super._();
   factory _Receipt.fromJson(Map<String, dynamic> json) => _$ReceiptFromJson(json);
 
 @override final  String id;
 @override final  String userId;
 @override final  String imageUrl;
 @override final  String extractedText;
- final  List<String> _rawLines;
-@override List<String> get rawLines {
-  if (_rawLines is EqualUnmodifiableListView) return _rawLines;
+ final  List<OCRLine> _lines;
+@override List<OCRLine> get lines {
+  if (_lines is EqualUnmodifiableListView) return _lines;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_rawLines);
+  return EqualUnmodifiableListView(_lines);
 }
 
 @override final  String? merchant;
+@override final  String? address;
+@override final  String? phone;
+@override final  String? email;
+@override final  int? subtotal;
+// Cents
+@override final  int? tax;
+// Cents
 @override final  int? total;
+// Cents
 @override final  DateTime? date;
+@override final  String? paymentMethod;
+@override final  String? receiptNumber;
 @override final  double confidence;
 @override final  DateTime createdAt;
 @override@JsonKey() final  bool processed;
+ final  List<ReceiptItem>? _items;
+@override List<ReceiptItem>? get items {
+  final value = _items;
+  if (value == null) return null;
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
@@ -253,16 +823,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other._rawLines, _rawLines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other._lines, _lines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.address, address) || other.address == address)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed)&&const DeepCollectionEquality().equals(other._items, _items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(_rawLines),merchant,total,date,confidence,createdAt,processed);
+int get hashCode => Object.hashAll([runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(_lines),merchant,address,phone,email,subtotal,tax,total,date,paymentMethod,receiptNumber,confidence,createdAt,processed,const DeepCollectionEquality().hash(_items)]);
 
 @override
 String toString() {
-  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, rawLines: $rawLines, merchant: $merchant, total: $total, date: $date, confidence: $confidence, createdAt: $createdAt, processed: $processed)';
+  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, lines: $lines, merchant: $merchant, address: $address, phone: $phone, email: $email, subtotal: $subtotal, tax: $tax, total: $total, date: $date, paymentMethod: $paymentMethod, receiptNumber: $receiptNumber, confidence: $confidence, createdAt: $createdAt, processed: $processed, items: $items)';
 }
 
 
@@ -273,7 +843,7 @@ abstract mixin class _$ReceiptCopyWith<$Res> implements $ReceiptCopyWith<$Res> {
   factory _$ReceiptCopyWith(_Receipt value, $Res Function(_Receipt) _then) = __$ReceiptCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String imageUrl, String extractedText, List<String> rawLines, String? merchant, int? total, DateTime? date, double confidence, DateTime createdAt, bool processed
+ String id, String userId, String imageUrl, String extractedText, List<OCRLine> lines, String? merchant, String? address, String? phone, String? email, int? subtotal, int? tax, int? total, DateTime? date, String? paymentMethod, String? receiptNumber, double confidence, DateTime createdAt, bool processed, List<ReceiptItem>? items
 });
 
 
@@ -290,20 +860,28 @@ class __$ReceiptCopyWithImpl<$Res>
 
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? rawLines = null,Object? merchant = freezed,Object? total = freezed,Object? date = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? lines = null,Object? merchant = freezed,Object? address = freezed,Object? phone = freezed,Object? email = freezed,Object? subtotal = freezed,Object? tax = freezed,Object? total = freezed,Object? date = freezed,Object? paymentMethod = freezed,Object? receiptNumber = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,Object? items = freezed,}) {
   return _then(_Receipt(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,extractedText: null == extractedText ? _self.extractedText : extractedText // ignore: cast_nullable_to_non_nullable
-as String,rawLines: null == rawLines ? _self._rawLines : rawLines // ignore: cast_nullable_to_non_nullable
-as List<String>,merchant: freezed == merchant ? _self.merchant : merchant // ignore: cast_nullable_to_non_nullable
-as String?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
+as String,lines: null == lines ? _self._lines : lines // ignore: cast_nullable_to_non_nullable
+as List<OCRLine>,merchant: freezed == merchant ? _self.merchant : merchant // ignore: cast_nullable_to_non_nullable
+as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,subtotal: freezed == subtotal ? _self.subtotal : subtotal // ignore: cast_nullable_to_non_nullable
+as int?,tax: freezed == tax ? _self.tax : tax // ignore: cast_nullable_to_non_nullable
+as int?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as int?,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime?,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as DateTime?,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as String?,receiptNumber: freezed == receiptNumber ? _self.receiptNumber : receiptNumber // ignore: cast_nullable_to_non_nullable
+as String?,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
 as double,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,processed: null == processed ? _self.processed : processed // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,items: freezed == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<ReceiptItem>?,
   ));
 }
 

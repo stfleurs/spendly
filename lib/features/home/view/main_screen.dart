@@ -5,6 +5,7 @@ import 'package:spendly/features/accounts/view/accounts_screen.dart';
 import 'package:spendly/features/reports/view/reports_screen.dart';
 import 'package:spendly/features/transactions/view/transactions_screen.dart';
 import 'package:spendly/features/transactions/view/new_transaction_screen.dart';
+import 'package:spendly/features/ocr/view/receipt_scanner_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
@@ -92,39 +93,249 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
 
-          // Floating Action Button
-          Positioned(
-            bottom: 45,
-            left: MediaQuery.of(context).size.width / 2 - 35,
+          // Speed-Dial FAB
+          const _SpeedDialFab(bottomNavHeight: 100),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Speed-Dial FAB
+// ---------------------------------------------------------------------------
+
+class _SpeedDialFab extends StatefulWidget {
+  final double bottomNavHeight;
+  const _SpeedDialFab({required this.bottomNavHeight});
+
+  @override
+  State<_SpeedDialFab> createState() => _SpeedDialFabState();
+}
+
+class _SpeedDialFabState extends State<_SpeedDialFab>
+    with SingleTickerProviderStateMixin {
+  bool _isOpen = false;
+  late AnimationController _controller;
+  late Animation<double> _expandAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 220),
+      vsync: this,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _isOpen = !_isOpen);
+    _isOpen ? _controller.forward() : _controller.reverse();
+  }
+
+  void _close() {
+    if (!_isOpen) return;
+    setState(() => _isOpen = false);
+    _controller.reverse();
+  }
+
+  void _navigate(Widget screen) {
+    _close();
+    Future.delayed(const Duration(milliseconds: 160), () {
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => screen),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Position FAB centred vertically in the bottom nav bar
+    final fabBottom = widget.bottomNavHeight / 2 - 35;
+
+    return Stack(
+      children: [
+        // ── Dimming overlay ─────────────────────────────────────────────────
+        if (_isOpen)
+          Positioned.fill(
             child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const NewTransactionScreen()),
-                );
-              },
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.4),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+              onTap: _close,
+              child: AnimatedOpacity(
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  color: Colors.black.withValues(alpha: 0.35),
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 36),
               ),
             ),
+          ),
+
+        // ── Action buttons (fan up above the FAB) ──────────────────────────
+        Positioned(
+          bottom: fabBottom + 85,
+          left: 0,
+          right: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Scan Receipt
+              ScaleTransition(
+                scale: _expandAnimation,
+                child: FadeTransition(
+                  opacity: _expandAnimation,
+                  child: _SpeedDialAction(
+                    icon: Icons.receipt_long,
+                    label: 'Scan Receipt',
+                    color: AppColors.primary,
+                    onTap: () => _navigate(const ReceiptScannerScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Add Manually
+              ScaleTransition(
+                scale: _expandAnimation,
+                child: FadeTransition(
+                  opacity: _expandAnimation,
+                  child: _SpeedDialAction(
+                    icon: Icons.edit_outlined,
+                    label: 'Add Manually',
+                    color: AppColors.income,
+                    onTap: () => _navigate(const NewTransactionScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+
+        // ── Main FAB ────────────────────────────────────────────────────────
+        Positioned(
+          bottom: fabBottom,
+          left: MediaQuery.of(context).size.width / 2 - 35,
+          child: GestureDetector(
+            onTap: _toggle,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: _isOpen ? Colors.white : AppColors.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: (_isOpen ? Colors.black : AppColors.primary)
+                        .withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: AnimatedRotation(
+                turns: _isOpen ? 0.125 : 0.0, // 45° → looks like X
+                duration: const Duration(milliseconds: 220),
+                child: Icon(
+                  Icons.add,
+                  color: _isOpen ? AppColors.primary : Colors.white,
+                  size: 36,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Speed-Dial Action Button
+// ---------------------------------------------------------------------------
+
+class _SpeedDialAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _SpeedDialAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color = AppColors.primary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Label chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Mini FAB
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 22),
           ),
         ],
       ),
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Nav Bar Item
+// ---------------------------------------------------------------------------
 
 class _NavBarItem extends StatelessWidget {
   final IconData icon;

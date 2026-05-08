@@ -54,12 +54,20 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
         userId: userId,
         imageUrl: imageUrl,
         extractedText: recognizedText.text,
-        rawLines: parsed.rawLines,
+        lines: parsed.lines,
         merchant: parsed.merchant,
+        address: parsed.address,
+        phone: parsed.phone,
+        email: parsed.email,
+        subtotal: parsed.subtotal,
+        tax: parsed.tax,
         total: parsed.total,
         date: parsed.date,
+        paymentMethod: parsed.paymentMethod,
+        receiptNumber: parsed.receiptNumber,
         confidence: parsed.confidence,
         createdAt: DateTime.now(),
+        items: parsed.items,
       );
 
       await repository.saveReceipt(receipt);

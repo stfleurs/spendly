@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spendly/core/models/receipt.dart';
 import 'package:spendly/features/ocr/services/receipt_parser.dart';
 
 void main() {
@@ -13,17 +15,18 @@ void main() {
         'Bread      250.00',
         'Milk       1,250.00',
         '------------------',
-        'SUBTOTAL:  1,500.00',
-        'TAX:       150.00',
-        'TOTAL:     1,650.00',
+        'SUBTOTAL:  130.00',
+        'Tax (8.00%)  10.40',
+        'TOTAL:     140.40',
         '------------------',
         'THANK YOU',
       ];
 
-      final result = ReceiptParser.parseFromLines(lines);
+      final result = ReceiptParser.parseFromLines(_toLines(lines));
 
       expect(result.merchant, equals('Caribbean Supermarket'));
-      expect(result.total, equals(165000)); // 1,650.00 * 100
+      expect(result.total, equals(14040)); // 140.40 * 100
+      expect(result.tax, equals(1040)); 
       expect(result.date!.year, equals(2026));
       expect(result.confidence, greaterThanOrEqualTo(0.5));
     });
@@ -44,7 +47,7 @@ void main() {
         'CHANGE: 200.00',       // Competing number
       ];
 
-      final result = ReceiptParser.parseFromLines(lines);
+      final result = ReceiptParser.parseFromLines(_toLines(lines));
 
       expect(result.merchant, equals('CAFE   DES   ARTS'));
       expect(result.total, equals(80000));
@@ -59,7 +62,7 @@ void main() {
         '50.00',
       ];
 
-      final result = ReceiptParser.parseFromLines(lines);
+      final result = ReceiptParser.parseFromLines(_toLines(lines));
 
       expect(result.total, equals(15000)); // Largest
     });
@@ -72,11 +75,22 @@ void main() {
       };
 
       formats.forEach((text, expected) {
-        final result = ReceiptParser.parseFromLines(['Receipt', text, 'TOTAL: 10.00']);
+        final result = ReceiptParser.parseFromLines(_toLines(['Receipt', text, 'TOTAL: 10.00']));
         expect(result.date!.year, expected.year);
         expect(result.date!.month, expected.month);
         expect(result.date!.day, expected.day);
       });
     });
   });
+}
+
+List<OCRLine> _toLines(List<String> texts) {
+  return texts.asMap().entries.map((e) {
+    final i = e.key;
+    final text = e.value;
+    return OCRLine(
+      text: text.trim(),
+      bounds: Rect.fromLTWH(0, i * 20.0, 400, 20),
+    );
+  }).toList();
 }

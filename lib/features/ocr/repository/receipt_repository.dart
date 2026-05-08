@@ -26,7 +26,13 @@ class ReceiptRepository {
   }
 
   Future<void> saveReceipt(Receipt receipt) async {
-    await _collection.doc(receipt.id).set(receipt.toJson());
+    final data = receipt.toJson();
+    // Ensure nested lists are converted to maps for Firestore
+    data['lines'] = receipt.lines.map((l) => l.toJson()).toList();
+    if (receipt.items != null) {
+      data['items'] = receipt.items!.map((i) => i.toJson()).toList();
+    }
+    await _collection.doc(receipt.id).set(data);
   }
 
   Stream<List<Receipt>> getReceipts(String userId) {

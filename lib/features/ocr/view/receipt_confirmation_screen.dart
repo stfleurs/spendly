@@ -11,6 +11,7 @@ import 'package:spendly/features/budget/providers/budget_provider.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
 import 'package:spendly/core/providers/balance_provider.dart';
 import 'package:spendly/features/ocr/repository/merchant_repository.dart';
+import 'package:spendly/features/ocr/repository/receipt_repository.dart';
 import 'package:uuid/uuid.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
@@ -24,6 +25,13 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
 class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationScreen> {
   late TextEditingController _merchantController;
   late TextEditingController _amountController;
+  late TextEditingController _subtotalController;
+  late TextEditingController _taxController;
+  late TextEditingController _addressController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emailController;
+  late TextEditingController _paymentMethodController;
+  late TextEditingController _receiptNumberController;
   DateTime? _selectedDate;
   String? _selectedAccountId;
   String? _selectedCategoryId;
@@ -35,6 +43,17 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
     _amountController = TextEditingController(
       text: widget.receipt.total != null ? (widget.receipt.total! / 100).toStringAsFixed(2) : '',
     );
+    _subtotalController = TextEditingController(
+      text: widget.receipt.subtotal != null ? (widget.receipt.subtotal! / 100).toStringAsFixed(2) : '',
+    );
+    _taxController = TextEditingController(
+      text: widget.receipt.tax != null ? (widget.receipt.tax! / 100).toStringAsFixed(2) : '',
+    );
+    _addressController = TextEditingController(text: widget.receipt.address);
+    _phoneController = TextEditingController(text: widget.receipt.phone);
+    _emailController = TextEditingController(text: widget.receipt.email);
+    _paymentMethodController = TextEditingController(text: widget.receipt.paymentMethod);
+    _receiptNumberController = TextEditingController(text: widget.receipt.receiptNumber);
     _selectedDate = widget.receipt.date ?? DateTime.now();
     
     // Merchant Memory: Auto-select category/account
@@ -59,6 +78,13 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
   void dispose() {
     _merchantController.dispose();
     _amountController.dispose();
+    _subtotalController.dispose();
+    _taxController.dispose();
+    _addressController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _paymentMethodController.dispose();
+    _receiptNumberController.dispose();
     super.dispose();
   }
 
@@ -106,11 +132,32 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
     }
 
     try {
+      final totalCents = amount.round();
+      final subtotalCents = (double.tryParse(_subtotalController.text) ?? 0.0) * 100;
+      final taxCents = (double.tryParse(_taxController.text) ?? 0.0) * 100;
+
+      // Update the Receipt record with corrected values
+      final correctedReceipt = widget.receipt.copyWith(
+        merchant: _merchantController.text,
+        total: totalCents,
+        subtotal: subtotalCents.round(),
+        tax: taxCents.round(),
+        date: _selectedDate,
+        address: _addressController.text.isNotEmpty ? _addressController.text : null,
+        phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
+        email: _emailController.text.isNotEmpty ? _emailController.text : null,
+        paymentMethod: _paymentMethodController.text.isNotEmpty ? _paymentMethodController.text : null,
+        receiptNumber: _receiptNumberController.text.isNotEmpty ? _receiptNumberController.text : null,
+        processed: true,
+      );
+
+      await ref.read(receiptRepositoryProvider).saveReceipt(correctedReceipt);
+
       final transaction = AppTransaction(
         id: const Uuid().v4(),
         userId: userId,
         accountId: _selectedAccountId!,
-        amount: amount.round(),
+        amount: totalCents,
         categoryId: _selectedCategoryId!,
         note: _merchantController.text,
         type: 'expense',
@@ -187,11 +234,39 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
             ),
             const SizedBox(height: 16),
 
+            // Subtotal and Tax
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInputField(
+                    label: 'Subtotal',
+                    controller: _subtotalController,
+                    icon: Icons.summarize_outlined,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    confidence: widget.receipt.subtotal != null ? widget.receipt.confidence : 1.0,
+                    dense: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildInputField(
+                    label: 'Tax',
+                    controller: _taxController,
+                    icon: Icons.receipt_outlined,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    confidence: widget.receipt.tax != null ? widget.receipt.confidence : 1.0,
+                    dense: true,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             // Amount
             _buildInputField(
-              label: 'Amount',
+              label: 'Grand Total',
               controller: _amountController,
-              icon: Icons.attach_money,
+              icon: Icons.payments_outlined,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               confidence: widget.receipt.total != null ? widget.receipt.confidence : 0.0,
             ),
@@ -202,6 +277,17 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
               confidence: _selectedDate != null ? widget.receipt.confidence : 0.0,
             ),
             const SizedBox(height: 32),
+
+            // Line Items Section
+            if (widget.receipt.items != null && widget.receipt.items!.isNotEmpty) ...[
+              const Text(
+                'LINE ITEMS',
+                style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              _buildLineItems(),
+              const SizedBox(height: 32),
+            ],
 
             const Text(
               'TRANSACTION DETAILS',
@@ -256,7 +342,68 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
               loading: () => const LinearProgressIndicator(),
               error: (err, stack) => const Text('Error loading categories'),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
+
+            // Extra Metadata Section
+            const Text(
+              'RECEIPT DETAILS',
+              style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            _buildInputField(
+              label: 'Address',
+              controller: _addressController,
+              icon: Icons.location_on_outlined,
+              confidence: widget.receipt.address != null ? widget.receipt.confidence : 1.0,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInputField(
+                    label: 'Phone',
+                    controller: _phoneController,
+                    icon: Icons.phone_outlined,
+                    confidence: widget.receipt.phone != null ? widget.receipt.confidence : 1.0,
+                    keyboardType: TextInputType.phone,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildInputField(
+                    label: 'Email',
+                    controller: _emailController,
+                    icon: Icons.email_outlined,
+                    confidence: widget.receipt.email != null ? widget.receipt.confidence : 1.0,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInputField(
+                    label: 'Payment Method',
+                    controller: _paymentMethodController,
+                    icon: Icons.payment_outlined,
+                    confidence: widget.receipt.paymentMethod != null ? widget.receipt.confidence : 1.0,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildInputField(
+                    label: 'Receipt #',
+                    controller: _receiptNumberController,
+                    icon: Icons.tag,
+                    confidence: widget.receipt.receiptNumber != null ? widget.receipt.confidence : 1.0,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
             SizedBox(
               width: double.infinity,
@@ -278,12 +425,71 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
     );
   }
 
+  Widget _buildLineItems() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: widget.receipt.items!.map((item) {
+          final isLast = widget.receipt.items!.last == item;
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: isLast ? null : Border(bottom: BorderSide(color: AppColors.primary.withValues(alpha: 0.1))),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary, size: 16),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.description,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (item.quantity != null)
+                        Text(
+                          'Qty: ${item.quantity}',
+                          style: const TextStyle(color: AppColors.textLight, fontSize: 12),
+                        ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${(item.amount / 100).toStringAsFixed(2)} HTG',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildInputField({
     required String label,
     required TextEditingController controller,
     required IconData icon,
     required double confidence,
     TextInputType keyboardType = TextInputType.text,
+    bool dense = false,
   }) {
     Color borderColor = Colors.transparent;
     Color? bgColor;
@@ -316,12 +522,16 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
-            style: const TextStyle(fontWeight: FontWeight.bold),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: AppColors.primary),
+              prefixIcon: Icon(icon, color: AppColors.primary, size: dense ? 18 : 24),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: dense ? 8 : 12),
               hintText: 'Enter $label',
+              hintStyle: TextStyle(fontSize: dense ? 12 : 14),
+            ),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: dense ? 13 : 15,
             ),
           ),
         ),

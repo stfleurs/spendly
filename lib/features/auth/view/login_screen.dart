@@ -17,6 +17,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -98,9 +99,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      _buildTextField(_emailController, l10n.email, Icons.email_outlined, false),
+                      _buildTextField(_emailController, l10n.email, Icons.email_outlined, false, keyboardType: TextInputType.emailAddress),
                       const SizedBox(height: 20),
-                      _buildTextField(_passwordController, l10n.password, Icons.lock_outline, true),
+                      _buildTextField(
+                        _passwordController,
+                        l10n.password,
+                        Icons.lock_outline,
+                        _obscurePassword,
+                        isPasswordField: true,
+                        onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
                       const SizedBox(height: 40),
                       SizedBox(
                         width: double.infinity,
@@ -153,7 +161,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, bool isPassword) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String hint,
+    IconData icon,
+    bool obscureText, {
+    TextInputType? keyboardType,
+    bool isPasswordField = false,
+    VoidCallback? onToggleVisibility,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.background,
@@ -162,12 +178,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
         style: const TextStyle(fontWeight: FontWeight.bold),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.normal),
           prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
+          suffixIcon: isPasswordField
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    color: AppColors.textLight,
+                    size: 20,
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
