@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
@@ -31,12 +33,19 @@ class MerchantRepository {
 
   MerchantRepository(this._firestore);
 
+  String _getDocId(String merchantName) {
+    final sanitized = merchantName.toLowerCase().trim();
+    final bytes = utf8.encode(sanitized);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
   Future<void> savePreference(String userId, MerchantPreference pref) async {
     await _firestore
         .collection('users')
         .doc(userId)
         .collection('merchant_preferences')
-        .doc(pref.merchantName.toLowerCase().trim())
+        .doc(_getDocId(pref.merchantName))
         .set(pref.toMap());
   }
 
@@ -45,7 +54,7 @@ class MerchantRepository {
         .collection('users')
         .doc(userId)
         .collection('merchant_preferences')
-        .doc(merchantName.toLowerCase().trim())
+        .doc(_getDocId(merchantName))
         .get();
     
     if (doc.exists) {
