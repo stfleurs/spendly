@@ -16,6 +16,11 @@ abstract class AppTransaction with _$AppTransaction {
     required String categoryId,
     String? note,
     String? receiptUrl,
+    String? receiptId,
+    // Audit fields for currency conversion
+    int? originalAmount,
+    String? originalCurrency,
+    double? exchangeRate,
   }) = _AppTransaction;
 
   const AppTransaction._();

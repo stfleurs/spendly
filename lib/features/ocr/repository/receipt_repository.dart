@@ -35,6 +35,12 @@ class ReceiptRepository {
     await _collection.doc(receipt.id).set(data);
   }
 
+  Future<Receipt?> getReceiptById(String id) async {
+    final doc = await _collection.doc(id).get();
+    if (!doc.exists) return null;
+    return Receipt.fromJson(doc.data() as Map<String, dynamic>);
+  }
+
   Stream<List<Receipt>> getReceipts(String userId) {
     return _collection
         .where('userId', isEqualTo: userId)

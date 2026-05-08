@@ -82,6 +82,12 @@ abstract class Receipt with _$Receipt {
     required DateTime createdAt,
     @Default(false) bool processed,
     List<ReceiptItem>? items,
+    // Audit fields for currency conversion
+    String? originalCurrency,
+    int? originalTotal,
+    int? originalSubtotal,
+    int? originalTax,
+    double? exchangeRate,
   }) = _Receipt;
 
   factory Receipt.fromJson(Map<String, dynamic> json) => _$ReceiptFromJson(json);

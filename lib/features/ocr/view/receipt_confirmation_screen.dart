@@ -12,6 +12,7 @@ import 'package:spendly/features/auth/repository/auth_repository.dart';
 import 'package:spendly/core/providers/balance_provider.dart';
 import 'package:spendly/features/ocr/repository/merchant_repository.dart';
 import 'package:spendly/features/ocr/repository/receipt_repository.dart';
+import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:uuid/uuid.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
@@ -35,27 +36,38 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
   DateTime? _selectedDate;
   String? _selectedAccountId;
   String? _selectedCategoryId;
+  String _selectedCurrency = 'USD';
+  bool _isSaving = false;
+  
+  // Immutability helpers for currency conversion
+  late final double _originalTotal;
+  late final double _originalSubtotal;
+  late final double _originalTax;
+  late final String _originalCurrency;
+  double _currentExchangeRate = 1.0;
 
   @override
   void initState() {
     super.initState();
     _merchantController = TextEditingController(text: widget.receipt.merchant);
-    _amountController = TextEditingController(
-      text: widget.receipt.total != null ? (widget.receipt.total! / 100).toStringAsFixed(2) : '',
-    );
-    _subtotalController = TextEditingController(
-      text: widget.receipt.subtotal != null ? (widget.receipt.subtotal! / 100).toStringAsFixed(2) : '',
-    );
-    _taxController = TextEditingController(
-      text: widget.receipt.tax != null ? (widget.receipt.tax! / 100).toStringAsFixed(2) : '',
-    );
+    
+    // Store original values (derived from OCR or initial scan)
+    _originalTotal = (widget.receipt.total != null ? widget.receipt.total! / 100 : 0.0);
+    _originalSubtotal = (widget.receipt.subtotal != null ? widget.receipt.subtotal! / 100 : 0.0);
+    _originalTax = (widget.receipt.tax != null ? widget.receipt.tax! / 100 : 0.0);
+    _originalCurrency = widget.receipt.originalCurrency ?? 'USD';
+
+    _amountController = TextEditingController(text: _originalTotal.toStringAsFixed(2));
+    _subtotalController = TextEditingController(text: _originalSubtotal.toStringAsFixed(2));
+    _taxController = TextEditingController(text: _originalTax.toStringAsFixed(2));
+    
     _addressController = TextEditingController(text: widget.receipt.address);
     _phoneController = TextEditingController(text: widget.receipt.phone);
     _emailController = TextEditingController(text: widget.receipt.email);
     _paymentMethodController = TextEditingController(text: widget.receipt.paymentMethod);
     _receiptNumberController = TextEditingController(text: widget.receipt.receiptNumber);
     _selectedDate = widget.receipt.date ?? DateTime.now();
-    
+
     // Merchant Memory: Auto-select category/account
     _loadMerchantPreferences();
   }
@@ -104,7 +116,16 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
       return;
     }
 
-    final userId = widget.receipt.userId;
+    final userId = ref.read(authStateProvider).value?.uid;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not authenticated')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    debugPrint('Spendly: Starting save for userId: $userId');
     
     // Duplicate Detection (Basic)
     final existingTransactions = ref.read(transactionsStreamProvider(userId)).value ?? [];
@@ -128,7 +149,31 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
           ],
         ),
       );
-      if (proceed != true || !mounted) return;
+      if (proceed != true || !mounted) {
+        setState(() => _isSaving = false);
+        return;
+      }
+    }
+
+    // Currency Match Validation
+    final accounts = ref.read(accountsStreamProvider(userId)).value;
+    final selectedAccount = accounts?.firstWhere((a) => a.id == _selectedAccountId);
+    
+    if (selectedAccount != null && selectedAccount.currency != _selectedCurrency) {
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Currency Mismatch! Account is in ${selectedAccount.currency}, but Receipt is in $_selectedCurrency. Please convert or change account.'),
+          backgroundColor: AppColors.expense,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'CONVERT',
+            textColor: Colors.white,
+            onPressed: _applyExchangeRate,
+          ),
+        ),
+      );
+      return;
     }
 
     try {
@@ -136,7 +181,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
       final subtotalCents = (double.tryParse(_subtotalController.text) ?? 0.0) * 100;
       final taxCents = (double.tryParse(_taxController.text) ?? 0.0) * 100;
 
-      // Update the Receipt record with corrected values
+      // Update the Receipt record with corrected values and audit info
       final correctedReceipt = widget.receipt.copyWith(
         merchant: _merchantController.text,
         total: totalCents,
@@ -149,6 +194,12 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
         paymentMethod: _paymentMethodController.text.isNotEmpty ? _paymentMethodController.text : null,
         receiptNumber: _receiptNumberController.text.isNotEmpty ? _receiptNumberController.text : null,
         processed: true,
+        // Audit fields
+        originalTotal: (_originalTotal * 100).round(),
+        originalSubtotal: (_originalSubtotal * 100).round(),
+        originalTax: (_originalTax * 100).round(),
+        originalCurrency: _originalCurrency,
+        exchangeRate: _currentExchangeRate,
       );
 
       await ref.read(receiptRepositoryProvider).saveReceipt(correctedReceipt);
@@ -163,7 +214,12 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
         type: 'expense',
         date: _selectedDate ?? DateTime.now(),
         receiptUrl: widget.receipt.imageUrl,
-        currency: 'HTG',
+        receiptId: correctedReceipt.id,
+        currency: _selectedCurrency,
+        // Audit fields
+        originalAmount: (_originalTotal * 100).round(),
+        originalCurrency: _originalCurrency,
+        exchangeRate: _currentExchangeRate,
       );
 
       await ref.read(transactionRepositoryProvider).addTransaction(transaction);
@@ -175,12 +231,20 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
         accountId: _selectedAccountId!,
       ));
 
+      debugPrint('Spendly: Save successful');
+
       if (!mounted) return;
       Navigator.popUntil(context, (route) => route.isFirst);
     } catch (e) {
+      debugPrint('Spendly: Save failed with error: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.expense),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -226,7 +290,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
             const SizedBox(height: 32),
 
             // Merchant
-            _buildInputField(
+            _buildField(
               label: 'Merchant',
               controller: _merchantController,
               icon: Icons.store,
@@ -238,7 +302,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
             Row(
               children: [
                 Expanded(
-                  child: _buildInputField(
+                  child: _buildField(
                     label: 'Subtotal',
                     controller: _subtotalController,
                     icon: Icons.summarize_outlined,
@@ -249,7 +313,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildInputField(
+                  child: _buildField(
                     label: 'Tax',
                     controller: _taxController,
                     icon: Icons.receipt_outlined,
@@ -263,12 +327,42 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
             const SizedBox(height: 16),
 
             // Amount
-            _buildInputField(
-              label: 'Grand Total',
+            _buildField(
+              icon: Icons.payments,
+              label: 'Total Amount',
               controller: _amountController,
-              icon: Icons.payments_outlined,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              confidence: widget.receipt.total != null ? widget.receipt.confidence : 0.0,
+              trailing: GestureDetector(
+                onTap: _showCurrencyPicker,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        _selectedCurrency,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Icon(Icons.keyboard_arrow_down, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      const VerticalDivider(width: 1, indent: 4, endIndent: 4),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _applyExchangeRate,
+                        child: const Icon(Icons.calculate_outlined, size: 20, color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -297,39 +391,126 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
 
             // Account Selection
             accounts.when(
-              data: (accs) => _buildDropdown<String>(
-                label: 'Account',
-                value: _selectedAccountId,
-                items: accs.map((a) {
-                  return DropdownMenuItem(
-                    value: a.id,
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final balance = ref.watch(accountBalanceProvider((userId: userId, accountId: a.id)));
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(a.name),
-                            Text(
-                              '${(balance / 100).toStringAsFixed(2)} HTG',
-                              style: const TextStyle(
-                                color: AppColors.textLight,
-                                fontSize: 12,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ],
+              data: (accs) {
+                final selectedAccount = accs.where((a) => a.id == _selectedAccountId).firstOrNull;
+                final isMismatch = selectedAccount != null && selectedAccount.currency != _selectedCurrency;
+                
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDropdown<String>(
+                      label: 'Account',
+                      value: _selectedAccountId,
+                      items: accs.map((a) {
+                        return DropdownMenuItem(
+                          value: a.id,
+                          child: Consumer(
+                            builder: (context, ref, _) {
+                              final balance = ref.watch(accountBalanceProvider((userId: userId, accountId: a.id)));
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(a.name),
+                                  Text(
+                                    '${(balance / 100).toStringAsFixed(2)} ${a.currency}',
+                                    style: const TextStyle(
+                                      color: AppColors.textLight,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         );
+                      }).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedAccountId = val;
+                          final account = accs.firstWhere((a) => a.id == val);
+                          _selectedCurrency = account.currency;
+                        });
                       },
                     ),
-                  );
-                }).toList(),
-                onChanged: (val) => setState(() => _selectedAccountId = val),
-              ),
+                    if (isMismatch) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.expense.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.warning_amber_rounded, color: AppColors.expense, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Currency Mismatch: Account is in ${selectedAccount.currency}, but Receipt is in $_selectedCurrency.',
+                                style: const TextStyle(color: AppColors.expense, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _applyExchangeRate,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text('CONVERT', style: TextStyle(color: AppColors.expense, fontSize: 11, fontWeight: FontWeight.w900)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
               loading: () => const LinearProgressIndicator(),
               error: (err, stack) => const Text('Error loading accounts'),
             ),
             const SizedBox(height: 16),
+
+            // Conversion Summary (If applied)
+            if (_currentExchangeRate != 1.0) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('CONVERSION SUMMARY', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1, color: AppColors.primary)),
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            _currentExchangeRate = 1.0;
+                            _amountController.text = _originalTotal.toStringAsFixed(2);
+                            _subtotalController.text = _originalSubtotal.toStringAsFixed(2);
+                            _taxController.text = _originalTax.toStringAsFixed(2);
+                            _selectedCurrency = _originalCurrency;
+                          }),
+                          child: const Icon(Icons.close, size: 14, color: AppColors.primary),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSummaryRow('Original Total', '${_originalTotal.toStringAsFixed(2)} $_originalCurrency'),
+                    _buildSummaryRow('Exchange Rate', 'x ${_currentExchangeRate.toStringAsFixed(4)}'),
+                    const Divider(height: 16),
+                    _buildSummaryRow('Converted Total', '${(double.tryParse(_amountController.text) ?? 0.0).toStringAsFixed(2)} $_selectedCurrency', isBold: true),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
 
             // Category Selection
             budgetState.when(
@@ -350,7 +531,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
               style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 12),
             ),
             const SizedBox(height: 16),
-            _buildInputField(
+            _buildField(
               label: 'Address',
               controller: _addressController,
               icon: Icons.location_on_outlined,
@@ -360,7 +541,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
             Row(
               children: [
                 Expanded(
-                  child: _buildInputField(
+                  child: _buildField(
                     label: 'Phone',
                     controller: _phoneController,
                     icon: Icons.phone_outlined,
@@ -370,7 +551,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildInputField(
+                  child: _buildField(
                     label: 'Email',
                     controller: _emailController,
                     icon: Icons.email_outlined,
@@ -384,7 +565,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
             Row(
               children: [
                 Expanded(
-                  child: _buildInputField(
+                  child: _buildField(
                     label: 'Payment Method',
                     controller: _paymentMethodController,
                     icon: Icons.payment_outlined,
@@ -393,7 +574,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildInputField(
+                  child: _buildField(
                     label: 'Receipt #',
                     controller: _receiptNumberController,
                     icon: Icons.tag,
@@ -409,14 +590,16 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _saveTransaction,
+                onPressed: _isSaving ? null : _saveTransaction,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 4,
                 ),
-                child: const Text('Confirm & Save', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: _isSaving 
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Confirm & Save', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -472,7 +655,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
                   ),
                 ),
                 Text(
-                  '${(item.amount / 100).toStringAsFixed(2)} HTG',
+                  '${(item.amount / 100).toStringAsFixed(2)} $_selectedCurrency',
                   style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
                 ),
               ],
@@ -483,65 +666,17 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
     );
   }
 
-  Widget _buildInputField({
+  Widget _buildField({
+    required IconData icon,
     required String label,
     required TextEditingController controller,
-    required IconData icon,
-    required double confidence,
     TextInputType keyboardType = TextInputType.text,
     bool dense = false,
+    Widget? trailing,
+    double confidence = 1.0,
   }) {
-    Color borderColor = Colors.transparent;
-    Color? bgColor;
-
-    if (confidence < 0.5) {
-      borderColor = AppColors.expense.withValues(alpha: 0.5); // Subtle red
-      bgColor = AppColors.expense.withValues(alpha: 0.03);
-    } else if (confidence < 0.8) {
-      borderColor = Colors.amber.withValues(alpha: 0.5); // Subtle amber
-      bgColor = Colors.amber.withValues(alpha: 0.03);
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: AppColors.textLight, fontSize: 12, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: bgColor ?? Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: borderColor != Colors.transparent ? borderColor : Colors.transparent,
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: AppColors.primary, size: dense ? 18 : 24),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: dense ? 8 : 12),
-              hintText: 'Enter $label',
-              hintStyle: TextStyle(fontSize: dense ? 12 : 14),
-            ),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: dense ? 13 : 15,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatePicker({required double confidence}) {
-    Color borderColor = Colors.transparent;
-    Color? bgColor;
+    Color borderColor = AppColors.primary.withValues(alpha: 0.1);
+    Color? bgColor = Colors.white;
 
     if (confidence < 0.5) {
       borderColor = AppColors.expense.withValues(alpha: 0.5);
@@ -554,9 +689,148 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Date', style: TextStyle(color: AppColors.textLight, fontSize: 12, fontWeight: FontWeight.bold)),
+        if (!dense) ...[
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              color: AppColors.textLight,
+              fontWeight: FontWeight.w900,
+              fontSize: 10,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor, width: confidence < 0.8 ? 2 : 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  keyboardType: keyboardType,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(icon, color: AppColors.primary, size: dense ? 18 : 24),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: dense ? 8 : 12),
+                    hintText: 'Enter $label',
+                    hintStyle: TextStyle(fontSize: dense ? 12 : 14),
+                  ),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: dense ? 13 : 15,
+                  ),
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _applyExchangeRate() async {
+    final rateController = TextEditingController();
+    final result = await showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exchange Rate', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter the exchange rate to multiply the amounts by (e.g., 150.0 for USD to HTG).', style: TextStyle(fontSize: 12, color: AppColors.textLight)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: rateController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Rate',
+                border: OutlineInputBorder(),
+                hintText: '1.0',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, double.tryParse(rateController.text)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            child: const Text('APPLY'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result > 0) {
+      final userId = ref.read(authStateProvider).value?.uid;
+      final accounts = ref.read(accountsStreamProvider(userId ?? '')).value;
+      final account = accounts?.firstWhere((a) => a.id == _selectedAccountId);
+
+      setState(() {
+        _currentExchangeRate = result;
+        
+        // Derive from originals to prevent stacking
+        final total = _originalTotal * _currentExchangeRate;
+        final subtotal = _originalSubtotal * _currentExchangeRate;
+        final tax = _originalTax * _currentExchangeRate;
+        
+        _amountController.text = total.toStringAsFixed(2);
+        _subtotalController.text = subtotal.toStringAsFixed(2);
+        _taxController.text = tax.toStringAsFixed(2);
+
+        // Automatically switch currency to match account if we converted
+        if (account != null) {
+          _selectedCurrency = account.currency;
+        }
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Converted using rate: $result. Currency set to $_selectedCurrency')),
+        );
+      }
+    }
+  }
+
+  Widget _buildDatePicker({required double confidence}) {
+    Color borderColor = AppColors.primary.withValues(alpha: 0.1);
+    Color? bgColor = Colors.white;
+
+    if (confidence < 0.5) {
+      borderColor = AppColors.expense.withValues(alpha: 0.5);
+      bgColor = AppColors.expense.withValues(alpha: 0.03);
+    } else if (confidence < 0.8) {
+      borderColor = Colors.amber.withValues(alpha: 0.5);
+      bgColor = Colors.amber.withValues(alpha: 0.03);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'DATE',
+          style: TextStyle(
+            color: AppColors.textLight,
+            fontWeight: FontWeight.w900,
+            fontSize: 10,
+            letterSpacing: 1.1,
+          ),
+        ),
         const SizedBox(height: 8),
-        InkWell(
+        GestureDetector(
           onTap: () async {
             final picked = await showDatePicker(
               context: context,
@@ -569,20 +843,14 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: bgColor ?? Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: borderColor != Colors.transparent ? borderColor : Colors.transparent,
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
-              ],
+              color: bgColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor, width: confidence < 0.8 ? 2 : 1),
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today, color: AppColors.primary, size: 20),
-                const SizedBox(width: 12),
+                const Icon(Icons.calendar_today, color: AppColors.primary, size: 24),
+                const SizedBox(width: 16),
                 Text(
                   _selectedDate != null ? DateFormat('MMM dd, yyyy').format(_selectedDate!) : 'Select Date',
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -592,6 +860,51 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
           ),
         ),
       ],
+    );
+  }
+
+  void _showCurrencyPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'SELECT CURRENCY',
+                  style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.textDark, letterSpacing: 1.2),
+                ),
+                const SizedBox(height: 8),
+                ...['USD', 'HTG', 'EUR', 'CAD'].map((c) {
+                  final isSelected = c == _selectedCurrency;
+                  return ListTile(
+                    title: Text(
+                      c,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                        color: isSelected ? AppColors.primary : AppColors.textDark,
+                      ),
+                    ),
+                    trailing: isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
+                    onTap: () {
+                      setState(() => _selectedCurrency = c);
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -627,6 +940,19 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: AppColors.textLight, fontSize: 12)),
+          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.w900 : FontWeight.bold, fontSize: 12, color: AppColors.textDark)),
+        ],
+      ),
     );
   }
 }

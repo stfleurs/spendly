@@ -18,6 +18,10 @@ _AppTransaction _$AppTransactionFromJson(Map<String, dynamic> json) =>
       categoryId: json['categoryId'] as String,
       note: json['note'] as String?,
       receiptUrl: json['receiptUrl'] as String?,
+      receiptId: json['receiptId'] as String?,
+      originalAmount: (json['originalAmount'] as num?)?.toInt(),
+      originalCurrency: json['originalCurrency'] as String?,
+      exchangeRate: (json['exchangeRate'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
@@ -32,4 +36,8 @@ Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
       'categoryId': instance.categoryId,
       'note': instance.note,
       'receiptUrl': instance.receiptUrl,
+      'receiptId': instance.receiptId,
+      'originalAmount': instance.originalAmount,
+      'originalCurrency': instance.originalCurrency,
+      'exchangeRate': instance.exchangeRate,
     };

@@ -109,6 +109,10 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
       accountId: _selectedAccount!.id,
       categoryId: _selectedCategory!.id,
       note: _payeeController.text.trim(),
+      // Add audit fields for manual entries too
+      originalAmount: (amountValue * 100).toInt(),
+      originalCurrency: _selectedCurrency,
+      exchangeRate: 1.0,
     );
 
     try {
@@ -205,6 +209,57 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
         );
       },
     );
+  }
+
+  void _applyExchangeRate() async {
+    final rateController = TextEditingController();
+    final result = await showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exchange Rate', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter the exchange rate to multiply the amount by.', style: TextStyle(fontSize: 12, color: AppColors.textLight)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: rateController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Rate',
+                border: OutlineInputBorder(),
+                hintText: '1.0',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, double.tryParse(rateController.text)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            child: const Text('APPLY'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result > 0) {
+      setState(() {
+        final current = double.tryParse(_amountController.text) ?? 0.0;
+        _amountController.text = (current * result).toStringAsFixed(2);
+        
+        if (_selectedAccount != null) {
+          _selectedCurrency = _selectedAccount!.currency;
+        }
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Applied exchange rate: $result')),
+        );
+      }
+    }
   }
 
   @override
@@ -415,6 +470,13 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                                   Text(_selectedCurrency,
                                       style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
                                   const Icon(Icons.keyboard_arrow_down, color: AppColors.primary, size: 16),
+                                  const SizedBox(width: 8),
+                                  const VerticalDivider(width: 1, indent: 4, endIndent: 4),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: _applyExchangeRate,
+                                    child: const Icon(Icons.calculate_outlined, size: 20, color: AppColors.primary),
+                                  ),
                                 ],
                               ),
                             ),

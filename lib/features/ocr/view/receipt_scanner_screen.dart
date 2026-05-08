@@ -68,6 +68,10 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
         confidence: parsed.confidence,
         createdAt: DateTime.now(),
         items: parsed.items,
+        originalCurrency: 'HTG', // Default source currency for OCR in this region
+        originalTotal: parsed.total,
+        originalSubtotal: parsed.subtotal,
+        originalTax: parsed.tax,
       );
 
       await repository.saveReceipt(receipt);

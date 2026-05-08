@@ -323,6 +323,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         builder: (_) => ReceiptViewerScreen(
                           imageUrl: transaction.receiptUrl!,
                           merchantName: transaction.note ?? categoryName,
+                          receiptId: transaction.receiptId,
                         ),
                       ),
                     );
