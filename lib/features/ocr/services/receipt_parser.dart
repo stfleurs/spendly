@@ -330,6 +330,16 @@ class ReceiptParser {
     final List<String> addressLines = [];
     for (final line in lines) {
       final text = line.text;
+      
+      // Explicitly skip pure numeric lines or isolated IDs that aren't zip codes
+      // This prevents receipt numbers from leaking into addresses
+      if (RegExp(r'^\d{4,}$').hasMatch(text)) {
+        continue;
+      }
+      if (text.toUpperCase().contains('RECEIPT') || text.toUpperCase().contains('INVOICE')) {
+        continue;
+      }
+
       // Look for ZIP codes or street patterns
       if (RegExp(r'\d{5}').hasMatch(text) || 
           RegExp(r'^\d+\s+[A-Za-z]').hasMatch(text) ||
