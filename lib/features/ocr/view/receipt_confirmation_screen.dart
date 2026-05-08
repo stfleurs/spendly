@@ -733,7 +733,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
         ),
