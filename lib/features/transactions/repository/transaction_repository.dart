@@ -5,6 +5,19 @@ import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/models/account.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 
+enum TransactionSource {
+  manual,
+  import,
+  sync,
+  reconciliation,
+}
+
+enum TransactionInsertResult {
+  success,
+  duplicate,
+  error,
+}
+
 class TransactionRepository {
   final FirebaseFirestore _firestore;
 
@@ -34,23 +47,35 @@ class TransactionRepository {
     return snapshot.docs.isNotEmpty;
   }
 
-  Future<void> addTransaction(AppTransaction transaction) async {
-    // Prevent duplicates if sourceHash is present
-    if (transaction.sourceHash != null) {
-      final exists = await isDuplicate(transaction.sourceHash!);
-      if (exists) {
-        debugPrint('Spendly: Skipping duplicate transaction: ${transaction.sourceHash}');
-        return;
+  Future<TransactionInsertResult> addTransaction(
+    AppTransaction transaction, {
+    TransactionSource source = TransactionSource.manual,
+  }) async {
+    try {
+      // Prevent duplicates if sourceHash is present
+      if (transaction.sourceHash != null) {
+        final exists = await isDuplicate(transaction.sourceHash!);
+        if (exists) {
+          debugPrint('Spendly: Skipping duplicate transaction: ${transaction.sourceHash}');
+          return TransactionInsertResult.duplicate;
+        }
       }
-    }
 
-    if (transaction.type.toLowerCase() == 'expense') {
-      await _validateBalance(transaction.accountId, transaction.amount);
+      if (source == TransactionSource.manual && transaction.type.toLowerCase() == 'expense') {
+        await _validateBalance(transaction.accountId, transaction.amount);
+      }
+      // Exclude id from the map when adding to Firestore as doc id will be generated
+      final data = transaction.toJson();
+      data.remove('id');
+      await _collection.add(data);
+      
+      return TransactionInsertResult.success;
+    } catch (e) {
+      debugPrint('Spendly: Error adding transaction: $e');
+      // If it's a balance validation error, we still want to throw it for the manual UI to catch and display
+      if (e.toString().contains('Insufficient funds')) rethrow;
+      return TransactionInsertResult.error;
     }
-    // Exclude id from the map when adding to Firestore as doc id will be generated
-    final data = transaction.toJson();
-    data.remove('id');
-    await _collection.add(data);
   }
 
   Future<void> updateTransaction(AppTransaction transaction) async {

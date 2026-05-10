@@ -38,7 +38,19 @@ class AccountRepository {
   }
 
   Future<void> deleteAccount(String id) async {
-    await _collection.doc(id).delete();
+    final batch = _firestore.batch();
+    
+    // 1. Delete all transactions associated with this account
+    final txsSnapshot = await _firestore.collection('transactions').where('accountId', isEqualTo: id).get();
+    for (var doc in txsSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // 2. Delete the account itself
+    batch.delete(_collection.doc(id));
+    
+    // Commit the batch operation
+    await batch.commit();
   }
 }
 

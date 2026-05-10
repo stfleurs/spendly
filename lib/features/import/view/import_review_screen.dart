@@ -9,6 +9,7 @@ import 'package:spendly/features/transactions/repository/transaction_repository.
 import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/ocr/repository/merchant_repository.dart';
+import 'package:spendly/core/providers/date_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
@@ -284,54 +285,100 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
       // to handle cases where there are legitimately multiple identical transactions on the same day
       final Map<String, int> occurrenceCounter = {};
       
+      int successCount = 0;
+      int duplicateCount = 0;
+      int errorCount = 0;
+      
       for (int i = 0; i < rawTxs.length; i++) {
-        final raw = rawTxs[i];
-        final catId = _selectedCategoryIds[i] ?? 'default'; // In a real app, handle default better
-        
-        final DateTime date = _parseSmartDate(raw.date);
-        
-        double amount = 0;
         try {
-          final String rawAmount = raw.amount.toString();
-          final String cleaned = rawAmount.replaceAll(',', '').replaceAll('HTG', '').replaceAll(r'$', '').trim();
-          amount = double.parse(cleaned);
-        } catch (_) {}
+          final raw = rawTxs[i];
+          final catId = _selectedCategoryIds[i] ?? 'default'; // In a real app, handle default better
+          
+          final DateTime date = _parseSmartDate(raw.date);
+          
+          double amount = 0;
+          try {
+            final String rawAmount = raw.amount.toString();
+            final String cleaned = rawAmount.replaceAll(',', '').replaceAll('HTG', '').replaceAll(r'$', '').trim();
+            amount = double.parse(cleaned);
+          } catch (_) {}
 
-        final baseHash = _generateSourceHash(raw, widget.accountId);
-        
-        // Increment occurrence for this exact hash
-        final currentCount = (occurrenceCounter[baseHash] ?? 0) + 1;
-        occurrenceCounter[baseHash] = currentCount;
-        
-        // Create a unique hash by appending the occurrence count (e.g., hash_1, hash_2)
-        // This ensures if a bank statement has 3 identical PAIEMENT transactions on the same day,
-        // they get unique hashes, but running the import again tomorrow will yield the same 3 hashes,
-        // correctly preventing true duplicates while allowing identical siblings.
-        final uniqueSourceHash = '${baseHash}_$currentCount';
+          final baseHash = _generateSourceHash(raw, widget.accountId);
+          
+          // Increment occurrence for this exact hash
+          final currentCount = (occurrenceCounter[baseHash] ?? 0) + 1;
+          occurrenceCounter[baseHash] = currentCount;
+          
+          final uniqueSourceHash = '${baseHash}_$currentCount';
 
-        final tx = AppTransaction(
-          id: const Uuid().v4(),
-          userId: userId,
-          accountId: widget.accountId,
-          amount: (amount * 100).toInt(),
-          categoryId: catId,
-          note: raw.description,
-          type: amount < 0 ? 'expense' : 'income',
-          date: date,
-          currency: 'USD', // Default or fetch from account
-          sourceHash: uniqueSourceHash,
-        );
+          final tx = AppTransaction(
+            id: const Uuid().v4(),
+            userId: userId,
+            accountId: widget.accountId,
+            amount: (amount * 100).toInt(),
+            categoryId: catId,
+            note: raw.description,
+            type: amount < 0 ? 'expense' : 'income',
+            date: date,
+            currency: 'USD', // Default or fetch from account
+            sourceHash: uniqueSourceHash,
+          );
 
-        await repo.addTransaction(tx);
+          // Historical imports use TransactionSource.import which securely bypasses balance validation
+          final result = await repo.addTransaction(tx, source: TransactionSource.import);
+          
+          if (result == TransactionInsertResult.success) {
+            successCount++;
+          } else if (result == TransactionInsertResult.duplicate) {
+            duplicateCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (e) {
+          debugPrint('Spendly: Failed to import row $i: $e');
+          errorCount++;
+          continue;
+        }
       }
 
       if (mounted) {
+        if (successCount > 0 && rawTxs.isNotEmpty) {
+          // Automatically switch the global app date to the month of the imported statement
+          // so the user immediately sees their transactions in the Activity Tab instead of an empty current month.
+          final lastDate = _parseSmartDate(rawTxs.last.date);
+          ref.read(selectedDateProvider.notifier).select(DateTime(lastDate.year, lastDate.month, 1));
+        }
+
         Navigator.popUntil(context, (route) => route.isFirst);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Import completed successfully!')));
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Import Complete'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${rawTxs.length} transactions detected', style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text('✅ $successCount imported successfully', style: const TextStyle(color: Colors.green)),
+                if (duplicateCount > 0) 
+                  Text('⏭️ $duplicateCount duplicates skipped', style: const TextStyle(color: Colors.orange)),
+                if (errorCount > 0) 
+                  Text('❌ $errorCount errors', style: const TextStyle(color: Colors.red)),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('DONE'),
+              ),
+            ],
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fatal Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isImporting = false);
