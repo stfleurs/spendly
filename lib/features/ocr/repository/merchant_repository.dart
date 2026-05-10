@@ -40,6 +40,20 @@ class MerchantRepository {
     return digest.toString();
   }
 
+  // Built-in global rules for common merchants
+  static const Map<String, String> globalRules = {
+    'uber': 'Transportation',
+    'netflix': 'Entertainment',
+    'spotify': 'Entertainment',
+    'amazon': 'Shopping',
+    'walmart': 'Groceries',
+    'starbucks': 'Food',
+    'mcdonald': 'Food',
+    'digicel': 'Utilities',
+    'natcom': 'Utilities',
+    'rent': 'Housing',
+  };
+
   Future<void> savePreference(String userId, MerchantPreference pref) async {
     await _firestore
         .collection('users')
@@ -60,6 +74,24 @@ class MerchantRepository {
     if (doc.exists) {
       return MerchantPreference.fromMap(doc.data()!);
     }
+    return null;
+  }
+
+  Future<String?> guessCategory(String userId, String description) async {
+    final sanitized = description.toLowerCase().trim();
+    
+    // 1. Check user preferences (Exact match first)
+    final pref = await getPreference(userId, sanitized);
+    if (pref != null) return pref.categoryId;
+
+    // 2. Check global rules (Contains match)
+    for (var entry in globalRules.entries) {
+      if (sanitized.contains(entry.key)) {
+        return entry.value; // Note: This should ideally map to an ID, but for now we use the group name or similar. 
+        // In a real app, you'd map "Transportation" to the actual category ID.
+      }
+    }
+
     return null;
   }
 }

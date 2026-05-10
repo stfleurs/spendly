@@ -21,6 +21,7 @@ abstract class AppTransaction with _$AppTransaction {
     int? originalAmount,
     String? originalCurrency,
     double? exchangeRate,
+    String? sourceHash,
   }) = _AppTransaction;
 
   const AppTransaction._();

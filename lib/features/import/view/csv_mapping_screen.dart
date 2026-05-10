@@ -18,8 +18,8 @@ class CsvMappingScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: Text('No data found')));
     }
 
-    final headers = state.csvData[0];
-    final previewRows = state.csvData.skip(1).take(5).toList();
+    final headers = state.csvData[state.headerRowIndex];
+    final previewRows = state.csvData.skip(state.headerRowIndex + 1).take(5).toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -54,11 +54,40 @@ class CsvMappingScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   _buildMappingDropdown(
-                    label: 'AMOUNT',
+                    label: 'AMOUNT (UNIFIED)',
                     field: 'amount',
                     headers: headers,
                     currentValue: state.columnMapping['amount'],
                     onChanged: (val) => notifier.updateMapping('amount', val!),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'OR IF AMOUNTS ARE SPLIT:',
+                    style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 10),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMappingDropdown(
+                          label: 'DEBIT (EXPENSE)',
+                          field: 'debit',
+                          headers: headers,
+                          currentValue: state.columnMapping['debit'],
+                          onChanged: (val) => notifier.updateMapping('debit', val!),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildMappingDropdown(
+                          label: 'CREDIT (INCOME)',
+                          field: 'credit',
+                          headers: headers,
+                          currentValue: state.columnMapping['credit'],
+                          onChanged: (val) => notifier.updateMapping('credit', val!),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 32),
                   

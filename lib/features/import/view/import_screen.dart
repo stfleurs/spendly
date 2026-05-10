@@ -36,7 +36,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          const SliverAppHeader(title: 'IMPORT DATA', showBackButton: true),
+          const SliverAppHeader(title: 'Import', showBackButton: true),
           SliverPadding(
             padding: const EdgeInsets.all(24),
             sliver: SliverToBoxAdapter(
@@ -100,30 +100,44 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                         }
                       },
                       child: Opacity(
-                        opacity: _selectedAccountId == null ? 0.5 : 1.0,
+                        opacity: _selectedAccountId == null || importState.isLoading ? 0.5 : 1.0,
                         child: Column(
                           children: [
-                            const Icon(Icons.upload_file, size: 48, color: AppColors.primary),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Tap to select CSV or PDF',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Supported formats: .csv, .pdf',
-                              style: TextStyle(color: AppColors.textLight, fontSize: 12),
-                            ),
+                            if (importState.isLoading) ...[
+                              const SizedBox(height: 16),
+                              const CircularProgressIndicator(color: AppColors.primary),
+                              if (importState.loadingMessage != null) ...[
+                                const SizedBox(height: 16),
+                                Text(
+                                  importState.loadingMessage!,
+                                  style: const TextStyle(
+                                    color: AppColors.textLight,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 16),
+                            ] else ...[
+                              const SizedBox(height: 16),
+                              const Icon(Icons.upload_file, size: 48, color: AppColors.primary),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Tap to select CSV or PDF',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Supported formats: .csv, .pdf',
+                                style: TextStyle(color: AppColors.textLight, fontSize: 12),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
                           ],
                         ),
                       ),
                     ),
                   ),
-                  
-                  if (importState.isLoading) ...[
-                    const SizedBox(height: 32),
-                    const Center(child: CircularProgressIndicator()),
-                  ],
                   
                   if (importState.error != null) ...[
                     const SizedBox(height: 32),

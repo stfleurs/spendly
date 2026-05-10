@@ -22,6 +22,7 @@ _AppTransaction _$AppTransactionFromJson(Map<String, dynamic> json) =>
       originalAmount: (json['originalAmount'] as num?)?.toInt(),
       originalCurrency: json['originalCurrency'] as String?,
       exchangeRate: (json['exchangeRate'] as num?)?.toDouble(),
+      sourceHash: json['sourceHash'] as String?,
     );
 
 Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
@@ -40,4 +41,5 @@ Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
       'originalAmount': instance.originalAmount,
       'originalCurrency': instance.originalCurrency,
       'exchangeRate': instance.exchangeRate,
+      'sourceHash': instance.sourceHash,
     };

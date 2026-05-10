@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/models/account.dart';
@@ -27,7 +28,22 @@ class TransactionRepository {
     });
   }
 
+  Future<bool> isDuplicate(String sourceHash) async {
+    final snapshot =
+        await _collection.where('sourceHash', isEqualTo: sourceHash).limit(1).get();
+    return snapshot.docs.isNotEmpty;
+  }
+
   Future<void> addTransaction(AppTransaction transaction) async {
+    // Prevent duplicates if sourceHash is present
+    if (transaction.sourceHash != null) {
+      final exists = await isDuplicate(transaction.sourceHash!);
+      if (exists) {
+        debugPrint('Spendly: Skipping duplicate transaction: ${transaction.sourceHash}');
+        return;
+      }
+    }
+
     if (transaction.type.toLowerCase() == 'expense') {
       await _validateBalance(transaction.accountId, transaction.amount);
     }
