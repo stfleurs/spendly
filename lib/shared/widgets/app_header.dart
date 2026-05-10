@@ -13,6 +13,7 @@ class AppHeader extends StatelessWidget {
   final bool showDatePicker;
   final bool showBackButton;
   final bool showActions;
+  final Widget? bottom;
 
   const AppHeader({
     super.key,
@@ -21,6 +22,7 @@ class AppHeader extends StatelessWidget {
     this.showDatePicker = true,
     this.showBackButton = false,
     this.showActions = true,
+    this.bottom,
   });
 
   @override
@@ -67,8 +69,12 @@ class AppHeader extends StatelessWidget {
             ],
           ),
           if (showDatePicker) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             const DatePickerBar(),
+          ],
+          if (bottom != null) ...[
+            const SizedBox(height: 8),
+            bottom!,
           ],
         ],
       ),
@@ -81,6 +87,7 @@ class SliverAppHeader extends StatelessWidget {
   final bool showDatePicker;
   final bool showBackButton;
   final bool showActions;
+  final Widget? bottom;
 
   const SliverAppHeader({
     super.key,
@@ -88,6 +95,7 @@ class SliverAppHeader extends StatelessWidget {
     this.showDatePicker = true,
     this.showBackButton = false,
     this.showActions = true,
+    this.bottom,
   });
 
   @override
@@ -95,7 +103,7 @@ class SliverAppHeader extends StatelessWidget {
     return SliverAppBar(
       pinned: true,
       floating: false,
-      expandedHeight: showDatePicker ? 180 : 100,
+      expandedHeight: showDatePicker ? (bottom != null ? 210 : 160) : (bottom != null ? 140 : 90),
       backgroundColor: AppColors.primary,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -114,6 +122,10 @@ class SliverAppHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               if (showDatePicker) const DatePickerBar(),
+              if (bottom != null) ...[
+                if (showDatePicker) const SizedBox(height: 8),
+                bottom!,
+              ],
             ],
           ),
         ),

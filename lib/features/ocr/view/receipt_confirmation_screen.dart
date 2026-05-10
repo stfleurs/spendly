@@ -949,8 +949,18 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textLight, fontSize: 12)),
-          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.w900 : FontWeight.bold, fontSize: 12, color: AppColors.textDark)),
+          Expanded(child: Text(label, style: const TextStyle(color: AppColors.textLight, fontSize: 12))),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.w900 : FontWeight.bold,
+              fontSize: 12,
+              color: AppColors.textDark,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );

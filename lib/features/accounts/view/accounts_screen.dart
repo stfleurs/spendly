@@ -8,7 +8,9 @@ import 'package:spendly/features/accounts/view/new_account_screen.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/models/account.dart';
 import 'package:spendly/core/providers/balance_provider.dart';
+import 'package:spendly/features/transactions/view/transactions_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/features/import/view/import_screen.dart';
 
 class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
@@ -79,7 +81,7 @@ class AccountsScreen extends ConsumerWidget {
                           ),
                         ...accounts.map((acc) => _buildAccountItem(context, ref, userId, acc)),
                         
-                        // Add Account Button at the end of list
+                        // Create Account Button
                         InkWell(
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(builder: (context) => const NewAccountScreen()),
@@ -94,6 +96,33 @@ class AccountsScreen extends ConsumerWidget {
                                 Text(
                                   l10n.createAccount.toUpperCase(),
                                   style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        
+                        const Divider(height: 1),
+                        
+                        // Import Transactions Button
+                        InkWell(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => const ImportScreen()),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.upload_file_outlined, color: AppColors.primary),
+                                SizedBox(width: 12),
+                                Text(
+                                  'IMPORT TRANSACTIONS',
+                                  style: TextStyle(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 1.1,
@@ -122,6 +151,7 @@ class AccountsScreen extends ConsumerWidget {
   Widget _buildAccountItem(BuildContext context, WidgetRef ref, String userId, Account account) {
     final currentBalance = ref.watch(accountBalanceProvider((userId: userId, accountId: account.id)));
     final l10n = AppLocalizations.of(context)!;
+    
     // Parse color from hex string
     Color accountColor = AppColors.primary;
     if (account.color != null && account.color!.startsWith('#')) {
@@ -131,49 +161,65 @@ class AccountsScreen extends ConsumerWidget {
       } catch (_) {}
     }
 
-    // Map type to icon and localized name
-    IconData accountIcon = Icons.account_balance_wallet;
+    // Map type to localized name
     String typeName = account.type;
+    IconData accountIcon = Icons.account_balance;
     switch (account.type) {
       case 'CHECKING':
-        accountIcon = Icons.account_balance;
         typeName = l10n.checking;
+        accountIcon = Icons.account_balance;
         break;
       case 'SAVINGS':
-        accountIcon = Icons.savings;
         typeName = l10n.savings;
+        accountIcon = Icons.savings;
         break;
       case 'CASH':
-        accountIcon = Icons.payments;
         typeName = l10n.cash;
+        accountIcon = Icons.payments;
         break;
       case 'CREDIT CARD':
-        accountIcon = Icons.credit_card;
         typeName = l10n.creditCard;
+        accountIcon = Icons.credit_card;
         break;
     }
 
+    final isNegative = currentBalance < 0;
+    final balanceStr = '${account.currency == 'USD' ? r'$ ' : '${account.currency} '}${(currentBalance / 100).toStringAsFixed(2)}';
+
     return InkWell(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => NewAccountScreen(account: account)),
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            body: TransactionsScreen(initialAccountId: account.id),
+          ),
+        ),
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: AppColors.primaryLight, width: 1)),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Account Icon
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: accountColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(accountIcon, color: accountColor, size: 24),
+              child: Icon(
+                accountIcon,
+                color: accountColor,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
+            
+            // Name and Type
             Expanded(
+              flex: 2,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -182,8 +228,10 @@ class AccountsScreen extends ConsumerWidget {
                     style: const TextStyle(
                       color: AppColors.textDark,
                       fontWeight: FontWeight.w900,
-                      fontSize: 15,
+                      fontSize: 16,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -192,45 +240,65 @@ class AccountsScreen extends ConsumerWidget {
                       color: AppColors.textLight,
                       fontWeight: FontWeight.w900,
                       fontSize: 10,
-                      letterSpacing: 1.1,
+                      letterSpacing: 1.0,
                     ),
                   ),
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (account.type.toUpperCase() == 'CREDIT CARD') ...[
+            const SizedBox(width: 12),
+            
+            // Balance and Credit Info
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
                   Text(
-                    'Limit: ${(account.creditLimit / 100).toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: AppColors.textLight,
-                      fontSize: 10,
+                    balanceStr,
+                    style: TextStyle(
+                      color: isNegative ? AppColors.expense : AppColors.textDark,
                       fontWeight: FontWeight.w900,
+                      fontSize: 18,
                     ),
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    'Available: ${(ref.watch(availableFundsProvider((userId: userId, accountId: account.id))) / 100).toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: AppColors.income,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
+                  if (account.type == 'CREDIT CARD') ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'LIMIT: ${(account.creditLimit / 100).toStringAsFixed(0)}',
+                      style: const TextStyle(color: AppColors.textLight, fontSize: 9, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  const SizedBox(height: 4),
+                    Builder(
+                      builder: (context) {
+                        final available = account.creditLimit + currentBalance; 
+                        return Text(
+                          'AVAIL: ${(available / 100).toStringAsFixed(0)}',
+                          style: TextStyle(
+                            color: available < 0 ? AppColors.expense : AppColors.income,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }
+                    ),
+                  ],
                 ],
-                Text(
-                  '${account.currency == 'USD' ? r'$ ' : '${account.currency} '}${(currentBalance / 100).toStringAsFixed(2)}',
-                  style: TextStyle(
-                    color: currentBalance < 0 ? AppColors.expense : AppColors.textDark,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
+              ),
             ),
-
+            const SizedBox(width: 8),
+            
+            // Edit Button
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.textLight),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => NewAccountScreen(account: account)),
+              ),
+            ),
           ],
         ),
       ),
