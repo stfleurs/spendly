@@ -20,16 +20,16 @@ abstract class AppTransaction with _$AppTransaction {
     String? receiptId,
 
     // Normalized accounting fields (The Immutable Truth)
-    required int amountInBaseCurrency,
-    required String baseCurrency,
-    required double exchangeRate, // User still sees this as decimal
+    @Default(0) int amountInBaseCurrency,
+    @Default('USD') String baseCurrency,
+    @Default(1.0) double exchangeRate, // User still sees this as decimal
     @Default(1000000) int rateScale, // 1,000,000 for integer math
-    required int scaledRate, // (exchangeRate * rateScale).round()
+    @Default(1000000) int scaledRate, // (exchangeRate * rateScale).round()
     @Default('manual') String rateSource,
     
     // FX Metadata
-    String? rateBaseCurrency,
-    String? rateQuoteCurrency,
+    @Default('USD') String rateBaseCurrency,
+    @Default('USD') String rateQuoteCurrency,
 
     // Original payment data
     int? originalAmount,
