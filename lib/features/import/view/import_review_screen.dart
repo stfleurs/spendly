@@ -300,10 +300,30 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
           
           double amount = 0;
           try {
-            final String rawAmount = raw.amount.toString();
-            final String cleaned = rawAmount.replaceAll(',', '').replaceAll('HTG', '').replaceAll(r'$', '').trim();
+            String rawAmount = raw.amount.toString();
+            // Handle European format: "1.234,56" -> "1234.56"
+            if (rawAmount.contains(',') && rawAmount.contains('.')) {
+              if (rawAmount.indexOf('.') < rawAmount.indexOf(',')) {
+                rawAmount = rawAmount.replaceAll('.', '').replaceAll(',', '.');
+              } else {
+                rawAmount = rawAmount.replaceAll(',', '');
+              }
+            } else if (rawAmount.contains(',')) {
+              // If only comma, it might be the decimal separator "1234,56" or thousands "1,234"
+              // We'll assume it's decimal if there's only 2 digits after it
+              final parts = rawAmount.split(',');
+              if (parts.last.length == 2) {
+                rawAmount = rawAmount.replaceAll(',', '.');
+              } else {
+                rawAmount = rawAmount.replaceAll(',', '');
+              }
+            }
+            
+            final String cleaned = rawAmount.replaceAll(RegExp(r'[^0-9.-]'), '').trim();
             amount = double.parse(cleaned);
-          } catch (_) {}
+          } catch (e) {
+             debugPrint('Spendly: Amount parse failed for "${raw.amount}": $e');
+          }
 
           final baseHash = _generateSourceHash(raw, widget.accountId);
           
