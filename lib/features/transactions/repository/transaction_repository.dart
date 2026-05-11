@@ -2,21 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/models/app_transaction.dart';
-import 'package:spendly/core/models/account.dart';
+import 'package:spendly/core/models/bill.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 
-enum TransactionSource {
-  manual,
-  import,
-  sync,
-  reconciliation,
-}
+enum TransactionSource { manual, import, sync, reconciliation }
 
-enum TransactionInsertResult {
-  success,
-  duplicate,
-  error,
-}
+enum TransactionInsertResult { success, duplicate, error }
 
 class TransactionRepository {
   final FirebaseFirestore _firestore;
@@ -26,24 +17,53 @@ class TransactionRepository {
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection('transactions');
 
-  Stream<List<AppTransaction>> watchTransactions(String userId) {
+  Stream<List<AppTransaction>> watchTransactions(
+    String userId, {
+    int limit = 50,
+  }) {
     return _collection
         .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
+        .orderBy(FieldPath.documentId, descending: true)
+        .limit(limit)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => AppTransaction.fromJson({
-                ...doc.data(),
-                'id': doc.id,
-              }))
-          .toList();
-    });
+          return snapshot.docs
+              .map(
+                (doc) => AppTransaction.fromJson({...doc.data(), 'id': doc.id}),
+              )
+              .toList();
+        });
   }
 
-  Future<bool> isDuplicate(String sourceHash) async {
-    final snapshot =
-        await _collection.where('sourceHash', isEqualTo: sourceHash).limit(1).get();
+  Future<List<AppTransaction>> getTransactionsPaginated(
+    String userId, {
+    DateTime? startAfterDate,
+    String? startAfterId,
+    int limit = 50,
+  }) async {
+    var query = _collection
+        .where('userId', isEqualTo: userId)
+        .orderBy('date', descending: true)
+        .orderBy(FieldPath.documentId, descending: true)
+        .limit(limit);
+
+    if (startAfterDate != null && startAfterId != null) {
+      query = query.startAfter([startAfterDate, startAfterId]);
+    }
+
+    final snapshot = await query.get();
+    return snapshot.docs
+        .map((doc) => AppTransaction.fromJson({...doc.data(), 'id': doc.id}))
+        .toList();
+  }
+
+  Future<bool> isDuplicate(String accountId, String sourceHash) async {
+    final snapshot = await _collection
+        .where('accountId', isEqualTo: accountId)
+        .where('sourceHash', isEqualTo: sourceHash)
+        .limit(1)
+        .get();
     return snapshot.docs.isNotEmpty;
   }
 
@@ -52,76 +72,232 @@ class TransactionRepository {
     TransactionSource source = TransactionSource.manual,
   }) async {
     try {
-      // Prevent duplicates if sourceHash is present
       if (transaction.sourceHash != null) {
-        final exists = await isDuplicate(transaction.sourceHash!);
-        if (exists) {
-          debugPrint('Spendly: Skipping duplicate transaction: ${transaction.sourceHash}');
+        if (await isDuplicate(transaction.accountId, transaction.sourceHash!)) {
           return TransactionInsertResult.duplicate;
         }
       }
 
-      if (source == TransactionSource.manual && transaction.type.toLowerCase() == 'expense') {
-        await _validateBalance(transaction.accountId, transaction.amount);
+      final batch = _firestore.batch();
+
+      // 1. Transaction Doc
+      final txData = transaction.toJson();
+      txData.remove('id');
+      final txRef = _collection.doc();
+      batch.set(txRef, txData);
+
+      // 2. Account Update (O(1) Snapshot Update)
+      final isExpense = transaction.type.toLowerCase() == 'expense';
+      final isIncome = transaction.type.toLowerCase() == 'income';
+      int delta = 0;
+      if (isIncome) {
+        delta = transaction.amount;
+      } else if (isExpense) {
+        delta = -transaction.amount;
       }
-      // Exclude id from the map when adding to Firestore as doc id will be generated
-      final data = transaction.toJson();
-      data.remove('id');
-      await _collection.add(data);
-      
+
+      final accRef = _firestore
+          .collection('accounts')
+          .doc(transaction.accountId);
+
+      batch.update(accRef, {
+        'currentBalance': FieldValue.increment(delta),
+        'transactionCount': FieldValue.increment(1),
+        'lastTransactionAt': transaction.date,
+        'ledgerVersion': FieldValue.increment(1),
+        'lastCalculatedAt': DateTime.now(),
+        'lastLedgerMutationId': txRef.id,
+      });
+
+      // 3. Update Monthly Summary
+      _updateMonthlySummary(batch, transaction.userId, transaction);
+
+      await batch.commit();
       return TransactionInsertResult.success;
     } catch (e) {
       debugPrint('Spendly: Error adding transaction: $e');
-      // If it's a balance validation error, we still want to throw it for the manual UI to catch and display
-      if (e.toString().contains('Insufficient funds')) rethrow;
-      return TransactionInsertResult.error;
+      rethrow;
     }
   }
 
   Future<void> updateTransaction(AppTransaction transaction) async {
-    if (transaction.type.toLowerCase() == 'expense') {
-      await _validateBalance(transaction.accountId, transaction.amount, excludeTransactionId: transaction.id);
+    final batch = _firestore.batch();
+
+    // 1. Get the OLD transaction to calculate balance delta
+    final oldTxDoc = await _collection.doc(transaction.id).get();
+    if (!oldTxDoc.exists) throw Exception('Transaction not found');
+    final oldTx = AppTransaction.fromJson({
+      ...oldTxDoc.data()!,
+      'id': oldTxDoc.id,
+    });
+
+    // 2. Calculate Balance Delta
+    int delta = 0;
+
+    // Reverse old
+    if (oldTx.type.toLowerCase() == 'income') {
+      delta -= oldTx.amount;
+    } else if (oldTx.type.toLowerCase() == 'expense') {
+      delta += oldTx.amount;
     }
+
+    // Apply new
+    if (transaction.type.toLowerCase() == 'income') {
+      delta += transaction.amount;
+    } else if (transaction.type.toLowerCase() == 'expense') {
+      delta -= transaction.amount;
+    }
+
+    // 3. Update Transaction Doc (Strict Batch)
     final data = transaction.toJson();
     data.remove('id');
-    await _collection.doc(transaction.id).update(data);
+    batch.update(_collection.doc(transaction.id), data);
+
+    // 4. Update Account Snapshot
+    final accRef = _firestore.collection('accounts').doc(transaction.accountId);
+    batch.update(accRef, {
+      'currentBalance': FieldValue.increment(delta),
+      'lastTransactionAt': transaction.date,
+      'ledgerVersion': FieldValue.increment(1),
+      'lastCalculatedAt': DateTime.now(),
+      'lastLedgerMutationId': transaction.id,
+    });
+
+    // 5. Update Monthly Summary
+    _updateMonthlySummary(batch, transaction.userId, oldTx, isDelete: true);
+    _updateMonthlySummary(batch, transaction.userId, transaction);
+
+    await batch.commit();
   }
 
-  Future<void> _validateBalance(String accountId, int amount, {String? excludeTransactionId}) async {
-    final accountDoc = await _firestore.collection('accounts').doc(accountId).get();
-    if (!accountDoc.exists) throw Exception('Account not found');
-    
-    final account = Account.fromJson({...accountDoc.data()!, 'id': accountDoc.id});
-    
-    final txsSnapshot = await _collection.where('accountId', isEqualTo: accountId).get();
-    
-    // IMPORTANT: Derived balance logic
-    // currentBalance = initialBalance (account.balance) + sum(transactions)
-    int currentBalance = account.balance; 
-    
-    for (var doc in txsSnapshot.docs) {
-      if (doc.id == excludeTransactionId) continue;
-      final type = doc.data()['type'].toString().toLowerCase();
-      final txAmount = doc.data()['amount'] as int;
-      if (type == 'income') {
-        currentBalance += txAmount;
-      } else if (type == 'expense') {
-        currentBalance -= txAmount;
-      }
+  Future<void> deleteTransaction(AppTransaction transaction) async {
+    final batch = _firestore.batch();
+
+    // 1. Delete Transaction
+    batch.delete(_collection.doc(transaction.id));
+
+    // 2. Revert Account Balance
+    final isExpense = transaction.type.toLowerCase() == 'expense';
+    final isIncome = transaction.type.toLowerCase() == 'income';
+    int delta = 0;
+    if (isIncome) {
+      delta = -transaction.amount;
+    } else if (isExpense) {
+      delta = transaction.amount;
     }
-    
-    int available = currentBalance;
-    if (account.type.toUpperCase() == 'CREDIT CARD') {
-      available += account.creditLimit;
-    }
-    
-    if (amount > available) {
-      throw Exception('Insufficient funds (Available: ${available / 100})');
-    }
+
+    final accRef = _firestore.collection('accounts').doc(transaction.accountId);
+    batch.update(accRef, {
+      'currentBalance': FieldValue.increment(delta),
+      'transactionCount': FieldValue.increment(-1),
+      'ledgerVersion': FieldValue.increment(1),
+      'lastCalculatedAt': DateTime.now(),
+      'lastLedgerMutationId': 'delete_${transaction.id}',
+    });
+
+    // 3. Update Monthly Summary
+    _updateMonthlySummary(batch, transaction.userId, transaction, isDelete: true);
+
+    await batch.commit();
   }
 
-  Future<void> deleteTransaction(String id) async {
-    await _collection.doc(id).delete();
+  Future<void> payBill({
+    required AppTransaction transaction,
+    required Bill bill,
+    required int amountCents,
+  }) async {
+    final batch = _firestore.batch();
+
+    // 1. Create Transaction
+    final txData = transaction.toJson();
+    txData.remove('id');
+    final txRef = _collection.doc();
+    batch.set(txRef, txData);
+
+    // 2. Update Bill
+    final newPaid = bill.paidAmount + amountCents;
+    final String newStatus = newPaid >= bill.amount ? 'paid' : 'partiallyPaid';
+
+    final billRef = _firestore
+        .collection('users')
+        .doc(bill.userId)
+        .collection('bills')
+        .doc(bill.id);
+
+    batch.update(billRef, {
+      'paidAmount': newPaid,
+      'status': newStatus,
+      'linkedTransactionId': txRef.id,
+    });
+
+    // 3. Update Account
+    final accRef = _firestore.collection('accounts').doc(transaction.accountId);
+    batch.update(accRef, {
+      'currentBalance': FieldValue.increment(-amountCents),
+      'transactionCount': FieldValue.increment(1),
+      'lastTransactionAt': transaction.date,
+      'ledgerVersion': FieldValue.increment(1),
+      'lastCalculatedAt': DateTime.now(),
+      'lastLedgerMutationId': txRef.id,
+    });
+
+    // 4. Update Monthly Summary
+    _updateMonthlySummary(batch, transaction.userId, transaction);
+
+    await batch.commit();
+  }
+
+  void _updateMonthlySummary(
+    WriteBatch batch,
+    String userId,
+    AppTransaction transaction, {
+    bool isDelete = false,
+  }) {
+    final monthId =
+        "${transaction.date.year}_${transaction.date.month.toString().padLeft(2, '0')}";
+    final summaryRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('monthly_summaries')
+        .doc(monthId);
+
+    final isExpense = transaction.type.toLowerCase() == 'expense';
+    final isIncome = transaction.type.toLowerCase() == 'income';
+    final typeKey = isIncome ? 'income' : 'expense';
+
+    int incomeDelta = 0;
+    int expenseDelta = 0;
+    int netChangeDelta = 0;
+    int txCountDelta = isDelete ? -1 : 1;
+
+    final normalizedAmount = transaction.amountInBaseCurrency;
+    final rawAmount = transaction.amount;
+
+    if (isIncome) {
+      incomeDelta = isDelete ? -normalizedAmount : normalizedAmount;
+      netChangeDelta = incomeDelta;
+    } else if (isExpense) {
+      expenseDelta = isDelete ? -normalizedAmount : normalizedAmount;
+      netChangeDelta = -expenseDelta;
+    }
+
+    final updates = {
+      'userId': userId,
+      'income': FieldValue.increment(incomeDelta),
+      'expenses': FieldValue.increment(expenseDelta),
+      'netChange': FieldValue.increment(netChangeDelta),
+      'transactionCount': FieldValue.increment(txCountDelta),
+      'lastUpdatedAt': DateTime.now(),
+      'categoryTotals.${transaction.categoryId}':
+          FieldValue.increment(netChangeDelta),
+      'accountTotals.${transaction.accountId}':
+          FieldValue.increment(netChangeDelta),
+      // Rule #5: Namespaced currency breakdown
+      'currencyBreakdown.$typeKey.${transaction.currency}':
+          FieldValue.increment(isDelete ? -rawAmount : rawAmount),
+    };
+
+    batch.set(summaryRef, updates, SetOptions(merge: true));
   }
 }
 
@@ -129,6 +305,7 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   return TransactionRepository(ref.watch(firestoreProvider));
 });
 
-final transactionsStreamProvider = StreamProvider.family<List<AppTransaction>, String>((ref, userId) {
-  return ref.watch(transactionRepositoryProvider).watchTransactions(userId);
-});
+final transactionsStreamProvider =
+    StreamProvider.family<List<AppTransaction>, String>((ref, userId) {
+      return ref.watch(transactionRepositoryProvider).watchTransactions(userId);
+    });

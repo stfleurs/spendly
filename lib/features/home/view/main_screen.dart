@@ -6,6 +6,9 @@ import 'package:spendly/features/reports/view/reports_screen.dart';
 import 'package:spendly/features/transactions/view/transactions_screen.dart';
 import 'package:spendly/features/transactions/view/new_transaction_screen.dart';
 import 'package:spendly/features/ocr/view/receipt_scanner_screen.dart';
+import 'package:spendly/features/upcoming/view/upcoming_screen.dart';
+import 'package:spendly/features/upcoming/view/add_upcoming_screen.dart';
+import 'package:spendly/features/upcoming/view/add_plan_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
@@ -16,13 +19,14 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 2; // Default to Reports
+  int _selectedIndex = 0; // Default to Dashboard
 
   final List<Widget> _screens = [
     const DashboardScreen(),
     const AccountsScreen(),
     const ReportsScreen(),
     const TransactionsScreen(),
+    const UpcomingScreen(),
   ];
 
   @override
@@ -77,10 +81,10 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                   const SizedBox(width: 40), // Space for FAB
                   _NavBarItem(
-                    icon: Icons.pie_chart_outline,
-                    label: l10n.reports,
-                    isSelected: _selectedIndex == 2,
-                    onTap: () => setState(() => _selectedIndex = 2),
+                    icon: Icons.upcoming_outlined,
+                    label: 'Upcoming',
+                    isSelected: _selectedIndex == 4,
+                    onTap: () => setState(() => _selectedIndex = 4),
                   ),
                   _NavBarItem(
                     icon: Icons.list_alt_outlined,
@@ -191,6 +195,34 @@ class _SpeedDialFabState extends State<_SpeedDialFab>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Create Plan
+              ScaleTransition(
+                scale: _expandAnimation,
+                child: FadeTransition(
+                  opacity: _expandAnimation,
+                  child: _SpeedDialAction(
+                    icon: Icons.account_tree_outlined,
+                    label: 'Create Plan',
+                    color: const Color(0xFFD946EF), // Pink/Purple
+                    onTap: () => _navigate(const AddPlanScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Add Payment
+              ScaleTransition(
+                scale: _expandAnimation,
+                child: FadeTransition(
+                  opacity: _expandAnimation,
+                  child: _SpeedDialAction(
+                    icon: Icons.upcoming_outlined,
+                    label: 'Add Payment',
+                    color: const Color(0xFF7C3AED),
+                    onTap: () => _navigate(const AddUpcomingScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
               // Scan Receipt
               ScaleTransition(
                 scale: _expandAnimation,

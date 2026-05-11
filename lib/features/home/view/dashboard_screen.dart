@@ -10,6 +10,8 @@ import 'package:spendly/features/budget/providers/budget_provider.dart';
 import 'package:spendly/features/budget/view/budget_screen.dart';
 import 'package:spendly/features/reports/view/reports_screen.dart';
 import 'package:spendly/features/ocr/view/receipt_scanner_screen.dart';
+import 'package:spendly/features/upcoming/providers/upcoming_provider.dart';
+import 'package:spendly/features/upcoming/view/upcoming_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -88,11 +90,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   padding: const EdgeInsets.only(top: 32, right: 24, left: 8, bottom: 8),
                   child: SizedBox(
                     height: 200,
-                    child: timeline.isEmpty 
-                      ? const Center(child: Text('No data for this period'))
-                      : _buildTrendChart(timeline),
+                    child: timeline.when(
+                      data: (data) => data.isEmpty 
+                        ? const Center(child: Text('No data for this period'))
+                        : _buildTrendChart(data),
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (e, s) => Center(child: Text('Error: $e')),
+                    ),
                   ),
                 ),
+
+                const SizedBox(height: 32),
+
+                // ── Upcoming Payments Card ─────────────────────────────
+                _buildUpcomingCard(context, ref, userId),
 
                 const SizedBox(height: 32),
 
@@ -201,6 +212,124 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildUpcomingCard(BuildContext context, WidgetRef ref, String userId) {
+    final stats = ref.watch(upcomingBillsStatsProvider(userId));
+    final upcomingTotal = stats['upcomingTotal'] as int;
+    final overdueTotal = stats['overdueTotal'] as int;
+    final overdueCount = stats['overdueCount'] as int;
+    final dueSoonCount = stats['dueSoonCount'] as int;
+
+    final hasOverdue = overdueCount > 0;
+    final Color headerColor = hasOverdue ? AppColors.expense : AppColors.primary;
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const UpcomingScreen()),
+      ),
+      child: MainCard(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: headerColor.withValues(alpha: 0.08),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.upcoming_outlined, color: headerColor, size: 18),
+                  const SizedBox(width: 10),
+                  Text(
+                    'UPCOMING PAYMENTS',
+                    style: TextStyle(
+                      color: headerColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 11,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(Icons.chevron_right, color: headerColor, size: 18),
+                ],
+              ),
+            ),
+
+            // Stats row
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  _upcomingStat(
+                    label: 'UPCOMING',
+                    value: '\$${(upcomingTotal / 100).toStringAsFixed(0)}',
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 1),
+                  Container(width: 1, height: 40, color: AppColors.primaryLight),
+                  const SizedBox(width: 1),
+                  _upcomingStat(
+                    label: 'OVERDUE',
+                    value: overdueCount == 0
+                        ? 'None'
+                        : '\$${(overdueTotal / 100).toStringAsFixed(0)}',
+                    color: overdueCount > 0 ? AppColors.expense : AppColors.income,
+                  ),
+                  const SizedBox(width: 1),
+                  Container(width: 1, height: 40, color: AppColors.primaryLight),
+                  const SizedBox(width: 1),
+                  _upcomingStat(
+                    label: 'DUE SOON',
+                    value: dueSoonCount == 0
+                        ? 'None'
+                        : '$dueSoonCount item${dueSoonCount > 1 ? 's' : ''}',
+                    color: dueSoonCount > 0
+                        ? const Color(0xFFF59E0B)
+                        : AppColors.income,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _upcomingStat({required String label, required String value, required Color color}) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w900,
+              fontSize: 15,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textLight,
+              fontWeight: FontWeight.w900,
+              fontSize: 9,
+              letterSpacing: 1.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 

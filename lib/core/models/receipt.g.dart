@@ -57,6 +57,9 @@ _Receipt _$ReceiptFromJson(Map<String, dynamic> json) => _Receipt(
   items: (json['items'] as List<dynamic>?)
       ?.map((e) => ReceiptItem.fromJson(e as Map<String, dynamic>))
       .toList(),
+  extractedTokens: (json['extractedTokens'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
   originalCurrency: json['originalCurrency'] as String?,
   originalTotal: (json['originalTotal'] as num?)?.toInt(),
   originalSubtotal: (json['originalSubtotal'] as num?)?.toInt(),
@@ -84,6 +87,7 @@ Map<String, dynamic> _$ReceiptToJson(_Receipt instance) => <String, dynamic>{
   'createdAt': instance.createdAt.toIso8601String(),
   'processed': instance.processed,
   'items': instance.items,
+  'extractedTokens': instance.extractedTokens,
   'originalCurrency': instance.originalCurrency,
   'originalTotal': instance.originalTotal,
   'originalSubtotal': instance.originalSubtotal,

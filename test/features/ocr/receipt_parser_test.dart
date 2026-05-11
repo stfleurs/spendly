@@ -22,7 +22,7 @@ void main() {
         'THANK YOU',
       ];
 
-      final result = ReceiptParser.parseFromLines(_toLines(lines));
+      final result = ReceiptParser.parseFromLines(_toLines(lines), '', []);
 
       expect(result.merchant, equals('Caribbean Supermarket'));
       expect(result.total, equals(14040)); // 140.40 * 100
@@ -47,7 +47,7 @@ void main() {
         'CHANGE: 200.00',       // Competing number
       ];
 
-      final result = ReceiptParser.parseFromLines(_toLines(lines));
+      final result = ReceiptParser.parseFromLines(_toLines(lines), '', []);
 
       expect(result.merchant, equals('CAFE   DES   ARTS'));
       expect(result.total, equals(80000));
@@ -62,7 +62,7 @@ void main() {
         '50.00',
       ];
 
-      final result = ReceiptParser.parseFromLines(_toLines(lines));
+      final result = ReceiptParser.parseFromLines(_toLines(lines), '', []);
 
       expect(result.total, equals(15000)); // Largest
     });
@@ -75,7 +75,7 @@ void main() {
       };
 
       formats.forEach((text, expected) {
-        final result = ReceiptParser.parseFromLines(_toLines(['Receipt', text, 'TOTAL: 10.00']));
+        final result = ReceiptParser.parseFromLines(_toLines(['Receipt', text, 'TOTAL: 10.00']), '', []);
         expect(result.date!.year, expected.year);
         expect(result.date!.month, expected.month);
         expect(result.date!.day, expected.day);

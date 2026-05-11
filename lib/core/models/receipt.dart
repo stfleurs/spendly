@@ -82,6 +82,7 @@ abstract class Receipt with _$Receipt {
     required DateTime createdAt,
     @Default(false) bool processed,
     List<ReceiptItem>? items,
+    List<String>? extractedTokens, // Normalized tokens for search
     // Audit fields for currency conversion
     String? originalCurrency,
     int? originalTotal,

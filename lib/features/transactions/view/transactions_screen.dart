@@ -29,17 +29,71 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   String _selectedType = 'All'; // All, Expense, Income
   String _selectedAccountId = 'All';
 
+  final ScrollController _scrollController = ScrollController();
+  final List<AppTransaction> _historicalTransactions = [];
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     if (widget.initialAccountId != null) {
       _selectedAccountId = widget.initialAccountId!;
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    final userId = ref.read(authStateProvider).value?.uid ?? '';
+    final liveTransactions = ref.read(transactionsStreamProvider(userId)).value ?? [];
+    
+    // Use the date of the last transaction we have (either from history or live)
+    final lastTx = _historicalTransactions.isNotEmpty 
+        ? _historicalTransactions.last 
+        : (liveTransactions.isNotEmpty ? liveTransactions.last : null);
+
+    if (lastTx == null) return;
+
+    setState(() => _isLoadingMore = true);
+    try {
+      final more = await ref.read(transactionRepositoryProvider).getTransactionsPaginated(
+        userId,
+        startAfterDate: lastTx.date,
+        startAfterId: lastTx.id,
+      );
+
+      if (mounted) {
+        setState(() {
+          if (more.isEmpty) {
+            _hasMore = false;
+          } else {
+            // Deduplicate just in case
+            final existingIds = {
+              ...liveTransactions.map((t) => t.id),
+              ..._historicalTransactions.map((t) => t.id)
+            };
+            _historicalTransactions.addAll(more.where((t) => !existingIds.contains(t.id)));
+          }
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingMore = false);
     }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -54,6 +108,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return CustomScrollView(
+      controller: _scrollController,
       slivers: [
         SliverAppHeader(
           title: l10n.activity,
@@ -70,11 +125,17 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               padding: const EdgeInsets.all(24),
               child: Center(child: Text('Error loading transactions: $e')),
             ),
-            data: (allTransactions) {
+            data: (liveTransactions) {
               final categories = categoriesAsync.value ?? [];
               final accounts = accountsAsync.value ?? [];
               final Map<String, Category> catMap = {for (final c in categories) c.id: c};
               final Map<String, Account> accMap = {for (final a in accounts) a.id: a};
+              
+              // Merge live transactions with historical ones
+              final allTransactions = [
+                ...liveTransactions,
+                ..._historicalTransactions,
+              ];
 
               // Apply Filters
               final transactions = allTransactions.where((t) {
@@ -210,6 +271,26 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                           children: transactions.map((t) {
                             return _buildTransactionItem(context, t, catMap, accMap);
                           }).toList(),
+                        ),
+                      ),
+                    ),
+                  if (_isLoadingMore)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+                  if (!_hasMore && transactions.isNotEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(
+                        child: Text(
+                          'END OF HISTORY',
+                          style: TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
                     ),

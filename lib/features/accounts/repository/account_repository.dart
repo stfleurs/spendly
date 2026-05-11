@@ -26,7 +26,7 @@ class AccountRepository {
   }
 
   Future<void> addAccount(Account account) async {
-    final data = account.toJson();
+    final data = account.copyWith(currentBalance: account.balance).toJson();
     data.remove('id');
     await _collection.add(data);
   }

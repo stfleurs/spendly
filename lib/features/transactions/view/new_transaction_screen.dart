@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/shared/widgets/app_header.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
+import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
@@ -99,20 +100,39 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
 
     setState(() => _isLoading = true);
 
+    final int centsValue = (amountValue * 100).toInt();
+    final baseCurrency = ref.read(currencyProvider);
+    const double rate = 1.0; // TODO: Implement real-time rate lookup
+    
+    // Rule #2: Scaled Integer Math
+    const int rateScale = 1000000;
+    final int scaledRate = (rate * rateScale).round();
+    final int normalizedAmount = (centsValue * scaledRate) ~/ rateScale;
+
     final transaction = AppTransaction(
       id: widget.transaction?.id ?? '',
       userId: ref.read(authRepositoryProvider).currentUser?.uid ?? '',
       type: _selectedType.toLowerCase(),
-      amount: (amountValue * 100).toInt(),
+      amount: centsValue,
       currency: _selectedCurrency,
+      amountInBaseCurrency: normalizedAmount,
+      baseCurrency: baseCurrency,
+      exchangeRate: rate,
+      scaledRate: scaledRate,
+      rateScale: rateScale,
+      rateSource: 'manual',
+      rateBaseCurrency: baseCurrency,
+      rateQuoteCurrency: _selectedCurrency,
       date: widget.transaction?.date ?? DateTime.now(),
       accountId: _selectedAccount!.id,
       categoryId: _selectedCategory!.id,
       note: _payeeController.text.trim(),
+      // Add search tokens for manual indexing
+      searchTokens: AppTransaction.createSearchTokens(
+          _payeeController.text.trim(), _selectedCategory!.name),
       // Add audit fields for manual entries too
-      originalAmount: (amountValue * 100).toInt(),
+      originalAmount: centsValue,
       originalCurrency: _selectedCurrency,
-      exchangeRate: 1.0,
     );
 
     try {
@@ -152,7 +172,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     if (confirm == true && mounted) {
       setState(() => _isLoading = true);
       try {
-        await ref.read(transactionRepositoryProvider).deleteTransaction(widget.transaction!.id);
+        await ref.read(transactionRepositoryProvider).deleteTransaction(widget.transaction!);
         if (mounted) Navigator.of(context).pop();
       } catch (e) {
         if (mounted) {

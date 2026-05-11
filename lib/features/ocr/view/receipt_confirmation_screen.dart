@@ -13,6 +13,7 @@ import 'package:spendly/core/providers/balance_provider.dart';
 import 'package:spendly/features/ocr/repository/merchant_repository.dart';
 import 'package:spendly/features/ocr/repository/receipt_repository.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
@@ -204,22 +205,37 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
 
       await ref.read(receiptRepositoryProvider).saveReceipt(correctedReceipt);
 
+      final baseCurrency = ref.read(currencyProvider);
+      const double rateToBase = 1.0; // TODO: Implement real-time rate lookup
+      
+      // Rule #2: Scaled Integer Math
+      const int rateScale = 1000000;
+      final int scaledRate = (rateToBase * rateScale).round();
+      final int normalizedAmount = (totalCents * scaledRate) ~/ rateScale;
+
       final transaction = AppTransaction(
         id: const Uuid().v4(),
         userId: userId,
         accountId: _selectedAccountId!,
         amount: totalCents,
-        categoryId: _selectedCategoryId!,
-        note: _merchantController.text,
-        type: 'expense',
+        currency: _selectedCurrency,
+        amountInBaseCurrency: normalizedAmount,
+        baseCurrency: baseCurrency,
+        exchangeRate: _currentExchangeRate, // Rate from original to account
+        scaledRate: (rateToBase * rateScale).round(), // Rate from account to base
+        rateScale: rateScale,
+        rateSource: 'receipt',
+        rateBaseCurrency: baseCurrency,
+        rateQuoteCurrency: _selectedCurrency,
         date: _selectedDate ?? DateTime.now(),
+        categoryId: _selectedCategoryId!,
         receiptUrl: widget.receipt.imageUrl,
         receiptId: correctedReceipt.id,
-        currency: _selectedCurrency,
+        note: _merchantController.text,
+        type: 'expense',
         // Audit fields
         originalAmount: (_originalTotal * 100).round(),
         originalCurrency: _originalCurrency,
-        exchangeRate: _currentExchangeRate,
       );
 
       await ref.read(transactionRepositoryProvider).addTransaction(transaction);

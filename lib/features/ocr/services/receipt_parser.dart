@@ -1,5 +1,6 @@
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:spendly/core/models/receipt.dart';
+import 'package:spendly/core/services/search_indexer.dart';
 
 class ParsedReceipt {
   final String? merchant;
@@ -15,6 +16,8 @@ class ParsedReceipt {
   final double confidence;
   final List<OCRLine> lines;
   final List<ReceiptItem> items;
+  final String extractedText;
+  final List<String> extractedTokens;
 
   ParsedReceipt({
     this.merchant,
@@ -30,6 +33,8 @@ class ParsedReceipt {
     required this.confidence,
     required this.lines,
     required this.items,
+    required this.extractedText,
+    required this.extractedTokens,
   });
 }
 
@@ -43,7 +48,10 @@ class ReceiptParser {
 
   static ParsedReceipt parse(RecognizedText recognizedText) {
     final List<OCRLine> lines = [];
+    final StringBuffer fullTextBuffer = StringBuffer();
+
     for (final block in recognizedText.blocks) {
+      fullTextBuffer.writeln(block.text);
       for (final line in block.lines) {
         lines.add(OCRLine(
           text: line.text.trim(),
@@ -51,16 +59,26 @@ class ReceiptParser {
         ));
       }
     }
-    // Sort lines by vertical position primarily, then horizontal
+    
     lines.sort((a, b) {
       if ((a.top - b.top).abs() < 10) return a.left.compareTo(b.left);
       return a.top.compareTo(b.top);
     });
 
-    return parseFromLines(lines);
+    final indexed = SearchIndexer.index(fullTextBuffer.toString());
+
+    return parseFromLines(
+      lines,
+      indexed.content,
+      indexed.tokens,
+    );
   }
 
-  static ParsedReceipt parseFromLines(List<OCRLine> lines) {
+  static ParsedReceipt parseFromLines(
+    List<OCRLine> lines,
+    String extractedText,
+    List<String> extractedTokens,
+  ) {
     String? merchant;
     String? address;
     String? phone;
@@ -77,7 +95,6 @@ class ReceiptParser {
     merchant = _findMerchant(lines);
     if (merchant != null) confidence += 0.2;
 
-    // Look for address (multiple lines)
     if (merchant != null) {
       final merchantIdx = lines.indexWhere((l) => l.text == merchant);
       if (merchantIdx != -1) {
@@ -131,6 +148,8 @@ class ReceiptParser {
       confidence: confidence.clamp(0.0, 1.0),
       lines: lines,
       items: extractedItems,
+      extractedText: extractedText,
+      extractedTokens: extractedTokens,
     );
   }
 
@@ -142,7 +161,6 @@ class ReceiptParser {
       final text = line.text;
       final upperLine = text.toUpperCase();
       
-      // Skip lines that are likely totals, dates, or contact info
       if (totalKeywords.any((kw) => upperLine.contains(kw))) continue;
       if (text.contains('/') || text.contains('@')) continue;
       
@@ -186,7 +204,7 @@ class ReceiptParser {
   }
 
   static List<int> _extractAllAmounts(String text) {
-    final regex = RegExp(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2}))'); // Requires .xx for items
+    final regex = RegExp(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2}))');
     final matches = regex.allMatches(text);
     final List<int> amounts = [];
     
@@ -213,18 +231,9 @@ class ReceiptParser {
       double baseScore = 0.0;
 
       for (final kw in keywords) {
-        if (!upper.contains(kw)) {
-          continue;
-        }
-
-        if (upper.contains('DESCRIPTION') || upper.contains('QTY') || 
-            upper.contains('UNIT PRICE') || upper.contains('ITEM')) {
-          continue;
-        }
-
-        if (kw == 'TOTAL' && upper.contains('SUBTOTAL')) {
-          continue;
-        }
+        if (!upper.contains(kw)) continue;
+        if (upper.contains('DESCRIPTION') || upper.contains('QTY') || upper.contains('UNIT PRICE') || upper.contains('ITEM')) continue;
+        if (kw == 'TOTAL' && upper.contains('SUBTOTAL')) continue;
 
         baseScore += 50.0;
         if (kw == 'GRAND TOTAL') baseScore += 20.0;
@@ -234,9 +243,7 @@ class ReceiptParser {
           final nextLine = lines[i + 1];
           if ((nextLine.top - line.bottom).abs() < 30) {
             foundAmount = _extractAmount(nextLine.text);
-            if (foundAmount != null) {
-              baseScore += 10.0;
-            }
+            if (foundAmount != null) baseScore += 10.0;
           }
         }
         break;
@@ -247,14 +254,11 @@ class ReceiptParser {
         if (line.bottom > maxY * 0.75) score += 20.0;
         if (line.bottom > maxY * 0.90) score += 10.0;
         if (maxRight > 0 && line.right > maxRight * 0.7) score += 15.0;
-        
         candidates.add((amount: foundAmount, score: score));
       }
     }
 
     if (candidates.isEmpty) return null;
-
-    // Magnitude scoring: reward larger amounts (totals are usually large)
     final largestAmount = candidates.map((c) => c.amount).reduce((a, b) => a > b ? a : b);
     final List<({int amount, double score})> scoredCandidates = candidates.map((c) {
       double finalScore = c.score;
@@ -271,14 +275,10 @@ class ReceiptParser {
     for (final line in lines) {
       final text = line.text;
       final upper = text.toUpperCase();
-      
       if (upper.contains('SERVICE') || upper.contains('PRODUCT') || upper.contains('ITEM')) continue;
-
       final amount = _extractAmount(text);
       if (amount != null) {
-        if (maxAmount == null || amount > maxAmount) {
-          maxAmount = amount;
-        }
+        if (maxAmount == null || amount > maxAmount) maxAmount = amount;
       }
     }
     return maxAmount;
@@ -291,30 +291,19 @@ class ReceiptParser {
     for (int i = 0; i < lines.length && i < 15; i++) {
       final line = lines[i];
       final text = line.text;
-      if (text.isEmpty || !RegExp(r'[A-Za-z]').hasMatch(text)) {
-        continue;
-      }
+      if (text.isEmpty || !RegExp(r'[A-Za-z]').hasMatch(text)) continue;
 
       final lower = text.toLowerCase().trim();
-      if (_merchantBlocklist.any((w) => lower == w || lower.startsWith(w))) {
-        continue;
-      }
-      if (text.contains('@') || RegExp(r'(\d[\d\-\s\(\)]{8,}\d)').hasMatch(text)) {
-        continue;
-      }
+      if (_merchantBlocklist.any((w) => lower == w || lower.startsWith(w))) continue;
+      if (text.contains('@') || RegExp(r'(\d[\d\-\s\(\)]{8,}\d)').hasMatch(text)) continue;
 
       double score = 0.0;
-      // Position: top is much better
       if (line.top < maxY * 0.1) {
         score += 40.0;
       } else if (line.top < maxY * 0.2) {
         score += 20.0;
       }
-
-      // Format: Title Case is common for business names
       if (RegExp(r'^[A-Z][a-z]+(\s+[A-Z][a-z]+)*$').hasMatch(text)) score += 20.0;
-      
-      // Slogan/Generic guard: too long or all caps short words usually slogans or headers
       if (text.length > 30) score -= 20.0;
       if (RegExp(r'^[A-Z\s]+$').hasMatch(text) && text.length <= 12) score += 10.0;
 
@@ -330,20 +319,9 @@ class ReceiptParser {
     final List<String> addressLines = [];
     for (final line in lines) {
       final text = line.text;
-      
-      // Explicitly skip pure numeric lines or isolated IDs that aren't zip codes
-      // This prevents receipt numbers from leaking into addresses
-      if (RegExp(r'^\d{4,}$').hasMatch(text)) {
-        continue;
-      }
-      if (text.toUpperCase().contains('RECEIPT') || text.toUpperCase().contains('INVOICE')) {
-        continue;
-      }
-
-      // Look for ZIP codes or street patterns
-      if (RegExp(r'\d{5}').hasMatch(text) || 
-          RegExp(r'^\d+\s+[A-Za-z]').hasMatch(text) ||
-          RegExp(r'[A-Z]{2}\s+\d{5}').hasMatch(text)) {
+      if (RegExp(r'^\d{4,}$').hasMatch(text)) continue;
+      if (text.toUpperCase().contains('RECEIPT') || text.toUpperCase().contains('INVOICE')) continue;
+      if (RegExp(r'\d{5}').hasMatch(text) || RegExp(r'^\d+\s+[A-Za-z]').hasMatch(text) || RegExp(r'[A-Z]{2}\s+\d{5}').hasMatch(text)) {
         addressLines.add(text);
       }
     }
@@ -357,11 +335,15 @@ class ReceiptParser {
       final text = line.text;
       if (phone == null) {
         final match = RegExp(r'(\+?\d[\d\-\s\(\)]{8,}\d)').firstMatch(text);
-        if (match != null) phone = match.group(1);
+        if (match != null) {
+          phone = match.group(1);
+        }
       }
       if (email == null) {
         final match = RegExp(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})').firstMatch(text);
-        if (match != null) email = match.group(1);
+        if (match != null) {
+          email = match.group(1);
+        }
       }
     }
     return {'phone': phone, 'email': email};
@@ -373,18 +355,13 @@ class ReceiptParser {
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
       final upper = line.text.toUpperCase();
-      if (tax == null && (upper.contains('TAX') || upper.contains('VAT') || upper.contains('GST') || 
-          upper.contains('HST') || upper.contains('TPS') || upper.contains('TVQ'))) {
+      if (tax == null && (upper.contains('TAX') || upper.contains('VAT') || upper.contains('GST') || upper.contains('HST') || upper.contains('TPS') || upper.contains('TVQ'))) {
         tax = _extractAmount(line.text);
-        if (tax == null && i + 1 < lines.length) {
-          tax = _extractAmount(lines[i + 1].text);
-        }
+        if (tax == null && i + 1 < lines.length) tax = _extractAmount(lines[i + 1].text);
       }
       if (subtotal == null && upper.contains('SUBTOTAL')) {
         subtotal = _extractAmount(line.text);
-        if (subtotal == null && i + 1 < lines.length) {
-          subtotal = _extractAmount(lines[i + 1].text);
-        }
+        if (subtotal == null && i + 1 < lines.length) subtotal = _extractAmount(lines[i + 1].text);
       }
     }
     return {'tax': tax, 'subtotal': subtotal};
@@ -421,9 +398,7 @@ class ReceiptParser {
   }
 
   static int? _extractAmount(String text) {
-    // Ignore percentages (e.g. "Tax (8.00%)")
     final textWithoutPercentages = text.replaceAll(RegExp(r'\d+(\.\d+)?%'), '');
-    
     final regex = RegExp(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)');
     final matches = regex.allMatches(textWithoutPercentages);
     if (matches.isEmpty) return null;
@@ -431,21 +406,17 @@ class ReceiptParser {
       final raw = matches.last.group(1)!;
       final clean = raw.replaceAll(',', '');
       final value = double.parse(clean);
-      // Ignore obviously-wrong values (0, or absurdly large)
       if (value <= 0 || value > 999999) return null;
       return (value * 100).round();
-    } catch (_) {
-      return null;
-    }
+    } catch (_) { return null; }
   }
 
   static DateTime? _findDate(List<OCRLine> lines) {
     final regexes = [
-      RegExp(r'(\d{4})[-/](\d{1,2})[-/](\d{1,2})'), // YYYY-MM-DD
-      RegExp(r'(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})'), // DD/MM/YY or MM/DD/YY
-      RegExp(r'(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})'), // DD Month YYYY
+      RegExp(r'(\d{4})[-/](\d{1,2})[-/](\d{1,2})'),
+      RegExp(r'(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})'),
+      RegExp(r'(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})'),
     ];
-
     for (final line in lines) {
       final text = line.text;
       for (final reg in regexes) {
@@ -455,27 +426,16 @@ class ReceiptParser {
             final g1 = match.group(1)!;
             final g2 = match.group(2)!;
             final g3 = match.group(3)!;
-
-            // Handle "DD Month YYYY"
             if (int.tryParse(g2) == null) {
-              const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
-                              'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+              const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
               final monthIdx = months.indexWhere((m) => g2.toLowerCase().startsWith(m));
-              if (monthIdx != -1) {
-                return DateTime(int.parse(g3), monthIdx + 1, int.parse(g1));
-              }
+              if (monthIdx != -1) return DateTime(int.parse(g3), monthIdx + 1, int.parse(g1));
             }
-
             final n1 = int.parse(g1);
             final n2 = int.parse(g2);
             final n3 = int.parse(g3);
-
-            if (n1 > 1000) return DateTime(n1, n2, n3); // YYYY-MM-DD
-
-            // Heuristic: if first number > 12, it must be the day (DD/MM)
-            if (n1 > 12) {
-              return DateTime(n3 > 100 ? n3 : 2000 + n3, n2, n1);
-            }
+            if (n1 > 1000) return DateTime(n1, n2, n3);
+            if (n1 > 12) return DateTime(n3 > 100 ? n3 : 2000 + n3, n2, n1);
             return DateTime(n3 > 100 ? n3 : 2000 + n3, n1, n2);
           } catch (_) {}
         }

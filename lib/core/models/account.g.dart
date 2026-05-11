@@ -13,6 +13,16 @@ _Account _$AccountFromJson(Map<String, dynamic> json) => _Account(
   type: json['type'] as String,
   currency: json['currency'] as String,
   balance: (json['balance'] as num).toInt(),
+  currentBalance: (json['currentBalance'] as num?)?.toInt(),
+  transactionCount: (json['transactionCount'] as num?)?.toInt() ?? 0,
+  lastTransactionAt: const TimestampNullableConverter().fromJson(
+    json['lastTransactionAt'],
+  ),
+  ledgerVersion: (json['ledgerVersion'] as num?)?.toInt() ?? 1,
+  lastCalculatedAt: const TimestampNullableConverter().fromJson(
+    json['lastCalculatedAt'],
+  ),
+  lastLedgerMutationId: json['lastLedgerMutationId'] as String?,
   creditLimit: (json['creditLimit'] as num?)?.toInt() ?? 0,
   color: json['color'] as String?,
 );
@@ -24,6 +34,16 @@ Map<String, dynamic> _$AccountToJson(_Account instance) => <String, dynamic>{
   'type': instance.type,
   'currency': instance.currency,
   'balance': instance.balance,
+  'currentBalance': instance.currentBalance,
+  'transactionCount': instance.transactionCount,
+  'lastTransactionAt': const TimestampNullableConverter().toJson(
+    instance.lastTransactionAt,
+  ),
+  'ledgerVersion': instance.ledgerVersion,
+  'lastCalculatedAt': const TimestampNullableConverter().toJson(
+    instance.lastCalculatedAt,
+  ),
+  'lastLedgerMutationId': instance.lastLedgerMutationId,
   'creditLimit': instance.creditLimit,
   'color': instance.color,
 };

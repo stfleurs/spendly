@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'timestamp_converter.dart';
 
 part 'app_transaction.freezed.dart';
 part 'app_transaction.g.dart';
@@ -11,20 +12,47 @@ abstract class AppTransaction with _$AppTransaction {
     required String type, // income | expense | transfer
     required int amount,
     required String currency,
-    required DateTime date,
+    @TimestampConverter() required DateTime date,
     required String accountId,
     required String categoryId,
     String? note,
     String? receiptUrl,
     String? receiptId,
-    // Audit fields for currency conversion
+
+    // Normalized accounting fields (The Immutable Truth)
+    required int amountInBaseCurrency,
+    required String baseCurrency,
+    required double exchangeRate, // User still sees this as decimal
+    @Default(1000000) int rateScale, // 1,000,000 for integer math
+    required int scaledRate, // (exchangeRate * rateScale).round()
+    @Default('manual') String rateSource,
+    
+    // FX Metadata
+    String? rateBaseCurrency,
+    String? rateQuoteCurrency,
+
+    // Original payment data
     int? originalAmount,
     String? originalCurrency,
-    double? exchangeRate,
+    
     String? sourceHash,
+    List<String>? searchTokens,
   }) = _AppTransaction;
 
   const AppTransaction._();
   factory AppTransaction.fromJson(Map<String, dynamic> json) =>
       _$AppTransactionFromJson(json);
+
+  static List<String> createSearchTokens(String? note, String? categoryName) {
+    final tokens = <String>{};
+    if (note != null && note.isNotEmpty) {
+      final words = note.toLowerCase().split(RegExp(r'[^a-z0-9]')).where((w) => w.length >= 2);
+      tokens.addAll(words);
+    }
+    if (categoryName != null && categoryName.isNotEmpty) {
+      final words = categoryName.toLowerCase().split(RegExp(r'[^a-z0-9]')).where((w) => w.length >= 2);
+      tokens.addAll(words);
+    }
+    return tokens.toList();
+  }
 }

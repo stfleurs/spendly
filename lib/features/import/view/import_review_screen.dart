@@ -10,6 +10,8 @@ import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/ocr/repository/merchant_repository.dart';
 import 'package:spendly/core/providers/date_provider.dart';
+import 'package:spendly/core/providers/currency_provider.dart';
+import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
@@ -311,16 +313,37 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
           
           final uniqueSourceHash = '${baseHash}_$currentCount';
 
+          final accountAsync = ref.read(accountsStreamProvider(userId));
+          final accounts = accountAsync.value;
+          final account = accounts?.firstWhere((a) => a.id == widget.accountId);
+          final String txCurrency = account?.currency ?? 'USD';
+          final baseCurrency = ref.read(currencyProvider);
+          const double rate = 1.0; // TODO: Implement real-time rate lookup
+          
+          // Rule #2: Scaled Integer Math
+          const int rateScale = 1000000;
+          final int scaledRate = (rate * rateScale).round();
+          final int amountCents = (amount.abs() * 100).toInt();
+          final int normalizedAmount = (amountCents * scaledRate) ~/ rateScale;
+
           final tx = AppTransaction(
             id: const Uuid().v4(),
             userId: userId,
             accountId: widget.accountId,
-            amount: (amount * 100).toInt(),
+            amount: amountCents,
+            amountInBaseCurrency: normalizedAmount,
+            baseCurrency: baseCurrency,
+            exchangeRate: rate,
+            scaledRate: scaledRate,
+            rateScale: rateScale,
+            rateSource: 'import',
+            rateBaseCurrency: baseCurrency,
+            rateQuoteCurrency: txCurrency,
             categoryId: catId,
             note: raw.description,
             type: amount < 0 ? 'expense' : 'income',
             date: date,
-            currency: 'USD', // Default or fetch from account
+            currency: txCurrency,
             sourceHash: uniqueSourceHash,
           );
 

@@ -1,29 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/core/models/app_transaction.dart';
+import 'package:spendly/core/models/monthly_summary.dart';
 
 /// Computes the current balance of an account by summing its transactions relative to its initial balance.
 final accountBalanceProvider = Provider.family<int, ({String userId, String accountId})>((ref, arg) {
   final accounts = ref.watch(accountsStreamProvider(arg.userId)).value ?? [];
-  final transactions = ref.watch(transactionsStreamProvider(arg.userId)).value ?? [];
-
+  
   final accountMatch = accounts.where((a) => a.id == arg.accountId);
   if (accountMatch.isEmpty) return 0;
   
   final account = accountMatch.first;
-  final accountTransactions = transactions.where((t) => t.accountId == arg.accountId);
   
-  int balance = account.balance;
-  for (final t in accountTransactions) {
-    final type = t.type.toLowerCase();
-    if (type == 'income') {
-      balance += t.amount;
-    } else if (type == 'expense') {
-      balance -= t.amount;
-    }
-  }
-  return balance;
+  // Use the pre-calculated snapshot from the Atomic Ledger.
+  // Fallback to initial balance if no transactions have been recorded yet.
+  return account.currentBalance ?? account.balance;
 });
 
 /// Computes the available funds for an account, taking credit limits into account for credit cards.
@@ -54,14 +47,20 @@ final totalNetWorthProvider = Provider.family<int, String>((ref, userId) {
 });
 
 /// Computes a daily cumulative timeline of net worth for a given period.
-final netWorthTimelineProvider = Provider.family<List<({DateTime date, int balance})>, ({String userId, int days})>((ref, arg) {
+final netWorthTimelineProvider = FutureProvider.family<List<({DateTime date, int balance})>, ({String userId, int days})>((ref, arg) async {
+  // We use the repository directly for a one-time fetch to avoid continuous stream re-computation
+  final repo = ref.read(transactionRepositoryProvider);
   final accounts = ref.watch(accountsStreamProvider(arg.userId)).value ?? [];
-  final transactions = ref.watch(transactionsStreamProvider(arg.userId)).value ?? [];
+  
+  // For historical data, we still need to fetch transactions, 
+  // but we do it as a Future (one-time) and only for the relevant range later.
+  // For now, we'll use a one-time get of all transactions to build the baseline.
+  final transactions = await repo.getTransactionsPaginated(arg.userId, limit: 1000); // Reasonable cap for trend
   
   if (accounts.isEmpty) return [];
 
   // 1. Initial Net Worth (sum of initial balances)
-  int runningNetWorth = accounts.fold(0, (sum, acc) => sum + acc.balance);
+  int runningNetWorth = accounts.fold(0, (acc, account) => acc + account.balance);
   
   // 2. Sort ALL transactions by date ASC for cumulative calculation
   final sortedTxs = List<AppTransaction>.from(transactions)..sort((a, b) => a.date.compareTo(b.date));
@@ -72,7 +71,6 @@ final netWorthTimelineProvider = Provider.family<List<({DateTime date, int balan
   final Map<DateTime, int> dailyCheckpoints = {};
   int currentTotal = runningNetWorth;
 
-  // Single-pass running total calculation
   for (final tx in sortedTxs) {
     final type = tx.type.toLowerCase();
     if (type == 'income') {
@@ -80,17 +78,14 @@ final netWorthTimelineProvider = Provider.family<List<({DateTime date, int balan
     } else if (type == 'expense') {
       currentTotal -= tx.amount;
     }
-    // Explicitly ignore 'transfer' type for net worth as it's value-neutral
     
     final dateKey = DateTime(tx.date.year, tx.date.month, tx.date.day);
     dailyCheckpoints[dateKey] = currentTotal;
   }
 
-  // 3. Generate the timeline with carry-forward logic
   final List<({DateTime date, int balance})> timeline = [];
   int lastKnownBalance = runningNetWorth;
 
-  // Find the balance at the start of our window
   for (final date in dailyCheckpoints.keys.where((d) => d.isBefore(startDate))) {
      lastKnownBalance = dailyCheckpoints[date]!;
   }
@@ -109,37 +104,52 @@ final netWorthTimelineProvider = Provider.family<List<({DateTime date, int balan
   return timeline;
 });
 
+/// Fetches the pre-aggregated summary for a specific month.
+final monthlySummaryProvider = StreamProvider.family<MonthlySummary?, ({String userId, DateTime month})>((ref, arg) {
+  final monthId = "${arg.month.year}_${arg.month.month.toString().padLeft(2, '0')}";
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(arg.userId)
+      .collection('monthly_summaries')
+      .doc(monthId)
+      .snapshots()
+      .map((doc) => doc.exists ? MonthlySummary.fromJson({...doc.data()!, 'id': doc.id}) : null);
+});
+
 /// Aggregates spending by category for a month (Top 5 + "Other").
 final spendingInsightsProvider = Provider.family<Map<String, int>, ({String userId, DateTime month})>((ref, arg) {
-  final transactions = ref.watch(transactionsStreamProvider(arg.userId)).value ?? [];
+  final summaryAsync = ref.watch(monthlySummaryProvider(arg));
   
-  final filtered = transactions.where((t) => 
-    t.type.toLowerCase() == 'expense' && 
-    // Ensure we exclude transfers even if they are categorized as expenses
-    t.type.toLowerCase() != 'transfer' &&
-    t.date.year == arg.month.year && 
-    t.date.month == arg.month.month
+  return summaryAsync.maybeWhen(
+    data: (summary) {
+      if (summary == null || summary.categoryTotals.isEmpty) return {};
+      
+      // categoryTotals already contains net change (negative for expenses)
+      // We want absolute values for the "Spending" pie chart/insights
+      final Map<String, int> byCategory = {};
+      summary.categoryTotals.forEach((catId, total) {
+        if (total < 0) {
+          byCategory[catId] = total.abs();
+        }
+      });
+      
+      if (byCategory.isEmpty) return {};
+      
+      final sortedEntries = byCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+      
+      if (sortedEntries.length <= 5) return byCategory;
+      
+      final top5 = Map.fromEntries(sortedEntries.take(5));
+      final otherTotal = sortedEntries.skip(5).fold(0, (acc, entry) => acc + entry.value);
+      
+      if (otherTotal > 0) {
+        top5['other'] = otherTotal;
+      }
+      
+      return top5;
+    },
+    orElse: () => {},
   );
-  
-  final Map<String, int> byCategory = {};
-  for (final t in filtered) {
-    byCategory[t.categoryId] = (byCategory[t.categoryId] ?? 0) + t.amount;
-  }
-  
-  if (byCategory.isEmpty) return {};
-  
-  final sortedEntries = byCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-  
-  if (sortedEntries.length <= 5) return byCategory;
-  
-  final top5 = Map.fromEntries(sortedEntries.take(5));
-  final otherTotal = sortedEntries.skip(5).fold(0, (sum, entry) => sum + entry.value);
-  
-  if (otherTotal > 0) {
-    top5['other'] = otherTotal;
-  }
-  
-  return top5;
 });
 
 /// Computes aggregate credit utilization across all credit card accounts.
