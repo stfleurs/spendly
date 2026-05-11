@@ -204,18 +204,20 @@ class ReceiptParser {
   }
 
   static List<int> _extractAllAmounts(String text) {
-    final regex = RegExp(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2}))');
+    final regex = RegExp(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)');
     final matches = regex.allMatches(text);
     final List<int> amounts = [];
     
     for (final match in matches) {
       try {
         final clean = match.group(1)!.replaceAll(',', '');
-        amounts.add((double.parse(clean) * 100).round());
+        final value = double.parse(clean);
+        amounts.add((value * 100).round());
       } catch (_) {}
     }
     return amounts;
   }
+
 
   static int? _findAmountByKeywords(List<OCRLine> lines) {
     final keywords = ['GRAND TOTAL', 'TOTAL DUE', 'TOTAL', 'BALANCE DUE', 'BALANCE', 'NET DUE', 'NET', 'SUBTOTAL'];
@@ -399,7 +401,7 @@ class ReceiptParser {
 
   static int? _extractAmount(String text) {
     final textWithoutPercentages = text.replaceAll(RegExp(r'\d+(\.\d+)?%'), '');
-    final regex = RegExp(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)');
+    final regex = RegExp(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)');
     final matches = regex.allMatches(textWithoutPercentages);
     if (matches.isEmpty) return null;
     try {
@@ -410,6 +412,7 @@ class ReceiptParser {
       return (value * 100).round();
     } catch (_) { return null; }
   }
+
 
   static DateTime? _findDate(List<OCRLine> lines) {
     final regexes = [

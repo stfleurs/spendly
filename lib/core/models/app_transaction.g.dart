@@ -19,6 +19,8 @@ _AppTransaction _$AppTransactionFromJson(Map<String, dynamic> json) =>
       note: json['note'] as String?,
       receiptUrl: json['receiptUrl'] as String?,
       receiptId: json['receiptId'] as String?,
+      billId: json['billId'] as String?,
+      templateId: json['templateId'] as String?,
       amountInBaseCurrency:
           (json['amountInBaseCurrency'] as num?)?.toInt() ?? 0,
       baseCurrency: json['baseCurrency'] as String? ?? 'USD',
@@ -49,6 +51,8 @@ Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
       'note': instance.note,
       'receiptUrl': instance.receiptUrl,
       'receiptId': instance.receiptId,
+      'billId': instance.billId,
+      'templateId': instance.templateId,
       'amountInBaseCurrency': instance.amountInBaseCurrency,
       'baseCurrency': instance.baseCurrency,
       'exchangeRate': instance.exchangeRate,

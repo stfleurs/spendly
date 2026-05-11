@@ -18,6 +18,8 @@ abstract class AppTransaction with _$AppTransaction {
     String? note,
     String? receiptUrl,
     String? receiptId,
+    String? billId,
+    String? templateId,
 
     // Normalized accounting fields (The Immutable Truth)
     @Default(0) int amountInBaseCurrency,

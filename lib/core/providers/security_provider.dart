@@ -71,15 +71,21 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
 
     if (state.isBiometricEnabled) {
       try {
+        // Using flat parameters for compatibility with local_auth 3.0.1
         return await _auth.authenticate(
           localizedReason: 'Please authenticate to access Spendly',
+          persistAcrossBackgrounding: true,
+          biometricOnly: true,
         );
       } catch (e) {
         return false;
       }
     }
-    return false; // Should show PIN screen if biometric fails or is disabled
+    return false; 
   }
+
+
+
 }
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {

@@ -30,81 +30,83 @@ class MyBudgetScreen extends ConsumerWidget {
               // Category Budgets
               budgetAsync.when(
                 data: (state) {
-                  return MainCard(
-                    padding: EdgeInsets.zero,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 24, top: 24, right: 24, bottom: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.spendingByCategory,
-                                style: const TextStyle(
-                                  color: AppColors.textLight,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              Text(
-                                '${state.items.length} ACTIVE',
-                                style: const TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 10,
-                                  letterSpacing: 1.1,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (state.items.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(32.0),
-                            child: Center(
-                              child: Text(
-                                'No categories yet. Tap the button below to create your first budget category!',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: AppColors.textLight, height: 1.5),
+                  return Column(
+                    children: [
+                      MainCard(
+                        padding: EdgeInsets.zero,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 24, top: 24, right: 24, bottom: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    l10n.spendingByCategory,
+                                    style: const TextStyle(
+                                      color: AppColors.textLight,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 12,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${state.items.length} ACTIVE',
+                                    style: const TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 10,
+                                      letterSpacing: 1.1,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        ...state.items.map((item) => _buildBudgetItem(context, item)),
-                        
-                        // Add Category Button
-                        InkWell(
-                          onTap: () => _showCategoryForm(context, null),
-                          child: Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: const BoxDecoration(
-                              border: Border(top: BorderSide(color: AppColors.primaryLight, width: 1)),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.add_circle_outline, color: AppColors.primary),
-                                const SizedBox(width: 12),
-                                Text(
-                                  l10n.category.toUpperCase(),
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.1,
+                            if (state.items.isEmpty)
+                              const Padding(
+                                padding: EdgeInsets.all(40.0),
+                                child: Center(
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.pie_chart_outline, color: AppColors.primaryLight, size: 48),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'No budget categories yet.\nTap below to set up your first one!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(color: AppColors.textLight, height: 1.5, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            ...state.items.map((item) => _buildBudgetItem(context, item)),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Permanent Add Category Button
+                      _buildAddCategoryButton(context),
+                    ],
                   );
                 },
-                loading: () => const MainCard(child: Center(child: CircularProgressIndicator())),
-                error: (e, s) => MainCard(child: Center(child: Text('Error: $e'))),
+                loading: () => Column(
+                  children: [
+                    const MainCard(child: Center(child: Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: CircularProgressIndicator(),
+                    ))),
+                    const SizedBox(height: 16),
+                    _buildAddCategoryButton(context),
+                  ],
+                ),
+                error: (e, s) => Column(
+                  children: [
+                    MainCard(child: Center(child: Text('Error: $e'))),
+                    const SizedBox(height: 16),
+                    _buildAddCategoryButton(context),
+                  ],
+                ),
               ),
               
               const SizedBox(height: 40),
@@ -112,6 +114,35 @@ class MyBudgetScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAddCategoryButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return MainCard(
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () => _showCategoryForm(context, null),
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.add_circle_outline, color: AppColors.primary),
+              const SizedBox(width: 12),
+              Text(
+                l10n.category.toUpperCase(),
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

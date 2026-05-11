@@ -13,7 +13,9 @@ import 'package:spendly/core/models/category.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
 import 'package:spendly/core/providers/balance_provider.dart';
+import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/core/providers/exchange_rate_provider.dart';
 
 class NewTransactionScreen extends ConsumerStatefulWidget {
   /// Pass an existing transaction to enter edit mode.
@@ -27,6 +29,7 @@ class NewTransactionScreen extends ConsumerStatefulWidget {
 
 class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   late final TextEditingController _amountController;
+  late final TextEditingController _rateController;
   late String _selectedType;
   Account? _selectedAccount;
   Category? _selectedCategory;
@@ -48,6 +51,9 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     _selectedType = t != null ? t.type.toUpperCase() : 'EXPENSE';
     _selectedCurrency = t?.currency ?? 'USD';
     _payeeController = TextEditingController(text: t?.note ?? '');
+    _rateController = TextEditingController(
+      text: t != null && t.exchangeRate != 1.0 ? t.exchangeRate.toStringAsFixed(4) : '',
+    );
     // Account and category are resolved after streams load in build()
   }
 
@@ -55,6 +61,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   void dispose() {
     _amountController.dispose();
     _payeeController.dispose();
+    _rateController.dispose();
     super.dispose();
   }
 
@@ -102,9 +109,23 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
 
     final int centsValue = (amountValue * 100).toInt();
     final baseCurrency = ref.read(currencyProvider);
-    const double rate = 1.0; // TODO: Implement real-time rate lookup
-    
-    // Rule #2: Scaled Integer Math
+    final isCrossCurrency = _selectedAccount != null && _selectedCurrency != _selectedAccount!.currency;
+
+    // Use user-entered exchange rate for cross-currency, otherwise use provider lookup
+    final double rate;
+    if (isCrossCurrency) {
+      rate = double.tryParse(_rateController.text.replaceAll(',', '')) ?? 0.0;
+      if (rate <= 0) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter the exchange rate to continue.')),
+        );
+        return;
+      }
+    } else {
+      rate = ref.read(exchangeRateProvider((from: _selectedCurrency, to: baseCurrency)));
+    }
+
     const int rateScale = 1000000;
     final int scaledRate = (rate * rateScale).round();
     final int normalizedAmount = (centsValue * scaledRate) ~/ rateScale;
@@ -121,7 +142,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
       scaledRate: scaledRate,
       rateScale: rateScale,
       rateSource: 'manual',
-      rateBaseCurrency: baseCurrency,
+      rateBaseCurrency: _selectedAccount?.currency ?? baseCurrency,
       rateQuoteCurrency: _selectedCurrency,
       date: widget.transaction?.date ?? DateTime.now(),
       accountId: _selectedAccount!.id,
@@ -454,16 +475,35 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                       const SizedBox(height: 8),
                       categoriesAsync.when(
                         data: (categories) {
-                          if (categories.isEmpty) return const Text('No categories found');
-                          return DropdownButton<Category>(
-                            value: _selectedCategory,
-                            isExpanded: true,
-                            underline: const SizedBox(),
-                            hint: const Text('Select Category'),
-                            items: categories.map((cat) {
-                              return DropdownMenuItem(value: cat, child: Text(cat.name));
-                            }).toList(),
-                            onChanged: (val) => setState(() => _selectedCategory = val),
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButton<Category>(
+                                  value: _selectedCategory,
+                                  isExpanded: true,
+                                  underline: const SizedBox(),
+                                  hint: const Text('Select Category'),
+                                  items: categories.map((cat) {
+                                    return DropdownMenuItem(value: cat, child: Text(cat.name));
+                                  }).toList(),
+                                  onChanged: (val) => setState(() => _selectedCategory = val),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 20),
+                                onPressed: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => const CategoryFormBottomSheet(category: null),
+                                  ).then((_) {
+                                    // Refresh categories after potentially adding one
+                                    ref.invalidate(categoriesStreamProvider(userId));
+                                  });
+                                },
+                              ),
+                            ],
                           );
                         },
                         loading: () => const LinearProgressIndicator(),
@@ -516,6 +556,87 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                           ),
                         ],
                       ),
+                      // Exchange rate field — shown when transaction currency != account currency
+                      if (_selectedAccount != null && _selectedCurrency != _selectedAccount!.currency) ...[
+                        const SizedBox(height: 16),
+                        const Divider(color: AppColors.primaryLight),
+                        const SizedBox(height: 16),
+                        Builder(builder: (context) {
+                          final userRate = double.tryParse(_rateController.text.replaceAll(',', '')) ?? 0.0;
+                          final amt = double.tryParse(_amountController.text) ?? 0.0;
+                          final converted = userRate > 0 ? amt * userRate : null;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.swap_horiz, color: Colors.orange, size: 16),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Cross-currency: $_selectedCurrency → ${_selectedAccount!.currency}. Enter the exchange rate.',
+                                        style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'EXCHANGE RATE  (1 $_selectedCurrency = ? ${_selectedAccount!.currency})',
+                                style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: _rateController,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w900, fontSize: 18),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: 'e.g. 135.00',
+                                  prefixText: '1 $_selectedCurrency = ',
+                                  prefixStyle: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold),
+                                ),
+                                onChanged: (_) => setState(() {}),
+                              ),
+                              if (converted != null && converted > 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.income.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.account_balance_wallet_outlined, size: 14, color: AppColors.income),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '≈ ${_selectedAccount!.currency} ${converted.toStringAsFixed(2)} will be recorded',
+                                        style: const TextStyle(color: AppColors.income, fontWeight: FontWeight.w900, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    '⚠ Exchange rate required to save.',
+                                    style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                            ],
+                          );
+                        }),
+                      ],
+
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.primaryLight),
                       const SizedBox(height: 24),
@@ -532,6 +653,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+
                     ],
                   ),
                 ),

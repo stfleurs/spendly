@@ -9,6 +9,7 @@ import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/features/upcoming/providers/upcoming_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 
 class AddPlanScreen extends ConsumerStatefulWidget {
   final BillTemplate? existingPlan;
@@ -26,6 +27,7 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
   late final TextEditingController _descriptionController;
 
   Category? _selectedCategory;
+  String _selectedCurrency = 'USD';
   bool _isLoading = false;
 
   bool get _isEditing => widget.existingPlan != null;
@@ -42,6 +44,7 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
       text: p != null ? (p.defaultAmount / 100).toStringAsFixed(2) : '',
     );
     _descriptionController = TextEditingController(text: p?.description ?? '');
+    _selectedCurrency = p?.currency ?? 'USD';
   }
 
   @override
@@ -57,6 +60,13 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
   Widget build(BuildContext context) {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
+    // Watch existing bills to determine if currency is locked
+    final existingBills = _isEditing
+        ? (ref.watch(billsProvider(userId)).value ?? [])
+            .where((b) => b.templateId == widget.existingPlan!.id)
+            .toList()
+        : <dynamic>[];
+    final currencyLocked = _isEditing && existingBills.isNotEmpty;
 
     if (_isEditing && _selectedCategory == null && categoriesAsync.value != null) {
       final match = categoriesAsync.value!
@@ -175,8 +185,63 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
                                 color: AppColors.textDark,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 28),
-                            decoration: _input('0.00', prefix: '\$ '),
+                            decoration: _input('0.00', prefix: '$_selectedCurrency '),
                           ),
+
+                          const SizedBox(height: 24),
+                          const Divider(color: AppColors.primaryLight),
+                          const SizedBox(height: 24),
+
+                          const SizedBox(height: 24),
+                          const Divider(color: AppColors.primaryLight),
+                          const SizedBox(height: 24),
+
+                          // Currency — locked if plan has existing payments
+                          _label('PLAN CURRENCY'),
+                          const SizedBox(height: 8),
+                          if (currencyLocked)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryLight.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: AppColors.primaryLight),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.lock_outline, size: 16, color: AppColors.textLight),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    _selectedCurrency,
+                                    style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w900, fontSize: 16),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Expanded(
+                                    child: Text(
+                                      'Currency is locked — payments already recorded.',
+                                      style: TextStyle(color: AppColors.textLight, fontSize: 10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            DropdownButtonFormField<String>(
+                              value: _selectedCurrency,
+                              decoration: _input('Select currency'),
+                              items: ['USD', 'HTG', 'EUR', 'CAD', 'DOP']
+                                  .map((c) => DropdownMenuItem(
+                                        value: c,
+                                        child: Text(c,
+                                            style: const TextStyle(
+                                                color: AppColors.textDark,
+                                                fontWeight: FontWeight.w900)),
+                                      ))
+                                  .toList(),
+                              onChanged: (v) => setState(() => _selectedCurrency = v ?? 'USD'),
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
 
                           const SizedBox(height: 24),
                           const Divider(color: AppColors.primaryLight),
@@ -199,7 +264,7 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
                                 color: AppColors.textDark,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 24),
-                            decoration: _input('0.00', prefix: '\$ '),
+                            decoration: _input('0.00', prefix: '$_selectedCurrency '),
                             validator: (v) {
                               if (v == null || v.isEmpty) {
                                 return 'Installment amount is required';
@@ -220,30 +285,44 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
                           const SizedBox(height: 8),
                           categoriesAsync.when(
                             data: (cats) {
-                              if (cats.isEmpty) {
-                                return const Text(
-                                  'No categories yet. Add some in Budget.',
-                                  style: TextStyle(color: AppColors.textLight),
-                                );
-                              }
-                              return DropdownButtonFormField<Category>(
-                                initialValue: _selectedCategory,
-                                decoration: _input('Select a category'),
-                                items: cats
-                                    .map((c) => DropdownMenuItem(
-                                          value: c,
-                                          child: Text(c.name,
-                                              style: const TextStyle(
-                                                  color: AppColors.textDark,
-                                                  fontWeight: FontWeight.bold)),
-                                        ))
-                                    .toList(),
-                                onChanged: (c) =>
-                                    setState(() => _selectedCategory = c),
-                                validator: (v) =>
-                                    v == null ? 'Please select a category' : null,
-                                dropdownColor: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownButtonFormField<Category>(
+                                      value: _selectedCategory,
+                                      decoration: _input('Select a category'),
+                                      items: cats
+                                          .map((c) => DropdownMenuItem(
+                                                value: c,
+                                                child: Text(c.name,
+                                                    style: const TextStyle(
+                                                        color: AppColors.textDark,
+                                                        fontWeight: FontWeight.bold)),
+                                              ))
+                                          .toList(),
+                                      onChanged: (c) =>
+                                          setState(() => _selectedCategory = c),
+                                      validator: (v) =>
+                                          v == null ? 'Please select a category' : null,
+                                      dropdownColor: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 20),
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) => const CategoryFormBottomSheet(category: null),
+                                      ).then((_) {
+                                        ref.invalidate(categoriesStreamProvider(userId));
+                                      });
+                                    },
+                                  ),
+                                ],
                               );
                             },
                             loading: () => const LinearProgressIndicator(),
@@ -349,6 +428,7 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
         userId: userId,
         title: _titleController.text.trim(),
         defaultAmount: installmentCents,
+        currency: _selectedCurrency,
         categoryId: _selectedCategory!.id,
         totalAmount: totalCents,
         description: _descriptionController.text.trim().isEmpty

@@ -8,12 +8,11 @@ class CategoryRepository {
 
   CategoryRepository(this._firestore);
 
-  CollectionReference<Map<String, dynamic>> get _collection =>
-      _firestore.collection('categories');
+  CollectionReference<Map<String, dynamic>> _getCollection(String userId) =>
+      _firestore.collection('users').doc(userId).collection('categories');
 
   Stream<List<Category>> watchCategories(String userId) {
-    return _collection
-        .where('userId', isEqualTo: userId)
+    return _getCollection(userId)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
@@ -28,17 +27,17 @@ class CategoryRepository {
   Future<void> addCategory(Category category) async {
     final data = category.toJson();
     data.remove('id');
-    await _collection.add(data);
+    await _getCollection(category.userId).add(data);
   }
 
   Future<void> updateCategory(Category category) async {
     final data = category.toJson();
     data.remove('id');
-    await _collection.doc(category.id).update(data);
+    await _getCollection(category.userId).doc(category.id).update(data);
   }
 
-  Future<void> deleteCategory(String id) async {
-    await _collection.doc(id).delete();
+  Future<void> deleteCategory(String userId, String id) async {
+    await _getCollection(userId).doc(id).delete();
   }
 }
 

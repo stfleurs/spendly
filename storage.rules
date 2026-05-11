@@ -1,0 +1,35 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // --- HELPER FUNCTIONS ---
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    // --- RULES ---
+
+    match /receipts/{userId}/{fileId} {
+      // Allow read/delete if owner
+      allow read, delete: if isOwner(userId);
+      
+      // Allow create if owner and follows constraints
+      allow create: if isOwner(userId)
+        && request.resource.size < 10 * 1024 * 1024 // 10MB limit
+        && request.resource.contentType.matches('image/(jpeg|png|heic)');
+      
+      // Receipt images should be immutable
+      allow update: if false;
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

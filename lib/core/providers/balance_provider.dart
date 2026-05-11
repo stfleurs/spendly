@@ -48,51 +48,62 @@ final totalNetWorthProvider = Provider.family<int, String>((ref, userId) {
 
 /// Computes a daily cumulative timeline of net worth for a given period.
 final netWorthTimelineProvider = FutureProvider.family<List<({DateTime date, int balance})>, ({String userId, int days})>((ref, arg) async {
-  // We use the repository directly for a one-time fetch to avoid continuous stream re-computation
   final repo = ref.read(transactionRepositoryProvider);
   final accounts = ref.watch(accountsStreamProvider(arg.userId)).value ?? [];
   
-  // For historical data, we still need to fetch transactions, 
-  // but we do it as a Future (one-time) and only for the relevant range later.
-  // For now, we'll use a one-time get of all transactions to build the baseline.
-  final transactions = await repo.getTransactionsPaginated(arg.userId, limit: 1000); // Reasonable cap for trend
-  
   if (accounts.isEmpty) return [];
 
-  // 1. Initial Net Worth (sum of initial balances)
-  int runningNetWorth = accounts.fold(0, (acc, account) => acc + account.balance);
-  
-  // 2. Sort ALL transactions by date ASC for cumulative calculation
-  final sortedTxs = List<AppTransaction>.from(transactions)..sort((a, b) => a.date.compareTo(b.date));
-  
+  // 1. Current Net Worth
+  int currentNetWorth = 0;
+  for (final account in accounts) {
+    currentNetWorth += account.currentBalance ?? account.balance;
+  }
+
+  // 2. Fetch transactions for the period (plus a bit of buffer)
   final now = DateTime.now();
   final startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: arg.days));
   
+  // We fetch a larger limit to ensure we cover the requested days.
+  // In a real app, we'd query by date range.
+  final transactions = await repo.getTransactionsPaginated(arg.userId, limit: 1000);
+  
+  // 3. Sort DESC (most recent first) to work backwards
+  final sortedTxs = List<AppTransaction>.from(transactions)..sort((a, b) => b.date.compareTo(a.date));
+  
   final Map<DateTime, int> dailyCheckpoints = {};
-  int currentTotal = runningNetWorth;
+  int runningTotal = currentNetWorth;
+  
+  final todayKey = DateTime(now.year, now.month, now.day);
+  dailyCheckpoints[todayKey] = runningTotal;
 
   for (final tx in sortedTxs) {
+    if (tx.date.isBefore(startDate)) break;
+
     final type = tx.type.toLowerCase();
     if (type == 'income') {
-      currentTotal += tx.amount;
+      runningTotal -= tx.amount;
     } else if (type == 'expense') {
-      currentTotal -= tx.amount;
+      runningTotal += tx.amount;
     }
     
     final dateKey = DateTime(tx.date.year, tx.date.month, tx.date.day);
-    dailyCheckpoints[dateKey] = currentTotal;
+    dailyCheckpoints[dateKey] = runningTotal;
   }
 
   final List<({DateTime date, int balance})> timeline = [];
-  int lastKnownBalance = runningNetWorth;
+  int lastKnownBalance = runningTotal;
 
-  for (final date in dailyCheckpoints.keys.where((d) => d.isBefore(startDate))) {
-     lastKnownBalance = dailyCheckpoints[date]!;
-  }
-
+  // Generate the timeline for each day in the range
   for (int i = 0; i <= arg.days; i++) {
     final currentDate = startDate.add(Duration(days: i));
     final dateKey = DateTime(currentDate.year, currentDate.month, currentDate.day);
+    
+    // If we have multiple transactions on one day, the loop above stores the balance 
+    // AFTER the earliest transaction of that day (because we're working backwards).
+    // Wait, working backwards:
+    // Today: balance = 100.
+    // Tx today (income 10): balance becomes 90 (at start of today).
+    // Tx yesterday (expense 5): balance becomes 95 (at start of yesterday).
     
     if (dailyCheckpoints.containsKey(dateKey)) {
       lastKnownBalance = dailyCheckpoints[dateKey]!;
@@ -103,6 +114,7 @@ final netWorthTimelineProvider = FutureProvider.family<List<({DateTime date, int
   
   return timeline;
 });
+
 
 /// Fetches the pre-aggregated summary for a specific month.
 final monthlySummaryProvider = StreamProvider.family<MonthlySummary?, ({String userId, DateTime month})>((ref, arg) {

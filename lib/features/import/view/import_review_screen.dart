@@ -346,6 +346,8 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
           final int amountCents = (amount.abs() * 100).toInt();
           final int normalizedAmount = (amountCents * scaledRate) ~/ rateScale;
 
+
+
           final tx = AppTransaction(
             id: const Uuid().v4(),
             userId: userId,

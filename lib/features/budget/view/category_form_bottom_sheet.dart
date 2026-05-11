@@ -122,7 +122,7 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
     if (confirm == true) {
       setState(() => _isLoading = true);
       try {
-        await ref.read(categoryRepositoryProvider).deleteCategory(widget.category!.id);
+        await ref.read(categoryRepositoryProvider).deleteCategory(widget.category!.userId, widget.category!.id);
         if (mounted) Navigator.pop(context);
       } catch (e) {
         if (mounted) {

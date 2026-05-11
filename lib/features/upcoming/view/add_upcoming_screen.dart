@@ -9,6 +9,7 @@ import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/features/upcoming/providers/upcoming_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 
 class AddUpcomingScreen extends ConsumerStatefulWidget {
   final Bill? existingBill;
@@ -37,6 +38,7 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
 
   DateTime _dueDate = DateTime.now().add(const Duration(days: 7));
   Category? _selectedCategory;
+  String _selectedCurrency = 'USD';
   bool _isLoading = false;
 
   bool get _isEditing => widget.existingBill != null;
@@ -54,7 +56,12 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
               : '',
     );
     _notesController = TextEditingController(text: b?.notes ?? '');
-    if (b != null) _dueDate = b.dueDate;
+    if (b != null) {
+      _dueDate = b.dueDate;
+      _selectedCurrency = b.currency;
+    } else {
+      _selectedCurrency = 'USD';
+    }
   }
 
   @override
@@ -126,6 +133,34 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
                           const Divider(color: AppColors.primaryLight),
                           const SizedBox(height: 24),
 
+                          const SizedBox(height: 24),
+                          const Divider(color: AppColors.primaryLight),
+                          const SizedBox(height: 24),
+
+                          // Currency
+                          _sectionLabel('CURRENCY'),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String>(
+                            value: _selectedCurrency,
+                            decoration: _inputDecoration('Select currency'),
+                            items: ['USD', 'HTG', 'EUR', 'CAD', 'DOP']
+                                .map((c) => DropdownMenuItem(
+                                      value: c,
+                                      child: Text(c,
+                                          style: const TextStyle(
+                                              color: AppColors.textDark,
+                                              fontWeight: FontWeight.w900)),
+                                    ))
+                                .toList(),
+                            onChanged: (v) => setState(() => _selectedCurrency = v ?? 'USD'),
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+
+                          const SizedBox(height: 24),
+                          const Divider(color: AppColors.primaryLight),
+                          const SizedBox(height: 24),
+
                           // Amount
                           _sectionLabel('AMOUNT'),
                           const SizedBox(height: 8),
@@ -137,7 +172,7 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
                               fontWeight: FontWeight.w900,
                               fontSize: 32,
                             ),
-                            decoration: _inputDecoration('0.00', prefixText: '\$ '),
+                            decoration: _inputDecoration('0.00', prefixText: '$_selectedCurrency '),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Amount is required';
                               if ((double.tryParse(v) ?? 0) <= 0) return 'Enter a valid amount';
@@ -191,30 +226,44 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
                           const SizedBox(height: 8),
                           categoriesAsync.when(
                             data: (categories) {
-                              if (categories.isEmpty) {
-                                return const Text(
-                                  'No categories yet. Add some in Budget.',
-                                  style: TextStyle(color: AppColors.textLight),
-                                );
-                              }
-                              return DropdownButtonFormField<Category>(
-                                initialValue: _selectedCategory,
-                                decoration: _inputDecoration('Select a category'),
-                                items: categories
-                                    .map((c) => DropdownMenuItem(
-                                          value: c,
-                                          child: Text(c.name,
-                                              style: const TextStyle(
-                                                  color: AppColors.textDark,
-                                                  fontWeight: FontWeight.bold)),
-                                        ))
-                                    .toList(),
-                                onChanged: (c) =>
-                                    setState(() => _selectedCategory = c),
-                                validator: (v) =>
-                                    v == null ? 'Please select a category' : null,
-                                dropdownColor: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownButtonFormField<Category>(
+                                      value: _selectedCategory,
+                                      decoration: _inputDecoration('Select a category'),
+                                      items: categories
+                                          .map((c) => DropdownMenuItem(
+                                                value: c,
+                                                child: Text(c.name,
+                                                    style: const TextStyle(
+                                                        color: AppColors.textDark,
+                                                        fontWeight: FontWeight.bold)),
+                                              ))
+                                          .toList(),
+                                      onChanged: (c) =>
+                                          setState(() => _selectedCategory = c),
+                                      validator: (v) =>
+                                          v == null ? 'Please select a category' : null,
+                                      dropdownColor: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 20),
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) => const CategoryFormBottomSheet(category: null),
+                                      ).then((_) {
+                                        ref.invalidate(categoriesStreamProvider(userId));
+                                      });
+                                    },
+                                  ),
+                                ],
                               );
                             },
                             loading: () => const LinearProgressIndicator(),
@@ -360,6 +409,7 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
         userId: userId,
         title: _titleController.text.trim(),
         amount: amountCents,
+        currency: _selectedCurrency,
         paidAmount: widget.existingBill?.paidAmount ?? 0,
         dueDate: _dueDate,
         status: widget.existingBill?.status ?? BillStatus.upcoming,

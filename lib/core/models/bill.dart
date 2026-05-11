@@ -23,6 +23,7 @@ abstract class Bill with _$Bill {
     required String userId,
     required String title,
     required int amount, // expected total, in cents
+    @Default('USD') String currency,
     @Default(0) int paidAmount, // actual paid so far, in cents
     required DateTime dueDate,
     @Default(BillStatus.upcoming) BillStatus status,

@@ -10,6 +10,7 @@ abstract class BillTemplate with _$BillTemplate {
     required String userId,
     required String title,
     required int defaultAmount,  // default installment amount, in cents
+    @Default('USD') String currency,
     required String categoryId,
     @Default('Monthly') String frequency, // One-time, Weekly, Monthly, Yearly
     // ── Plan / umbrella fields ──────────────────────────────────────────────

@@ -11,6 +11,7 @@ _Bill _$BillFromJson(Map<String, dynamic> json) => _Bill(
   userId: json['userId'] as String,
   title: json['title'] as String,
   amount: (json['amount'] as num).toInt(),
+  currency: json['currency'] as String? ?? 'USD',
   paidAmount: (json['paidAmount'] as num?)?.toInt() ?? 0,
   dueDate: DateTime.parse(json['dueDate'] as String),
   status:
@@ -31,6 +32,7 @@ Map<String, dynamic> _$BillToJson(_Bill instance) => <String, dynamic>{
   'userId': instance.userId,
   'title': instance.title,
   'amount': instance.amount,
+  'currency': instance.currency,
   'paidAmount': instance.paidAmount,
   'dueDate': instance.dueDate.toIso8601String(),
   'status': _$BillStatusEnumMap[instance.status]!,

@@ -14,6 +14,7 @@ import 'package:spendly/features/ocr/repository/merchant_repository.dart';
 import 'package:spendly/features/ocr/repository/receipt_repository.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
+import 'package:spendly/core/providers/exchange_rate_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
@@ -206,7 +207,7 @@ class _ReceiptConfirmationScreenState extends ConsumerState<ReceiptConfirmationS
       await ref.read(receiptRepositoryProvider).saveReceipt(correctedReceipt);
 
       final baseCurrency = ref.read(currencyProvider);
-      const double rateToBase = 1.0; // TODO: Implement real-time rate lookup
+      final double rateToBase = ref.read(exchangeRateProvider((from: _selectedCurrency, to: baseCurrency)));
       
       // Rule #2: Scaled Integer Math
       const int rateScale = 1000000;

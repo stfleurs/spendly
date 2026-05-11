@@ -36,6 +36,17 @@ class TransactionRepository {
         });
   }
 
+  Stream<List<AppTransaction>> watchPlanTransactions(String userId, String templateId) {
+    return _collection
+        .where('userId', isEqualTo: userId)
+        .where('templateId', isEqualTo: templateId)
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AppTransaction.fromJson({...doc.data(), 'id': doc.id}))
+            .toList());
+  }
+
   Future<List<AppTransaction>> getTransactionsPaginated(
     String userId, {
     DateTime? startAfterDate,
@@ -206,46 +217,106 @@ class TransactionRepository {
     required Bill bill,
     required int amountCents,
   }) async {
-    final batch = _firestore.batch();
+    await _firestore.runTransaction((tx) async {
+      // 1. Get current bill state
+      final billRef = _firestore
+          .collection('users')
+          .doc(bill.userId)
+          .collection('bills')
+          .doc(bill.id);
+      final billDoc = await tx.get(billRef);
+      if (!billDoc.exists) throw Exception('Bill not found');
+      
+      final currentPaid = billDoc.data()?['paidAmount'] as int? ?? 0;
+      final totalAmount = billDoc.data()?['amount'] as int? ?? bill.amount;
 
-    // 1. Create Transaction
-    final txData = transaction.toJson();
-    txData.remove('id');
-    final txRef = _collection.doc();
-    batch.set(txRef, txData);
+      // 2. Create Transaction
+      final txData = transaction.copyWith(
+        billId: bill.id,
+        templateId: bill.templateId,
+      ).toJson();
+      txData.remove('id');
+      final txRef = _firestore.collection('transactions').doc();
+      tx.set(txRef, txData);
 
-    // 2. Update Bill
-    final newPaid = bill.paidAmount + amountCents;
-    final String newStatus = newPaid >= bill.amount ? 'paid' : 'partiallyPaid';
+      // 3. Update Bill
+      final newPaid = currentPaid + amountCents;
+      final String newStatus = newPaid >= totalAmount ? 'paid' : 'partiallyPaid';
 
-    final billRef = _firestore
-        .collection('users')
-        .doc(bill.userId)
-        .collection('bills')
-        .doc(bill.id);
+      tx.update(billRef, {
+        'paidAmount': newPaid,
+        'status': newStatus,
+        'linkedTransactionId': txRef.id,
+      });
 
-    batch.update(billRef, {
-      'paidAmount': newPaid,
-      'status': newStatus,
-      'linkedTransactionId': txRef.id,
+      // 4. Update Account
+      final accRef = _firestore.collection('accounts').doc(transaction.accountId);
+      tx.update(accRef, {
+        'currentBalance': FieldValue.increment(-amountCents),
+        'transactionCount': FieldValue.increment(1),
+        'lastTransactionAt': transaction.date,
+        'ledgerVersion': FieldValue.increment(1),
+        'lastCalculatedAt': DateTime.now(),
+        'lastLedgerMutationId': txRef.id,
+      });
+
+      // 5. Update Monthly Summary
+      _updateMonthlySummaryInTransaction(tx, transaction.userId, transaction);
     });
-
-    // 3. Update Account
-    final accRef = _firestore.collection('accounts').doc(transaction.accountId);
-    batch.update(accRef, {
-      'currentBalance': FieldValue.increment(-amountCents),
-      'transactionCount': FieldValue.increment(1),
-      'lastTransactionAt': transaction.date,
-      'ledgerVersion': FieldValue.increment(1),
-      'lastCalculatedAt': DateTime.now(),
-      'lastLedgerMutationId': txRef.id,
-    });
-
-    // 4. Update Monthly Summary
-    _updateMonthlySummary(batch, transaction.userId, transaction);
-
-    await batch.commit();
   }
+
+  void _updateMonthlySummaryInTransaction(
+    Transaction tx,
+    String userId,
+    AppTransaction transaction, {
+    bool isDelete = false,
+  }) {
+    final monthId =
+        "${transaction.date.year}_${transaction.date.month.toString().padLeft(2, '0')}";
+    final summaryRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('monthly_summaries')
+        .doc(monthId);
+
+    final isExpense = transaction.type.toLowerCase() == 'expense';
+    final isIncome = transaction.type.toLowerCase() == 'income';
+    final typeKey = isIncome ? 'income' : 'expense';
+
+    int incomeDelta = 0;
+    int expenseDelta = 0;
+    int netChangeDelta = 0;
+    int txCountDelta = isDelete ? -1 : 1;
+
+    final normalizedAmount = transaction.amountInBaseCurrency;
+    final rawAmount = transaction.amount;
+
+    if (isIncome) {
+      incomeDelta = isDelete ? -normalizedAmount : normalizedAmount;
+      netChangeDelta = incomeDelta;
+    } else if (isExpense) {
+      expenseDelta = isDelete ? -normalizedAmount : normalizedAmount;
+      netChangeDelta = -expenseDelta;
+    }
+
+    final updates = {
+      'userId': userId,
+      'income': FieldValue.increment(incomeDelta),
+      'expenses': FieldValue.increment(expenseDelta),
+      'netChange': FieldValue.increment(netChangeDelta),
+      'transactionCount': FieldValue.increment(txCountDelta),
+      'lastUpdatedAt': DateTime.now(),
+      'categoryTotals.${transaction.categoryId}':
+          FieldValue.increment(netChangeDelta),
+      'accountTotals.${transaction.accountId}':
+          FieldValue.increment(netChangeDelta),
+      'currencyBreakdown.$typeKey.${transaction.currency}':
+          FieldValue.increment(isDelete ? -rawAmount : rawAmount),
+    };
+
+    tx.set(summaryRef, updates, SetOptions(merge: true));
+  }
+
 
   void _updateMonthlySummary(
     WriteBatch batch,
@@ -309,3 +380,5 @@ final transactionsStreamProvider =
     StreamProvider.family<List<AppTransaction>, String>((ref, userId) {
       return ref.watch(transactionRepositoryProvider).watchTransactions(userId);
     });
+
+final planTransactionsProvider = StreamProvider.family<List<AppTransaction>, ({String userId, String templateId})>((ref, arg) { return ref.read(transactionRepositoryProvider).watchPlanTransactions(arg.userId, arg.templateId); });

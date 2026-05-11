@@ -129,7 +129,7 @@ class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
     if (confirm == true) {
       setState(() => _isLoading = true);
       try {
-        await ref.read(accountRepositoryProvider).deleteAccount(widget.account!.id);
+        await ref.read(accountRepositoryProvider).deleteAccount(widget.account!);
         if (mounted) Navigator.pop(context);
       } catch (e) {
         if (mounted) {

@@ -232,7 +232,7 @@ class SettingsScreen extends ConsumerWidget {
                               try {
                                 final accounts = await ref.read(accountRepositoryProvider).watchAccounts(userId).first;
                                 for (var account in accounts) {
-                                  await ref.read(accountRepositoryProvider).deleteAccount(account.id);
+                                  await ref.read(accountRepositoryProvider).deleteAccount(account);
                                 }
                                 scaffoldMessenger.showSnackBar(const SnackBar(content: Text('App Reset Successful')));
                               } catch (e) {

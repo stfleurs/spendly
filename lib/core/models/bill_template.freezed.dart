@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$BillTemplate {
 
  String get id; String get userId; String get title; int get defaultAmount;// default installment amount, in cents
- String get categoryId; String get frequency;// One-time, Weekly, Monthly, Yearly
+ String get currency; String get categoryId; String get frequency;// One-time, Weekly, Monthly, Yearly
 // ── Plan / umbrella fields ──────────────────────────────────────────────
  int? get totalAmount;// total obligation (e.g. full year tuition), in cents
  String? get description;// human-readable note, e.g. "2025-26 school year"
@@ -33,16 +33,16 @@ $BillTemplateCopyWith<BillTemplate> get copyWith => _$BillTemplateCopyWithImpl<B
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BillTemplate&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.defaultAmount, defaultAmount) || other.defaultAmount == defaultAmount)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.description, description) || other.description == description)&&(identical(other.defaultAccountId, defaultAccountId) || other.defaultAccountId == defaultAccountId)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BillTemplate&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.defaultAmount, defaultAmount) || other.defaultAmount == defaultAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.description, description) || other.description == description)&&(identical(other.defaultAccountId, defaultAccountId) || other.defaultAccountId == defaultAccountId)&&(identical(other.notes, notes) || other.notes == notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,title,defaultAmount,categoryId,frequency,totalAmount,description,defaultAccountId,notes);
+int get hashCode => Object.hash(runtimeType,id,userId,title,defaultAmount,currency,categoryId,frequency,totalAmount,description,defaultAccountId,notes);
 
 @override
 String toString() {
-  return 'BillTemplate(id: $id, userId: $userId, title: $title, defaultAmount: $defaultAmount, categoryId: $categoryId, frequency: $frequency, totalAmount: $totalAmount, description: $description, defaultAccountId: $defaultAccountId, notes: $notes)';
+  return 'BillTemplate(id: $id, userId: $userId, title: $title, defaultAmount: $defaultAmount, currency: $currency, categoryId: $categoryId, frequency: $frequency, totalAmount: $totalAmount, description: $description, defaultAccountId: $defaultAccountId, notes: $notes)';
 }
 
 
@@ -53,7 +53,7 @@ abstract mixin class $BillTemplateCopyWith<$Res>  {
   factory $BillTemplateCopyWith(BillTemplate value, $Res Function(BillTemplate) _then) = _$BillTemplateCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String title, int defaultAmount, String categoryId, String frequency, int? totalAmount, String? description, String? defaultAccountId, String? notes
+ String id, String userId, String title, int defaultAmount, String currency, String categoryId, String frequency, int? totalAmount, String? description, String? defaultAccountId, String? notes
 });
 
 
@@ -70,13 +70,14 @@ class _$BillTemplateCopyWithImpl<$Res>
 
 /// Create a copy of BillTemplate
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? defaultAmount = null,Object? categoryId = null,Object? frequency = null,Object? totalAmount = freezed,Object? description = freezed,Object? defaultAccountId = freezed,Object? notes = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? defaultAmount = null,Object? currency = null,Object? categoryId = null,Object? frequency = null,Object? totalAmount = freezed,Object? description = freezed,Object? defaultAccountId = freezed,Object? notes = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,defaultAmount: null == defaultAmount ? _self.defaultAmount : defaultAmount // ignore: cast_nullable_to_non_nullable
-as int,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,frequency: null == frequency ? _self.frequency : frequency // ignore: cast_nullable_to_non_nullable
 as String,totalAmount: freezed == totalAmount ? _self.totalAmount : totalAmount // ignore: cast_nullable_to_non_nullable
 as int?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
@@ -167,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  int defaultAmount,  String categoryId,  String frequency,  int? totalAmount,  String? description,  String? defaultAccountId,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  int defaultAmount,  String currency,  String categoryId,  String frequency,  int? totalAmount,  String? description,  String? defaultAccountId,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BillTemplate() when $default != null:
-return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.categoryId,_that.frequency,_that.totalAmount,_that.description,_that.defaultAccountId,_that.notes);case _:
+return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.currency,_that.categoryId,_that.frequency,_that.totalAmount,_that.description,_that.defaultAccountId,_that.notes);case _:
   return orElse();
 
 }
@@ -188,10 +189,10 @@ return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.cate
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  int defaultAmount,  String categoryId,  String frequency,  int? totalAmount,  String? description,  String? defaultAccountId,  String? notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  int defaultAmount,  String currency,  String categoryId,  String frequency,  int? totalAmount,  String? description,  String? defaultAccountId,  String? notes)  $default,) {final _that = this;
 switch (_that) {
 case _BillTemplate():
-return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.categoryId,_that.frequency,_that.totalAmount,_that.description,_that.defaultAccountId,_that.notes);case _:
+return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.currency,_that.categoryId,_that.frequency,_that.totalAmount,_that.description,_that.defaultAccountId,_that.notes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +209,10 @@ return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.cate
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String title,  int defaultAmount,  String categoryId,  String frequency,  int? totalAmount,  String? description,  String? defaultAccountId,  String? notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String title,  int defaultAmount,  String currency,  String categoryId,  String frequency,  int? totalAmount,  String? description,  String? defaultAccountId,  String? notes)?  $default,) {final _that = this;
 switch (_that) {
 case _BillTemplate() when $default != null:
-return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.categoryId,_that.frequency,_that.totalAmount,_that.description,_that.defaultAccountId,_that.notes);case _:
+return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.currency,_that.categoryId,_that.frequency,_that.totalAmount,_that.description,_that.defaultAccountId,_that.notes);case _:
   return null;
 
 }
@@ -223,7 +224,7 @@ return $default(_that.id,_that.userId,_that.title,_that.defaultAmount,_that.cate
 @JsonSerializable()
 
 class _BillTemplate extends BillTemplate {
-  const _BillTemplate({required this.id, required this.userId, required this.title, required this.defaultAmount, required this.categoryId, this.frequency = 'Monthly', this.totalAmount, this.description, this.defaultAccountId, this.notes}): super._();
+  const _BillTemplate({required this.id, required this.userId, required this.title, required this.defaultAmount, this.currency = 'USD', required this.categoryId, this.frequency = 'Monthly', this.totalAmount, this.description, this.defaultAccountId, this.notes}): super._();
   factory _BillTemplate.fromJson(Map<String, dynamic> json) => _$BillTemplateFromJson(json);
 
 @override final  String id;
@@ -231,6 +232,7 @@ class _BillTemplate extends BillTemplate {
 @override final  String title;
 @override final  int defaultAmount;
 // default installment amount, in cents
+@override@JsonKey() final  String currency;
 @override final  String categoryId;
 @override@JsonKey() final  String frequency;
 // One-time, Weekly, Monthly, Yearly
@@ -255,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BillTemplate&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.defaultAmount, defaultAmount) || other.defaultAmount == defaultAmount)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.description, description) || other.description == description)&&(identical(other.defaultAccountId, defaultAccountId) || other.defaultAccountId == defaultAccountId)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BillTemplate&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.defaultAmount, defaultAmount) || other.defaultAmount == defaultAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.description, description) || other.description == description)&&(identical(other.defaultAccountId, defaultAccountId) || other.defaultAccountId == defaultAccountId)&&(identical(other.notes, notes) || other.notes == notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,title,defaultAmount,categoryId,frequency,totalAmount,description,defaultAccountId,notes);
+int get hashCode => Object.hash(runtimeType,id,userId,title,defaultAmount,currency,categoryId,frequency,totalAmount,description,defaultAccountId,notes);
 
 @override
 String toString() {
-  return 'BillTemplate(id: $id, userId: $userId, title: $title, defaultAmount: $defaultAmount, categoryId: $categoryId, frequency: $frequency, totalAmount: $totalAmount, description: $description, defaultAccountId: $defaultAccountId, notes: $notes)';
+  return 'BillTemplate(id: $id, userId: $userId, title: $title, defaultAmount: $defaultAmount, currency: $currency, categoryId: $categoryId, frequency: $frequency, totalAmount: $totalAmount, description: $description, defaultAccountId: $defaultAccountId, notes: $notes)';
 }
 
 
@@ -275,7 +277,7 @@ abstract mixin class _$BillTemplateCopyWith<$Res> implements $BillTemplateCopyWi
   factory _$BillTemplateCopyWith(_BillTemplate value, $Res Function(_BillTemplate) _then) = __$BillTemplateCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String title, int defaultAmount, String categoryId, String frequency, int? totalAmount, String? description, String? defaultAccountId, String? notes
+ String id, String userId, String title, int defaultAmount, String currency, String categoryId, String frequency, int? totalAmount, String? description, String? defaultAccountId, String? notes
 });
 
 
@@ -292,13 +294,14 @@ class __$BillTemplateCopyWithImpl<$Res>
 
 /// Create a copy of BillTemplate
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? defaultAmount = null,Object? categoryId = null,Object? frequency = null,Object? totalAmount = freezed,Object? description = freezed,Object? defaultAccountId = freezed,Object? notes = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? defaultAmount = null,Object? currency = null,Object? categoryId = null,Object? frequency = null,Object? totalAmount = freezed,Object? description = freezed,Object? defaultAccountId = freezed,Object? notes = freezed,}) {
   return _then(_BillTemplate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,defaultAmount: null == defaultAmount ? _self.defaultAmount : defaultAmount // ignore: cast_nullable_to_non_nullable
-as int,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,frequency: null == frequency ? _self.frequency : frequency // ignore: cast_nullable_to_non_nullable
 as String,totalAmount: freezed == totalAmount ? _self.totalAmount : totalAmount // ignore: cast_nullable_to_non_nullable
 as int?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable

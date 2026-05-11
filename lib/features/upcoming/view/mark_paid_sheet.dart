@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/core/models/bill.dart';
 import 'package:spendly/core/models/app_transaction.dart';
-import 'package:spendly/core/models/account.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/features/ocr/repository/receipt_repository.dart';
+import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:spendly/core/providers/exchange_rate_provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:io';
 
 class MarkPaidSheet extends ConsumerStatefulWidget {
   final Bill bill;
@@ -21,10 +24,13 @@ class MarkPaidSheet extends ConsumerStatefulWidget {
 }
 
 class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
-  Account? _selectedAccount;
+  String? _selectedAccountId;
   DateTime _paymentDate = DateTime.now();
   late TextEditingController _amountController;
+  late TextEditingController _rateController;
   bool _isLoading = false;
+  File? _imageFile;
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -33,11 +39,13 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
     _amountController = TextEditingController(
       text: (remaining / 100).toStringAsFixed(2),
     );
+    _rateController = TextEditingController();
   }
 
   @override
   void dispose() {
     _amountController.dispose();
+    _rateController.dispose();
     super.dispose();
   }
 
@@ -119,15 +127,13 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
 
               const SizedBox(height: 28),
 
-              // Amount field
-              _fieldLabel('AMOUNT'),
+              // Amount field — always denominated in the plan's currency
+              _fieldLabel('AMOUNT  (${widget.bill.currency})'),
               const SizedBox(height: 8),
               TextField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: _inputDecoration('0.00', prefixText: '\$ '),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: _inputDecoration('0.00', prefixText: '${widget.bill.currency} '),
                 style: const TextStyle(
                   color: AppColors.textDark,
                   fontWeight: FontWeight.w900,
@@ -137,13 +143,92 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
               if (widget.bill.paidAmount > 0) ...[
                 const SizedBox(height: 6),
                 Text(
-                  'Remaining: \$${(remaining / 100).toStringAsFixed(2)} of \$${(widget.bill.amount / 100).toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: AppColors.textLight,
-                    fontSize: 11,
-                  ),
+                  'Remaining: ${widget.bill.currency} ${(remaining / 100).toStringAsFixed(2)} of ${widget.bill.currency} ${(widget.bill.amount / 100).toStringAsFixed(2)}',
+                  style: const TextStyle(color: AppColors.textLight, fontSize: 11),
                 ),
               ],
+              // Cross-currency notice
+              Builder(builder: (context) {
+                final accounts = ref.watch(accountsStreamProvider(widget.userId)).value ?? [];
+                final selectedAcc = accounts.where((a) => a.id == _selectedAccountId).firstOrNull;
+                if (selectedAcc != null && selectedAcc.currency != widget.bill.currency) {
+                  final billAmt = double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
+                  final userRate = double.tryParse(_rateController.text.replaceAll(',', '')) ?? 0;
+                  final accountAmt = userRate > 0 ? billAmt * userRate : null;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, bottom: 12),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.swap_horiz, color: Colors.orange, size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Cross-currency payment: ${widget.bill.currency} → ${selectedAcc.currency}. Enter the exchange rate you used.',
+                                  style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      _fieldLabel('EXCHANGE RATE  (1 ${widget.bill.currency} = ? ${selectedAcc.currency})'),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _rateController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: _inputDecoration(
+                          'e.g. 135.00',
+                          prefixText: '1 ${widget.bill.currency} = ',
+                        ),
+                        style: const TextStyle(
+                          color: AppColors.textDark,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      if (accountAmt != null && accountAmt > 0) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.income.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.account_balance_wallet_outlined, size: 14, color: AppColors.income),
+                              const SizedBox(width: 8),
+                              Text(
+                                '≈ ${selectedAcc.currency} ${accountAmt.toStringAsFixed(2)} will leave your account',
+                                style: const TextStyle(color: AppColors.income, fontWeight: FontWeight.w900, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (userRate == 0) ...[
+                        const SizedBox(height: 6),
+                        const Text(
+                          '⚠ Exchange rate is required to proceed.',
+                          style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
 
               const SizedBox(height: 20),
 
@@ -152,31 +237,32 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
               const SizedBox(height: 8),
               accountsAsync.when(
                 data: (accounts) {
-                  if (_selectedAccount == null && accounts.isNotEmpty) {
+                  if (_selectedAccountId == null && accounts.isNotEmpty) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) {
-                        setState(() => _selectedAccount = accounts.first);
+                        setState(() => _selectedAccountId = accounts.first.id);
                       }
                     });
                   }
-                  return DropdownButtonFormField<Account>(
-                    initialValue: _selectedAccount,
+                  return DropdownButtonFormField<String>(
+                    initialValue: _selectedAccountId,
                     decoration: _inputDecoration('Select account'),
                     items: accounts
                         .map(
                           (acc) => DropdownMenuItem(
-                            value: acc,
+                            value: acc.id,
                             child: Text(
-                              acc.name,
+                              '${acc.name}  (${acc.currency})',
                               style: const TextStyle(
                                 color: AppColors.textDark,
                                 fontWeight: FontWeight.bold,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         )
                         .toList(),
-                    onChanged: (acc) => setState(() => _selectedAccount = acc),
+                    onChanged: (id) => setState(() => _selectedAccountId = id),
                     dropdownColor: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   );
@@ -221,6 +307,57 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 20),
+
+              // Proof of Payment
+              _fieldLabel('PROOF OF PAYMENT (OPTIONAL)'),
+              const SizedBox(height: 8),
+              if (_imageFile != null)
+                Stack(
+                  children: [
+                    Container(
+                      height: 120,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        image: DecorationImage(
+                          image: FileImage(_imageFile!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: () => setState(() => _imageFile = null),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                OutlinedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                  label: const Text('ATTACH RECEIPT OR CHECK'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primaryLight),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
 
               const SizedBox(height: 28),
 
@@ -309,15 +446,52 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
     if (picked != null) setState(() => _paymentDate = picked);
   }
 
+  Future<void> _pickImage() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source != null) {
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (pickedFile != null) {
+        setState(() => _imageFile = File(pickedFile.path));
+      }
+    }
+  }
+
   Future<void> _confirm() async {
     final amountText = _amountController.text.replaceAll(',', '');
     final amount = (double.tryParse(amountText) ?? 0) * 100;
-    if (amount <= 0 || _selectedAccount == null) return;
+    if (amount <= 0 || _selectedAccountId == null) return;
     final amountCents = amount.round();
 
     setState(() => _isLoading = true);
     try {
       final txRepo = ref.read(transactionRepositoryProvider);
+      final accounts = ref.read(accountsStreamProvider(widget.userId)).value ?? [];
+      final selectedAccount = accounts.firstWhere((a) => a.id == _selectedAccountId);
       final receiptRepo = ref.read(receiptRepositoryProvider);
       const uuid = Uuid();
 
@@ -330,43 +504,76 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
         deepSearchTokens = receipt?.extractedTokens;
       }
 
-      // 2. Create the linked transaction
+      // 2. Upload image if exists
+      String? imageUrl;
+      if (_imageFile != null) {
+        final storage = ref.read(storageProvider);
+        final refStorage = storage.ref().child('receipts/${widget.userId}/${uuid.v4()}.jpg');
+        await refStorage.putFile(_imageFile!);
+        imageUrl = await refStorage.getDownloadURL();
+      }
+
+      // 3. Create the linked transaction
       final txId = uuid.v4();
       final baseCurrency = ref.read(currencyProvider);
-      const double rate = 1.0; // TODO: Implement real-time rate lookup
-      
-      // Rule #2: Scaled Integer Math
+      final isCrossCurrency = selectedAccount.currency != widget.bill.currency;
+
+      // Bill amount: always in the bill's currency — used to track obligation progress
+      final billAmountCents = amountCents;
+
+      // Account amount: what actually leaves the account
+      // If same currency: identical. If cross-currency: bill amount × user-entered rate
+      late final int accountAmountCents;
+      late final double rate;
+      if (isCrossCurrency) {
+        rate = double.tryParse(_rateController.text.replaceAll(',', '')) ?? 1.0;
+        if (rate <= 0) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter the exchange rate to continue.')),
+          );
+          return;
+        }
+        accountAmountCents = (billAmountCents * rate).round();
+      } else {
+        rate = 1.0;
+        accountAmountCents = billAmountCents;
+      }
+
+      // Normalize to base currency
+      final rateToBase = ref.read(exchangeRateProvider((from: selectedAccount.currency, to: baseCurrency)));
       const int rateScale = 1000000;
-      final int scaledRate = (rate * rateScale).round();
-      final int normalizedAmount = (amountCents * scaledRate) ~/ rateScale;
+      final int scaledRateToBase = (rateToBase * rateScale).round();
+      final int normalizedAmount = (accountAmountCents * scaledRateToBase) ~/ rateScale;
 
       final tx = AppTransaction(
         id: txId,
         userId: widget.userId,
         type: 'expense',
-        amount: amountCents,
-        currency: _selectedAccount!.currency,
+        amount: accountAmountCents,       // what leaves the account
+        currency: selectedAccount.currency,
         amountInBaseCurrency: normalizedAmount,
         baseCurrency: baseCurrency,
-        exchangeRate: rate,
-        scaledRate: scaledRate,
+        exchangeRate: isCrossCurrency ? rate : rateToBase,
+        scaledRate: scaledRateToBase,
         rateScale: rateScale,
         rateSource: 'manual',
-        rateBaseCurrency: baseCurrency,
-        rateQuoteCurrency: _selectedAccount!.currency,
+        rateBaseCurrency: widget.bill.currency,
+        rateQuoteCurrency: selectedAccount.currency,
         date: _paymentDate,
-        accountId: _selectedAccount!.id,
+        accountId: selectedAccount.id,
         categoryId: widget.bill.categoryId,
         note: 'Payment: ${widget.bill.title}',
         receiptId: widget.bill.receiptId,
-        searchTokens: deepSearchTokens, // Optimized for universal search
+        receiptUrl: imageUrl,
+        searchTokens: deepSearchTokens,
       );
 
-      // Atomic write across Transaction, Bill, and Account
+      // Atomic write: bill progress tracked in bill's currency, account debited in account's currency
       await txRepo.payBill(
         transaction: tx,
         bill: widget.bill,
-        amountCents: amountCents,
+        amountCents: billAmountCents, // bill progress in bill's own currency
       );
 
       if (mounted) Navigator.pop(context);
