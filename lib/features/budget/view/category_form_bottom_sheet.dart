@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/features/budget/repository/category_repository.dart';
+import 'package:spendly/features/home/providers/insights_provider.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
@@ -24,15 +25,13 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
   bool _isLoading = false;
 
   final List<String> _groups = [
-    'Housing',
-    'Food',
-    'Transport',
-    'Utilities',
-    'Insurance',
-    'Healthcare',
-    'Saving & Debts',
-    'Personal',
-    'Entertainment',
+    'Family',
+    'Health',
+    'Kids',
+    'Home',
+    'Essentials',
+    'Lifestyle',
+    'Financial Obligations',
     'Other'
   ];
 
@@ -49,6 +48,11 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
           : '',
     );
     _selectedGroup = widget.category?.group ?? _groups.first;
+    // ensure _selectedGroup is valid (fallback to Other if it was old format)
+    if (!_groups.contains(_selectedGroup)) {
+      _selectedGroup = 'Other';
+    }
+
     _selectedCurrency = widget.category?.currency ?? 'USD';
     _selectedRecurrence = widget.category?.recurrence ?? 'Monthly';
   }
@@ -107,7 +111,7 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.category), // Using category as placeholder or I should add deleteCategory to arb
+        title: Text(l10n.category), 
         content: Text(l10n.deleteConfirmMessage),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
@@ -140,6 +144,7 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isEditing = widget.category != null;
+    final userId = ref.watch(authStateProvider).value?.uid ?? '';
 
     // Adjusting for keyboard
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
@@ -163,7 +168,7 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    isEditing ? '${l10n.category.toUpperCase()} - ${l10n.updateAccount}' : '${l10n.category.toUpperCase()} - ${l10n.createAccount}', // Simplified
+                    isEditing ? '${l10n.category.toUpperCase()} - ${l10n.updateAccount}' : '${l10n.category.toUpperCase()} - ${l10n.createAccount}', 
                     style: const TextStyle(
                       color: AppColors.textDark,
                       fontWeight: FontWeight.w900,
@@ -279,6 +284,62 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
                   ),
                 ],
               ),
+
+              // Reality Suggestion
+              if (isEditing) ...[
+                const SizedBox(height: 8),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final suggestionAsync = ref.watch(realityBudgetSuggestionProvider((
+                      userId: userId,
+                      categoryId: widget.category!.id,
+                    )));
+
+                    return suggestionAsync.when(
+                      data: (avgAmount) {
+                        if (avgAmount <= 0) return const SizedBox.shrink();
+                        final avgStr = (avgAmount / 100).toStringAsFixed(0);
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.lightbulb_outline, size: 16, color: AppColors.primary),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'You average \$$avgStr here. Consider setting this as a comfort target.',
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _budgetController.text = avgStr;
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text('Apply', style: TextStyle(fontWeight: FontWeight.w900)),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    );
+                  },
+                ),
+              ],
 
               const SizedBox(height: 32),
               SizedBox(

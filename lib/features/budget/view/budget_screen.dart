@@ -6,6 +6,7 @@ import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/features/budget/providers/budget_provider.dart';
 import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:spendly/features/home/providers/insights_provider.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
@@ -80,7 +81,7 @@ class MyBudgetScreen extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                            ...state.items.map((item) => _buildBudgetItem(context, item)),
+                            ...state.items.map((item) => _CategoryBudgetItemWidget(item: item, userId: userId)),
                           ],
                         ),
                       ),
@@ -122,7 +123,12 @@ class MyBudgetScreen extends ConsumerWidget {
     return MainCard(
       padding: EdgeInsets.zero,
       child: InkWell(
-        onTap: () => _showCategoryForm(context, null),
+        onTap: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => const CategoryFormBottomSheet(category: null),
+        ),
         borderRadius: BorderRadius.circular(24),
         child: Container(
           padding: const EdgeInsets.all(24),
@@ -145,109 +151,76 @@ class MyBudgetScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
-  void _showCategoryForm(BuildContext context, Category? category) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CategoryFormBottomSheet(category: category),
-    );
-  }
+class _CategoryBudgetItemWidget extends ConsumerWidget {
+  final CategoryBudgetItem item;
+  final String userId;
 
-  Widget _buildBudgetItem(BuildContext context, CategoryBudgetItem item) {
+  const _CategoryBudgetItemWidget({
+    required this.item,
+    required this.userId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final category = item.category;
-    
+
     String currencySymbol = '\$';
     if (category.currency == 'HTG') currencySymbol = 'G';
     if (category.currency == 'EUR') currencySymbol = '€';
-    
+
     final spentStr = '$currencySymbol${(item.spentAmount / 100).toStringAsFixed(2)}';
-    
+
     String assignedStr = 'No limit';
-    int leftToSpend = 0;
     bool hasTarget = category.monthlyTarget != null && category.monthlyTarget! > 0;
-    bool isOverspent = false;
+    bool isTrendingHigh = false;
 
     if (hasTarget) {
       assignedStr = '$currencySymbol${(category.monthlyTarget! / 100).toStringAsFixed(2)}';
-      leftToSpend = category.monthlyTarget! - item.spentAmount;
-      if (leftToSpend < 0) isOverspent = true;
     }
-    
-    final pillText = hasTarget 
-        ? '$currencySymbol${(leftToSpend.abs() / 100).toStringAsFixed(2)}'
-        : spentStr;
-    
-    final pillColor = hasTarget 
-        ? (isOverspent ? const Color(0xFFFFE5E5) : const Color(0xFFD4F7E2)) 
-        : const Color(0xFFE2E8F0); // Neutral color if no target
-    final pillTextColor = hasTarget 
-        ? (isOverspent ? AppColors.expense : AppColors.income) 
-        : AppColors.textDark;
+
+    final comparisonAsync = ref.watch(monthlyComparisonProvider((
+      userId: userId,
+      categoryId: category.id,
+      categoryName: category.name,
+    )));
 
     return InkWell(
-      onTap: () => _showCategoryForm(context, category),
+      onTap: () => showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => CategoryFormBottomSheet(category: category),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row 1: Name, Overspent Badge, Pill
+            // Row 1: Name & Spent
             Row(
               children: [
                 Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          category.name,
-                          style: const TextStyle(
-                            color: AppColors.textDark,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (isOverspent) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE2E5FF),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            l10n.overspent,
-                            style: const TextStyle(
-                              color: Color(0xFF5A67D8),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 9,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                  child: Text(
+                    category.name,
+                    style: const TextStyle(
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: pillColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    pillText,
-                    style: TextStyle(
-                      color: pillTextColor,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14,
-                    ),
+                Text(
+                  spentStr,
+                  style: const TextStyle(
+                    color: AppColors.textDark,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
                   ),
                 ),
               ],
@@ -255,41 +228,65 @@ class MyBudgetScreen extends ConsumerWidget {
             
             const SizedBox(height: 8),
             
-            // Row 2: Assigned & Spent
-            Row(
-              children: [
-                Text(
-                  '${l10n.assigned.toUpperCase()}: $assignedStr',
-                  style: const TextStyle(
-                    color: AppColors.textLight,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 11,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  '${l10n.spent.toUpperCase()}: $spentStr',
-                  style: const TextStyle(
-                    color: AppColors.textLight,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 11,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
+            // Row 2: Target & Trend
+            comparisonAsync.when(
+              data: (comparison) {
+                if (comparison == null) {
+                  return Text(
+                    hasTarget ? 'Target: $assignedStr' : 'No set target',
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                }
+
+                isTrendingHigh = comparison.percentageChange > 10;
+                final trendColor = isTrendingHigh ? const Color(0xFFECA00A) : AppColors.primary;
+
+                return Row(
+                  children: [
+                    if (hasTarget) ...[
+                      Text(
+                        'Target: $assignedStr',
+                        style: const TextStyle(
+                          color: AppColors.textLight,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: Text(
+                        comparison.trendMessage,
+                        style: TextStyle(
+                          color: trendColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Text('Loading trends...', style: TextStyle(color: AppColors.textLight, fontSize: 12)),
+              error: (e, s) => const SizedBox.shrink(),
             ),
 
-            // Row 3: Progress Bar
+            // Row 3: Soft Progress Bar
             if (hasTarget) ...[
               const SizedBox(height: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: LinearProgressIndicator(
-                  value: item.progress,
-                  backgroundColor: AppColors.primaryLight,
-                  color: isOverspent ? AppColors.expense : const Color(0xFFF6C022),
-                  minHeight: 8,
+                  value: item.progress > 1.0 ? 1.0 : item.progress,
+                  backgroundColor: AppColors.primaryLight.withValues(alpha: 0.3),
+                  color: isTrendingHigh ? const Color(0xFFECA00A) : AppColors.primary,
+                  minHeight: 6,
                 ),
               ),
             ],

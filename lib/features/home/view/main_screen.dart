@@ -244,7 +244,7 @@ class _SpeedDialFabState extends State<_SpeedDialFab>
                   opacity: _expandAnimation,
                   child: _SpeedDialAction(
                     icon: Icons.edit_outlined,
-                    label: 'Add Manually',
+                    label: 'Quick Add',
                     color: AppColors.income,
                     onTap: () => _navigate(const NewTransactionScreen()),
                   ),
