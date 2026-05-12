@@ -64,7 +64,7 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
           color: AppColors.background,
           borderRadius: BorderRadius.circular(28),
         ),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -528,10 +528,11 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
       if (isCrossCurrency) {
         rate = double.tryParse(_rateController.text.replaceAll(',', '')) ?? 1.0;
         if (rate <= 0) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please enter the exchange rate to continue.')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Please enter the exchange rate to continue.')),
+            );
+          }
           return;
         }
         accountAmountCents = (billAmountCents * rate).round();

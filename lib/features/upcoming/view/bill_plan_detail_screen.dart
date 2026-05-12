@@ -68,6 +68,10 @@ class BillPlanDetailScreen extends ConsumerWidget {
         .where((b) => !b.isPaid && b.computedStatus != BillStatus.cancelled)
         .toList();
 
+    String currencySymbol = '\$';
+    if (plan.currency == 'HTG') currencySymbol = 'G';
+    if (plan.currency == 'EUR') currencySymbol = '€';
+
     // ── Forecast Logic ──────────────────────────────────────────────────────
     String? forecastText;
     if (hasTotal && remaining! > 0) {
@@ -156,35 +160,51 @@ class BillPlanDetailScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _statCol(
-                              label: 'TOTAL PAID',
-                              value: '${plan.currency} ${(totalPaid / 100).toStringAsFixed(0)}',
-                              color: AppColors.income,
+                      if (hasTotal) ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _statCol(
+                                label: 'TOTAL PAID',
+                                value: '$currencySymbol ${(totalPaid / 100).toStringAsFixed(2)}',
+                                color: AppColors.income,
+                                align: CrossAxisAlignment.start,
+                              ),
                             ),
-                          ),
-                          if (hasTotal) ...[
+                            const SizedBox(width: 16),
                             Expanded(
                               child: _statCol(
                                 label: 'OBLIGATION',
-                                value: '${plan.currency} ${(totalObligation / 100).toStringAsFixed(0)}',
+                                value: '$currencySymbol ${(totalObligation / 100).toStringAsFixed(2)}',
                                 color: AppColors.textDark,
-                              ),
-                            ),
-                            Expanded(
-                              child: _statCol(
-                                label: 'REMAINING',
-                                value: '${plan.currency} ${(remaining! / 100).toStringAsFixed(0)}',
-                                color: remaining > 0
-                                    ? AppColors.expense
-                                    : AppColors.income,
+                                align: CrossAxisAlignment.end,
                               ),
                             ),
                           ],
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _statCol(
+                                label: 'REMAINING',
+                                value: '$currencySymbol ${(remaining! / 100).toStringAsFixed(2)}',
+                                color: remaining > 0 ? AppColors.expense : AppColors.income,
+                                align: CrossAxisAlignment.start,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(child: SizedBox.shrink()),
+                          ],
+                        ),
+                      ] else ...[
+                        _statCol(
+                          label: 'TOTAL PAID',
+                          value: '$currencySymbol ${(totalPaid / 100).toStringAsFixed(2)}',
+                          color: AppColors.income,
+                          align: CrossAxisAlignment.center,
+                        ),
+                      ],
                       if (progressValue != null) ...[
                         const SizedBox(height: 24),
                         ClipRRect(
@@ -284,14 +304,25 @@ class BillPlanDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _statCol({required String label, required String value, required Color color}) {
+  Widget _statCol({
+    required String label, 
+    required String value, 
+    required Color color,
+    CrossAxisAlignment align = CrossAxisAlignment.center,
+  }) {
     return Column(
+      crossAxisAlignment: align,
       children: [
         FittedBox(
           fit: BoxFit.scaleDown,
+          alignment: align == CrossAxisAlignment.start
+              ? Alignment.centerLeft
+              : align == CrossAxisAlignment.end
+                  ? Alignment.centerRight
+                  : Alignment.center,
           child: Text(
             value,
-            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 18),
+            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 20),
           ),
         ),
         const SizedBox(height: 4),
@@ -300,9 +331,13 @@ class BillPlanDetailScreen extends ConsumerWidget {
           style: const TextStyle(
               color: AppColors.textLight,
               fontWeight: FontWeight.w900,
-              fontSize: 8,
+              fontSize: 10,
               letterSpacing: 1.1),
-          textAlign: TextAlign.center,
+          textAlign: align == CrossAxisAlignment.start
+              ? TextAlign.left
+              : align == CrossAxisAlignment.end
+                  ? TextAlign.right
+                  : TextAlign.center,
         ),
       ],
     );
@@ -367,6 +402,10 @@ class _InstallmentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = bill.computedStatus;
     final statusColor = status.color;
+
+    String currencySymbol = '\$';
+    if (bill.currency == 'HTG') currencySymbol = 'G';
+    if (bill.currency == 'EUR') currencySymbol = '€';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -434,7 +473,7 @@ class _InstallmentRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${bill.currency} ${(bill.amount / 100).toStringAsFixed(2)}',
+                      '$currencySymbol ${(bill.amount / 100).toStringAsFixed(2)}',
                       style: TextStyle(
                         color: bill.isPaid ? AppColors.income : AppColors.textDark,
                         fontWeight: FontWeight.w900,
@@ -483,6 +522,10 @@ class _TransactionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String currencySymbol = '\$';
+    if (transaction.currency == 'HTG') currencySymbol = 'G';
+    if (transaction.currency == 'EUR') currencySymbol = '€';
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: MainCard(
@@ -532,9 +575,12 @@ class _TransactionRow extends StatelessWidget {
                     children: [
                       const Icon(Icons.account_balance_wallet_outlined, size: 10, color: AppColors.textLight),
                       const SizedBox(width: 4),
-                      Text(
-                        'Account Payment',
-                        style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 10),
+                      const Flexible(
+                        child: Text(
+                          'Account Payment',
+                          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 10),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       if (transaction.receiptUrl != null) ...[
                         const SizedBox(width: 8),
@@ -560,7 +606,7 @@ class _TransactionRow extends StatelessWidget {
 
             // Amount
             Text(
-              '${transaction.currency} ${(transaction.amount / 100).toStringAsFixed(2)}',
+              '$currencySymbol ${(transaction.amount / 100).toStringAsFixed(2)}',
               style: const TextStyle(
                 color: AppColors.income,
                 fontWeight: FontWeight.w900,
