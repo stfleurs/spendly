@@ -53,6 +53,7 @@ abstract class ReceiptItem with _$ReceiptItem {
     required int amount, // Cents
     int? quantity,
     int? unitPrice, // Cents
+    double? confidence,
   }) = _ReceiptItem;
 
   factory ReceiptItem.fromJson(Map<String, dynamic> json) => _$ReceiptItemFromJson(json);
@@ -89,6 +90,8 @@ abstract class Receipt with _$Receipt {
     int? originalSubtotal,
     int? originalTax,
     double? exchangeRate,
+    String? archetype, // 'thermal', 'invoice', 'restaurant', etc.
+    Map<String, double>? fieldConfidences,
   }) = _Receipt;
 
   factory Receipt.fromJson(Map<String, dynamic> json) => _$ReceiptFromJson(json);

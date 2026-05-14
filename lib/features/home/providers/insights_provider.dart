@@ -10,12 +10,6 @@ final realityBudgetSuggestionProvider = FutureProvider.family<int, ({String user
   // We look back at the previous 3 completed months
   for (int i = 1; i <= 3; i++) {
     final targetMonth = DateTime(now.year, now.month - i);
-    // Use the stream provider to get the latest snapshot
-    final summaryAsync = ref.read(monthlySummaryProvider((userId: arg.userId, month: targetMonth)));
-    
-    // We may need to wait for it if it's not loaded, but since it's a stream, we can read the future
-    // Actually, ref.read on a StreamProvider gives the AsyncValue. If it's not ready, it might be loading.
-    // Let's use a FutureProvider approach or just await the stream's first value.
     try {
       final summary = await ref.read(monthlySummaryProvider((userId: arg.userId, month: targetMonth)).future);
       if (summary != null) {

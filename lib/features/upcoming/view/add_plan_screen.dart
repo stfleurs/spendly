@@ -227,7 +227,7 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
                             )
                           else
                             DropdownButtonFormField<String>(
-                              value: _selectedCurrency,
+                              initialValue: _selectedCurrency,
                               decoration: _input('Select currency'),
                               items: ['USD', 'HTG', 'EUR', 'CAD', 'DOP']
                                   .map((c) => DropdownMenuItem(
@@ -289,7 +289,7 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
                                 children: [
                                   Expanded(
                                     child: DropdownButtonFormField<Category>(
-                                      value: _selectedCategory,
+                                      initialValue: _selectedCategory,
                                       decoration: _input('Select a category'),
                                       items: cats
                                           .map((c) => DropdownMenuItem(

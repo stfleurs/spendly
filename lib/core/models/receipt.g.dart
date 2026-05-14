@@ -23,6 +23,7 @@ _ReceiptItem _$ReceiptItemFromJson(Map<String, dynamic> json) => _ReceiptItem(
   amount: (json['amount'] as num).toInt(),
   quantity: (json['quantity'] as num?)?.toInt(),
   unitPrice: (json['unitPrice'] as num?)?.toInt(),
+  confidence: (json['confidence'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$ReceiptItemToJson(_ReceiptItem instance) =>
@@ -31,6 +32,7 @@ Map<String, dynamic> _$ReceiptItemToJson(_ReceiptItem instance) =>
       'amount': instance.amount,
       'quantity': instance.quantity,
       'unitPrice': instance.unitPrice,
+      'confidence': instance.confidence,
     };
 
 _Receipt _$ReceiptFromJson(Map<String, dynamic> json) => _Receipt(
@@ -65,6 +67,10 @@ _Receipt _$ReceiptFromJson(Map<String, dynamic> json) => _Receipt(
   originalSubtotal: (json['originalSubtotal'] as num?)?.toInt(),
   originalTax: (json['originalTax'] as num?)?.toInt(),
   exchangeRate: (json['exchangeRate'] as num?)?.toDouble(),
+  archetype: json['archetype'] as String?,
+  fieldConfidences: (json['fieldConfidences'] as Map<String, dynamic>?)?.map(
+    (k, e) => MapEntry(k, (e as num).toDouble()),
+  ),
 );
 
 Map<String, dynamic> _$ReceiptToJson(_Receipt instance) => <String, dynamic>{
@@ -93,4 +99,6 @@ Map<String, dynamic> _$ReceiptToJson(_Receipt instance) => <String, dynamic>{
   'originalSubtotal': instance.originalSubtotal,
   'originalTax': instance.originalTax,
   'exchangeRate': instance.exchangeRate,
+  'archetype': instance.archetype,
+  'fieldConfidences': instance.fieldConfidences,
 };

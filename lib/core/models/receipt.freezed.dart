@@ -282,7 +282,8 @@ as Rect,
 mixin _$ReceiptItem {
 
  String get description; int get amount;// Cents
- int? get quantity; int? get unitPrice;
+ int? get quantity; int? get unitPrice;// Cents
+ double? get confidence;
 /// Create a copy of ReceiptItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -295,16 +296,16 @@ $ReceiptItemCopyWith<ReceiptItem> get copyWith => _$ReceiptItemCopyWithImpl<Rece
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptItem&&(identical(other.description, description) || other.description == description)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptItem&&(identical(other.description, description) || other.description == description)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.confidence, confidence) || other.confidence == confidence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,description,amount,quantity,unitPrice);
+int get hashCode => Object.hash(runtimeType,description,amount,quantity,unitPrice,confidence);
 
 @override
 String toString() {
-  return 'ReceiptItem(description: $description, amount: $amount, quantity: $quantity, unitPrice: $unitPrice)';
+  return 'ReceiptItem(description: $description, amount: $amount, quantity: $quantity, unitPrice: $unitPrice, confidence: $confidence)';
 }
 
 
@@ -315,7 +316,7 @@ abstract mixin class $ReceiptItemCopyWith<$Res>  {
   factory $ReceiptItemCopyWith(ReceiptItem value, $Res Function(ReceiptItem) _then) = _$ReceiptItemCopyWithImpl;
 @useResult
 $Res call({
- String description, int amount, int? quantity, int? unitPrice
+ String description, int amount, int? quantity, int? unitPrice, double? confidence
 });
 
 
@@ -332,13 +333,14 @@ class _$ReceiptItemCopyWithImpl<$Res>
 
 /// Create a copy of ReceiptItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? description = null,Object? amount = null,Object? quantity = freezed,Object? unitPrice = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? description = null,Object? amount = null,Object? quantity = freezed,Object? unitPrice = freezed,Object? confidence = freezed,}) {
   return _then(_self.copyWith(
 description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,quantity: freezed == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,confidence: freezed == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
@@ -423,10 +425,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String description,  int amount,  int? quantity,  int? unitPrice)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String description,  int amount,  int? quantity,  int? unitPrice,  double? confidence)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ReceiptItem() when $default != null:
-return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);case _:
+return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice,_that.confidence);case _:
   return orElse();
 
 }
@@ -444,10 +446,10 @@ return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String description,  int amount,  int? quantity,  int? unitPrice)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String description,  int amount,  int? quantity,  int? unitPrice,  double? confidence)  $default,) {final _that = this;
 switch (_that) {
 case _ReceiptItem():
-return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);case _:
+return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice,_that.confidence);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -464,10 +466,10 @@ return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String description,  int amount,  int? quantity,  int? unitPrice)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String description,  int amount,  int? quantity,  int? unitPrice,  double? confidence)?  $default,) {final _that = this;
 switch (_that) {
 case _ReceiptItem() when $default != null:
-return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);case _:
+return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice,_that.confidence);case _:
   return null;
 
 }
@@ -479,7 +481,7 @@ return $default(_that.description,_that.amount,_that.quantity,_that.unitPrice);c
 @JsonSerializable()
 
 class _ReceiptItem implements ReceiptItem {
-  const _ReceiptItem({required this.description, required this.amount, this.quantity, this.unitPrice});
+  const _ReceiptItem({required this.description, required this.amount, this.quantity, this.unitPrice, this.confidence});
   factory _ReceiptItem.fromJson(Map<String, dynamic> json) => _$ReceiptItemFromJson(json);
 
 @override final  String description;
@@ -487,6 +489,8 @@ class _ReceiptItem implements ReceiptItem {
 // Cents
 @override final  int? quantity;
 @override final  int? unitPrice;
+// Cents
+@override final  double? confidence;
 
 /// Create a copy of ReceiptItem
 /// with the given fields replaced by the non-null parameter values.
@@ -501,16 +505,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptItem&&(identical(other.description, description) || other.description == description)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptItem&&(identical(other.description, description) || other.description == description)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.confidence, confidence) || other.confidence == confidence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,description,amount,quantity,unitPrice);
+int get hashCode => Object.hash(runtimeType,description,amount,quantity,unitPrice,confidence);
 
 @override
 String toString() {
-  return 'ReceiptItem(description: $description, amount: $amount, quantity: $quantity, unitPrice: $unitPrice)';
+  return 'ReceiptItem(description: $description, amount: $amount, quantity: $quantity, unitPrice: $unitPrice, confidence: $confidence)';
 }
 
 
@@ -521,7 +525,7 @@ abstract mixin class _$ReceiptItemCopyWith<$Res> implements $ReceiptItemCopyWith
   factory _$ReceiptItemCopyWith(_ReceiptItem value, $Res Function(_ReceiptItem) _then) = __$ReceiptItemCopyWithImpl;
 @override @useResult
 $Res call({
- String description, int amount, int? quantity, int? unitPrice
+ String description, int amount, int? quantity, int? unitPrice, double? confidence
 });
 
 
@@ -538,13 +542,14 @@ class __$ReceiptItemCopyWithImpl<$Res>
 
 /// Create a copy of ReceiptItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? description = null,Object? amount = null,Object? quantity = freezed,Object? unitPrice = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? description = null,Object? amount = null,Object? quantity = freezed,Object? unitPrice = freezed,Object? confidence = freezed,}) {
   return _then(_ReceiptItem(
 description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,quantity: freezed == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,confidence: freezed == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
@@ -560,7 +565,8 @@ mixin _$Receipt {
  int? get total;// Cents
  DateTime? get date; String? get paymentMethod; String? get receiptNumber; double get confidence; DateTime get createdAt; bool get processed; List<ReceiptItem>? get items; List<String>? get extractedTokens;// Normalized tokens for search
 // Audit fields for currency conversion
- String? get originalCurrency; int? get originalTotal; int? get originalSubtotal; int? get originalTax; double? get exchangeRate;
+ String? get originalCurrency; int? get originalTotal; int? get originalSubtotal; int? get originalTax; double? get exchangeRate; String? get archetype;// 'thermal', 'invoice', 'restaurant', etc.
+ Map<String, double>? get fieldConfidences;
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -573,16 +579,16 @@ $ReceiptCopyWith<Receipt> get copyWith => _$ReceiptCopyWithImpl<Receipt>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other.lines, lines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.address, address) || other.address == address)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.extractedTokens, extractedTokens)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalTotal, originalTotal) || other.originalTotal == originalTotal)&&(identical(other.originalSubtotal, originalSubtotal) || other.originalSubtotal == originalSubtotal)&&(identical(other.originalTax, originalTax) || other.originalTax == originalTax)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other.lines, lines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.address, address) || other.address == address)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.extractedTokens, extractedTokens)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalTotal, originalTotal) || other.originalTotal == originalTotal)&&(identical(other.originalSubtotal, originalSubtotal) || other.originalSubtotal == originalSubtotal)&&(identical(other.originalTax, originalTax) || other.originalTax == originalTax)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate)&&(identical(other.archetype, archetype) || other.archetype == archetype)&&const DeepCollectionEquality().equals(other.fieldConfidences, fieldConfidences));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(lines),merchant,address,phone,email,subtotal,tax,total,date,paymentMethod,receiptNumber,confidence,createdAt,processed,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(extractedTokens),originalCurrency,originalTotal,originalSubtotal,originalTax,exchangeRate]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(lines),merchant,address,phone,email,subtotal,tax,total,date,paymentMethod,receiptNumber,confidence,createdAt,processed,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(extractedTokens),originalCurrency,originalTotal,originalSubtotal,originalTax,exchangeRate,archetype,const DeepCollectionEquality().hash(fieldConfidences)]);
 
 @override
 String toString() {
-  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, lines: $lines, merchant: $merchant, address: $address, phone: $phone, email: $email, subtotal: $subtotal, tax: $tax, total: $total, date: $date, paymentMethod: $paymentMethod, receiptNumber: $receiptNumber, confidence: $confidence, createdAt: $createdAt, processed: $processed, items: $items, extractedTokens: $extractedTokens, originalCurrency: $originalCurrency, originalTotal: $originalTotal, originalSubtotal: $originalSubtotal, originalTax: $originalTax, exchangeRate: $exchangeRate)';
+  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, lines: $lines, merchant: $merchant, address: $address, phone: $phone, email: $email, subtotal: $subtotal, tax: $tax, total: $total, date: $date, paymentMethod: $paymentMethod, receiptNumber: $receiptNumber, confidence: $confidence, createdAt: $createdAt, processed: $processed, items: $items, extractedTokens: $extractedTokens, originalCurrency: $originalCurrency, originalTotal: $originalTotal, originalSubtotal: $originalSubtotal, originalTax: $originalTax, exchangeRate: $exchangeRate, archetype: $archetype, fieldConfidences: $fieldConfidences)';
 }
 
 
@@ -593,7 +599,7 @@ abstract mixin class $ReceiptCopyWith<$Res>  {
   factory $ReceiptCopyWith(Receipt value, $Res Function(Receipt) _then) = _$ReceiptCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String imageUrl, String extractedText, List<OCRLine> lines, String? merchant, String? address, String? phone, String? email, int? subtotal, int? tax, int? total, DateTime? date, String? paymentMethod, String? receiptNumber, double confidence, DateTime createdAt, bool processed, List<ReceiptItem>? items, List<String>? extractedTokens, String? originalCurrency, int? originalTotal, int? originalSubtotal, int? originalTax, double? exchangeRate
+ String id, String userId, String imageUrl, String extractedText, List<OCRLine> lines, String? merchant, String? address, String? phone, String? email, int? subtotal, int? tax, int? total, DateTime? date, String? paymentMethod, String? receiptNumber, double confidence, DateTime createdAt, bool processed, List<ReceiptItem>? items, List<String>? extractedTokens, String? originalCurrency, int? originalTotal, int? originalSubtotal, int? originalTax, double? exchangeRate, String? archetype, Map<String, double>? fieldConfidences
 });
 
 
@@ -610,7 +616,7 @@ class _$ReceiptCopyWithImpl<$Res>
 
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? lines = null,Object? merchant = freezed,Object? address = freezed,Object? phone = freezed,Object? email = freezed,Object? subtotal = freezed,Object? tax = freezed,Object? total = freezed,Object? date = freezed,Object? paymentMethod = freezed,Object? receiptNumber = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,Object? items = freezed,Object? extractedTokens = freezed,Object? originalCurrency = freezed,Object? originalTotal = freezed,Object? originalSubtotal = freezed,Object? originalTax = freezed,Object? exchangeRate = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? lines = null,Object? merchant = freezed,Object? address = freezed,Object? phone = freezed,Object? email = freezed,Object? subtotal = freezed,Object? tax = freezed,Object? total = freezed,Object? date = freezed,Object? paymentMethod = freezed,Object? receiptNumber = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,Object? items = freezed,Object? extractedTokens = freezed,Object? originalCurrency = freezed,Object? originalTotal = freezed,Object? originalSubtotal = freezed,Object? originalTax = freezed,Object? exchangeRate = freezed,Object? archetype = freezed,Object? fieldConfidences = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -637,7 +643,9 @@ as String?,originalTotal: freezed == originalTotal ? _self.originalTotal : origi
 as int?,originalSubtotal: freezed == originalSubtotal ? _self.originalSubtotal : originalSubtotal // ignore: cast_nullable_to_non_nullable
 as int?,originalTax: freezed == originalTax ? _self.originalTax : originalTax // ignore: cast_nullable_to_non_nullable
 as int?,exchangeRate: freezed == exchangeRate ? _self.exchangeRate : exchangeRate // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,archetype: freezed == archetype ? _self.archetype : archetype // ignore: cast_nullable_to_non_nullable
+as String?,fieldConfidences: freezed == fieldConfidences ? _self.fieldConfidences : fieldConfidences // ignore: cast_nullable_to_non_nullable
+as Map<String, double>?,
   ));
 }
 
@@ -722,10 +730,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items,  List<String>? extractedTokens,  String? originalCurrency,  int? originalTotal,  int? originalSubtotal,  int? originalTax,  double? exchangeRate)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items,  List<String>? extractedTokens,  String? originalCurrency,  int? originalTotal,  int? originalSubtotal,  int? originalTax,  double? exchangeRate,  String? archetype,  Map<String, double>? fieldConfidences)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Receipt() when $default != null:
-return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items,_that.extractedTokens,_that.originalCurrency,_that.originalTotal,_that.originalSubtotal,_that.originalTax,_that.exchangeRate);case _:
+return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items,_that.extractedTokens,_that.originalCurrency,_that.originalTotal,_that.originalSubtotal,_that.originalTax,_that.exchangeRate,_that.archetype,_that.fieldConfidences);case _:
   return orElse();
 
 }
@@ -743,10 +751,10 @@ return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.l
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items,  List<String>? extractedTokens,  String? originalCurrency,  int? originalTotal,  int? originalSubtotal,  int? originalTax,  double? exchangeRate)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items,  List<String>? extractedTokens,  String? originalCurrency,  int? originalTotal,  int? originalSubtotal,  int? originalTax,  double? exchangeRate,  String? archetype,  Map<String, double>? fieldConfidences)  $default,) {final _that = this;
 switch (_that) {
 case _Receipt():
-return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items,_that.extractedTokens,_that.originalCurrency,_that.originalTotal,_that.originalSubtotal,_that.originalTax,_that.exchangeRate);case _:
+return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items,_that.extractedTokens,_that.originalCurrency,_that.originalTotal,_that.originalSubtotal,_that.originalTax,_that.exchangeRate,_that.archetype,_that.fieldConfidences);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -763,10 +771,10 @@ return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.l
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items,  List<String>? extractedTokens,  String? originalCurrency,  int? originalTotal,  int? originalSubtotal,  int? originalTax,  double? exchangeRate)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String imageUrl,  String extractedText,  List<OCRLine> lines,  String? merchant,  String? address,  String? phone,  String? email,  int? subtotal,  int? tax,  int? total,  DateTime? date,  String? paymentMethod,  String? receiptNumber,  double confidence,  DateTime createdAt,  bool processed,  List<ReceiptItem>? items,  List<String>? extractedTokens,  String? originalCurrency,  int? originalTotal,  int? originalSubtotal,  int? originalTax,  double? exchangeRate,  String? archetype,  Map<String, double>? fieldConfidences)?  $default,) {final _that = this;
 switch (_that) {
 case _Receipt() when $default != null:
-return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items,_that.extractedTokens,_that.originalCurrency,_that.originalTotal,_that.originalSubtotal,_that.originalTax,_that.exchangeRate);case _:
+return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.lines,_that.merchant,_that.address,_that.phone,_that.email,_that.subtotal,_that.tax,_that.total,_that.date,_that.paymentMethod,_that.receiptNumber,_that.confidence,_that.createdAt,_that.processed,_that.items,_that.extractedTokens,_that.originalCurrency,_that.originalTotal,_that.originalSubtotal,_that.originalTax,_that.exchangeRate,_that.archetype,_that.fieldConfidences);case _:
   return null;
 
 }
@@ -778,7 +786,7 @@ return $default(_that.id,_that.userId,_that.imageUrl,_that.extractedText,_that.l
 @JsonSerializable()
 
 class _Receipt extends Receipt {
-  const _Receipt({required this.id, required this.userId, required this.imageUrl, required this.extractedText, required final  List<OCRLine> lines, this.merchant, this.address, this.phone, this.email, this.subtotal, this.tax, this.total, this.date, this.paymentMethod, this.receiptNumber, required this.confidence, required this.createdAt, this.processed = false, final  List<ReceiptItem>? items, final  List<String>? extractedTokens, this.originalCurrency, this.originalTotal, this.originalSubtotal, this.originalTax, this.exchangeRate}): _lines = lines,_items = items,_extractedTokens = extractedTokens,super._();
+  const _Receipt({required this.id, required this.userId, required this.imageUrl, required this.extractedText, required final  List<OCRLine> lines, this.merchant, this.address, this.phone, this.email, this.subtotal, this.tax, this.total, this.date, this.paymentMethod, this.receiptNumber, required this.confidence, required this.createdAt, this.processed = false, final  List<ReceiptItem>? items, final  List<String>? extractedTokens, this.originalCurrency, this.originalTotal, this.originalSubtotal, this.originalTax, this.exchangeRate, this.archetype, final  Map<String, double>? fieldConfidences}): _lines = lines,_items = items,_extractedTokens = extractedTokens,_fieldConfidences = fieldConfidences,super._();
   factory _Receipt.fromJson(Map<String, dynamic> json) => _$ReceiptFromJson(json);
 
 @override final  String id;
@@ -833,6 +841,18 @@ class _Receipt extends Receipt {
 @override final  int? originalSubtotal;
 @override final  int? originalTax;
 @override final  double? exchangeRate;
+@override final  String? archetype;
+// 'thermal', 'invoice', 'restaurant', etc.
+ final  Map<String, double>? _fieldConfidences;
+// 'thermal', 'invoice', 'restaurant', etc.
+@override Map<String, double>? get fieldConfidences {
+  final value = _fieldConfidences;
+  if (value == null) return null;
+  if (_fieldConfidences is EqualUnmodifiableMapView) return _fieldConfidences;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
 
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
@@ -847,16 +867,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other._lines, _lines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.address, address) || other.address == address)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._extractedTokens, _extractedTokens)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalTotal, originalTotal) || other.originalTotal == originalTotal)&&(identical(other.originalSubtotal, originalSubtotal) || other.originalSubtotal == originalSubtotal)&&(identical(other.originalTax, originalTax) || other.originalTax == originalTax)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receipt&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.extractedText, extractedText) || other.extractedText == extractedText)&&const DeepCollectionEquality().equals(other._lines, _lines)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.address, address) || other.address == address)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.total, total) || other.total == total)&&(identical(other.date, date) || other.date == date)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.processed, processed) || other.processed == processed)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._extractedTokens, _extractedTokens)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalTotal, originalTotal) || other.originalTotal == originalTotal)&&(identical(other.originalSubtotal, originalSubtotal) || other.originalSubtotal == originalSubtotal)&&(identical(other.originalTax, originalTax) || other.originalTax == originalTax)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate)&&(identical(other.archetype, archetype) || other.archetype == archetype)&&const DeepCollectionEquality().equals(other._fieldConfidences, _fieldConfidences));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(_lines),merchant,address,phone,email,subtotal,tax,total,date,paymentMethod,receiptNumber,confidence,createdAt,processed,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_extractedTokens),originalCurrency,originalTotal,originalSubtotal,originalTax,exchangeRate]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,imageUrl,extractedText,const DeepCollectionEquality().hash(_lines),merchant,address,phone,email,subtotal,tax,total,date,paymentMethod,receiptNumber,confidence,createdAt,processed,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_extractedTokens),originalCurrency,originalTotal,originalSubtotal,originalTax,exchangeRate,archetype,const DeepCollectionEquality().hash(_fieldConfidences)]);
 
 @override
 String toString() {
-  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, lines: $lines, merchant: $merchant, address: $address, phone: $phone, email: $email, subtotal: $subtotal, tax: $tax, total: $total, date: $date, paymentMethod: $paymentMethod, receiptNumber: $receiptNumber, confidence: $confidence, createdAt: $createdAt, processed: $processed, items: $items, extractedTokens: $extractedTokens, originalCurrency: $originalCurrency, originalTotal: $originalTotal, originalSubtotal: $originalSubtotal, originalTax: $originalTax, exchangeRate: $exchangeRate)';
+  return 'Receipt(id: $id, userId: $userId, imageUrl: $imageUrl, extractedText: $extractedText, lines: $lines, merchant: $merchant, address: $address, phone: $phone, email: $email, subtotal: $subtotal, tax: $tax, total: $total, date: $date, paymentMethod: $paymentMethod, receiptNumber: $receiptNumber, confidence: $confidence, createdAt: $createdAt, processed: $processed, items: $items, extractedTokens: $extractedTokens, originalCurrency: $originalCurrency, originalTotal: $originalTotal, originalSubtotal: $originalSubtotal, originalTax: $originalTax, exchangeRate: $exchangeRate, archetype: $archetype, fieldConfidences: $fieldConfidences)';
 }
 
 
@@ -867,7 +887,7 @@ abstract mixin class _$ReceiptCopyWith<$Res> implements $ReceiptCopyWith<$Res> {
   factory _$ReceiptCopyWith(_Receipt value, $Res Function(_Receipt) _then) = __$ReceiptCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String imageUrl, String extractedText, List<OCRLine> lines, String? merchant, String? address, String? phone, String? email, int? subtotal, int? tax, int? total, DateTime? date, String? paymentMethod, String? receiptNumber, double confidence, DateTime createdAt, bool processed, List<ReceiptItem>? items, List<String>? extractedTokens, String? originalCurrency, int? originalTotal, int? originalSubtotal, int? originalTax, double? exchangeRate
+ String id, String userId, String imageUrl, String extractedText, List<OCRLine> lines, String? merchant, String? address, String? phone, String? email, int? subtotal, int? tax, int? total, DateTime? date, String? paymentMethod, String? receiptNumber, double confidence, DateTime createdAt, bool processed, List<ReceiptItem>? items, List<String>? extractedTokens, String? originalCurrency, int? originalTotal, int? originalSubtotal, int? originalTax, double? exchangeRate, String? archetype, Map<String, double>? fieldConfidences
 });
 
 
@@ -884,7 +904,7 @@ class __$ReceiptCopyWithImpl<$Res>
 
 /// Create a copy of Receipt
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? lines = null,Object? merchant = freezed,Object? address = freezed,Object? phone = freezed,Object? email = freezed,Object? subtotal = freezed,Object? tax = freezed,Object? total = freezed,Object? date = freezed,Object? paymentMethod = freezed,Object? receiptNumber = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,Object? items = freezed,Object? extractedTokens = freezed,Object? originalCurrency = freezed,Object? originalTotal = freezed,Object? originalSubtotal = freezed,Object? originalTax = freezed,Object? exchangeRate = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? imageUrl = null,Object? extractedText = null,Object? lines = null,Object? merchant = freezed,Object? address = freezed,Object? phone = freezed,Object? email = freezed,Object? subtotal = freezed,Object? tax = freezed,Object? total = freezed,Object? date = freezed,Object? paymentMethod = freezed,Object? receiptNumber = freezed,Object? confidence = null,Object? createdAt = null,Object? processed = null,Object? items = freezed,Object? extractedTokens = freezed,Object? originalCurrency = freezed,Object? originalTotal = freezed,Object? originalSubtotal = freezed,Object? originalTax = freezed,Object? exchangeRate = freezed,Object? archetype = freezed,Object? fieldConfidences = freezed,}) {
   return _then(_Receipt(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -911,7 +931,9 @@ as String?,originalTotal: freezed == originalTotal ? _self.originalTotal : origi
 as int?,originalSubtotal: freezed == originalSubtotal ? _self.originalSubtotal : originalSubtotal // ignore: cast_nullable_to_non_nullable
 as int?,originalTax: freezed == originalTax ? _self.originalTax : originalTax // ignore: cast_nullable_to_non_nullable
 as int?,exchangeRate: freezed == exchangeRate ? _self.exchangeRate : exchangeRate // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,archetype: freezed == archetype ? _self.archetype : archetype // ignore: cast_nullable_to_non_nullable
+as String?,fieldConfidences: freezed == fieldConfidences ? _self._fieldConfidences : fieldConfidences // ignore: cast_nullable_to_non_nullable
+as Map<String, double>?,
   ));
 }
 

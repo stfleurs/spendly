@@ -59,7 +59,12 @@ extension BillStatusUI on BillStatus {
 // ─────────────────────────────────────────────────────────────
 
 class UpcomingScreen extends ConsumerWidget {
-  const UpcomingScreen({super.key});
+  final bool showBackButton;
+
+  const UpcomingScreen({
+    super.key,
+    this.showBackButton = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,9 +73,10 @@ class UpcomingScreen extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
-        const SliverAppHeader(
+        SliverAppHeader(
           title: 'Upcoming',
           showDatePicker: false,
+          showBackButton: showBackButton,
         ),
         SliverToBoxAdapter(
           child: Padding(

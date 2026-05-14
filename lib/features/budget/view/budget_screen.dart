@@ -7,7 +7,6 @@ import 'package:spendly/features/budget/providers/budget_provider.dart';
 import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/features/home/providers/insights_provider.dart';
-import 'package:spendly/core/models/category.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class MyBudgetScreen extends ConsumerWidget {
@@ -233,7 +232,7 @@ class _CategoryBudgetItemWidget extends ConsumerWidget {
               data: (comparison) {
                 if (comparison == null) {
                   return Text(
-                    hasTarget ? 'Target: $assignedStr' : 'No set target',
+                    hasTarget ? '${l10n.assigned}: $assignedStr' : 'No set target',
                     style: const TextStyle(
                       color: AppColors.textLight,
                       fontSize: 12,
@@ -249,7 +248,7 @@ class _CategoryBudgetItemWidget extends ConsumerWidget {
                   children: [
                     if (hasTarget) ...[
                       Text(
-                        'Target: $assignedStr',
+                        '${l10n.assigned}: $assignedStr',
                         style: const TextStyle(
                           color: AppColors.textLight,
                           fontSize: 12,

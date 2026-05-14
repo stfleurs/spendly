@@ -8,10 +8,11 @@ import 'package:spendly/features/budget/providers/budget_provider.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
-import 'package:spendly/features/ocr/repository/merchant_repository.dart';
+import 'package:spendly/features/ocr/repository/financial_intelligence_repository.dart';
 import 'package:spendly/core/providers/date_provider.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
+import 'package:spendly/core/providers/exchange_rate_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
@@ -26,6 +27,7 @@ class ImportReviewScreen extends ConsumerStatefulWidget {
 
 class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
   final Map<int, String?> _selectedCategoryIds = {};
+  final Map<int, String> _normalizedMerchants = {};
   bool _isImporting = false;
 
   @override
@@ -39,24 +41,27 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
   Future<void> _guessAllCategories() async {
     final state = ref.read(importProvider);
     final userId = ref.read(authStateProvider).value?.uid ?? '';
-    final merchantRepo = ref.read(merchantRepositoryProvider);
+    final intelligence = ref.read(financialIntelligenceRepositoryProvider);
     final budgetAsync = ref.read(budgetProvider(userId));
-    
+
     final budget = budgetAsync.value;
     if (budget == null) return;
 
     for (int i = 0; i < state.parsedTransactions.length; i++) {
       final tx = state.parsedTransactions[i];
-      final guessed = await merchantRepo.guessCategory(userId, tx.description);
-      
-      if (guessed != null) {
-        final category = budget.items.map((item) => item.category).firstWhere(
-          (c) => c.name.toLowerCase() == guessed.toLowerCase() || 
-                 c.group.toLowerCase() == guessed.toLowerCase(),
-          orElse: () => budget.items.first.category, // Fallback to first if not found
-        );
-        
-        if (mounted) {
+      final prediction = await intelligence.predictMerchant(userId, tx.description);
+
+      if (mounted) {
+        setState(() {
+          _normalizedMerchants[i] = prediction.merchant;
+        });
+
+        if (prediction.categoryId != null) {
+          final category = budget.items.map((item) => item.category).firstWhere(
+                (c) => c.id == prediction.categoryId,
+                orElse: () => budget.items.first.category,
+              );
+
           setState(() {
             _selectedCategoryIds[i] = category.id;
           });
@@ -193,11 +198,17 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            tx.description,
+            _normalizedMerchants[index] ?? tx.description,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          if (_normalizedMerchants[index] != null &&
+              _normalizedMerchants[index] != tx.description)
+            Text(
+              'Original: ${tx.description}',
+              style: const TextStyle(color: AppColors.textLight, fontSize: 10),
+            ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: _selectedCategoryIds[index],
@@ -338,7 +349,7 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
           final account = accounts?.firstWhere((a) => a.id == widget.accountId);
           final String txCurrency = account?.currency ?? 'USD';
           final baseCurrency = ref.read(currencyProvider);
-          const double rate = 1.0; // TODO: Implement real-time rate lookup
+          final double rate = ref.read(exchangeRateProvider((from: txCurrency, to: baseCurrency)));
           
           // Rule #2: Scaled Integer Math
           const int rateScale = 1000000;
@@ -374,6 +385,17 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
           
           if (result == TransactionInsertResult.success) {
             successCount++;
+            // Record interaction for intelligence learning
+            await ref
+                .read(financialIntelligenceRepositoryProvider)
+                .recordMerchantInteraction(
+                  userId: userId,
+                  rawMerchant: raw.description,
+                  correctedMerchant: _normalizedMerchants[i] ?? raw.description,
+                  categoryId: catId,
+                  accountId: widget.accountId,
+                  currency: txCurrency,
+                );
           } else if (result == TransactionInsertResult.duplicate) {
             duplicateCount++;
           } else {

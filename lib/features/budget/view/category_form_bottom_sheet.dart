@@ -335,7 +335,7 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
                         );
                       },
                       loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
+                      error: (_, _) => const SizedBox.shrink(),
                     );
                   },
                 ),

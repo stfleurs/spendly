@@ -6,10 +6,10 @@ import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/providers/balance_provider.dart';
-import 'package:spendly/features/home/providers/insights_provider.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/features/upcoming/providers/upcoming_provider.dart';
 import 'package:spendly/features/upcoming/view/upcoming_screen.dart';
+import 'package:spendly/core/providers/date_provider.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -23,8 +23,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
-    final now = DateTime.now();
-    final monthlySummaryAsync = ref.watch(monthlySummaryProvider((userId: userId, month: now)));
+    final selectedDate = ref.watch(selectedDateProvider);
+    final monthlySummaryAsync = ref.watch(monthlySummaryProvider((userId: userId, month: selectedDate)));
     final transactionsAsync = ref.watch(transactionsStreamProvider(userId));
 
     return CustomScrollView(
@@ -132,7 +132,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         height: 200,
                         child: Consumer(
                           builder: (context, ref, child) {
-                            final insights = ref.watch(spendingInsightsProvider((userId: userId, month: now)));
+                            final insights = ref.watch(spendingInsightsProvider((userId: userId, month: selectedDate)));
                             if (insights.isEmpty) {
                               return const Center(child: Text('No spending this month.'));
                             }
@@ -315,7 +315,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const UpcomingScreen()),
+        MaterialPageRoute(
+          builder: (_) => const UpcomingScreen(showBackButton: true),
+        ),
       ),
       child: MainCard(
         padding: EdgeInsets.zero,

@@ -8,6 +8,7 @@ import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/features/ocr/services/ocr_service.dart';
 import 'package:spendly/features/ocr/services/receipt_parser.dart';
 import 'package:spendly/features/ocr/repository/receipt_repository.dart';
+import 'package:spendly/features/ocr/repository/financial_intelligence_repository.dart';
 import 'package:spendly/features/ocr/view/receipt_confirmation_screen.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
 import 'package:spendly/core/models/receipt.dart';
@@ -17,7 +18,8 @@ class ReceiptScannerScreen extends ConsumerStatefulWidget {
   const ReceiptScannerScreen({super.key});
 
   @override
-  ConsumerState<ReceiptScannerScreen> createState() => _ReceiptScannerScreenState();
+  ConsumerState<ReceiptScannerScreen> createState() =>
+      _ReceiptScannerScreenState();
 }
 
 class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
@@ -41,15 +43,18 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
       setState(() => _status = 'Extracting text...');
       final ocrService = ref.read(ocrServiceProvider);
       final recognizedText = await ocrService.processImage(compressedFile);
-      
+
       final parsed = ReceiptParser.parse(recognizedText);
 
       setState(() => _status = 'Uploading to secure storage...');
       final userId = ref.read(authRepositoryProvider).currentUser?.uid ?? '';
       final repository = ref.read(receiptRepositoryProvider);
-      final imageUrl = await repository.uploadReceiptImage(userId, compressedFile);
+      final imageUrl = await repository.uploadReceiptImage(
+        userId,
+        compressedFile,
+      );
 
-      final receipt = Receipt(
+      final parsedReceipt = Receipt(
         id: const Uuid().v4(),
         userId: userId,
         imageUrl: imageUrl,
@@ -68,27 +73,36 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
         confidence: parsed.confidence,
         createdAt: DateTime.now(),
         items: parsed.items,
-        originalCurrency: 'HTG', // Default source currency for OCR in this region
+        originalCurrency:
+            'HTG', // Default source currency for OCR in this region
         originalTotal: parsed.total,
         originalSubtotal: parsed.subtotal,
         originalTax: parsed.tax,
+        archetype: parsed.archetype,
+        fieldConfidences: parsed.fieldConfidences,
       );
+
+      final receipt = await ref
+          .read(financialIntelligenceRepositoryProvider)
+          .applyLearning(userId, parsedReceipt);
 
       await repository.saveReceipt(receipt);
 
       if (!mounted) return;
-      
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => ReceiptConfirmationScreen(receipt: receipt),
         ),
       );
-
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.expense),
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: AppColors.expense,
+        ),
       );
     } finally {
       if (mounted) {
@@ -99,14 +113,15 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
 
   Future<File?> _compressImage(File file) async {
     final dir = await path_provider.getTemporaryDirectory();
-    final targetPath = '${dir.absolute.path}/temp_receipt_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final targetPath =
+        '${dir.absolute.path}/temp_receipt_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
     return await FlutterImageCompress.compressAndGetFile(
       file.absolute.path,
       targetPath,
-      quality: 70,
-      minWidth: 1024,
-      minHeight: 1024,
+      quality: 85,
+      minWidth: 1600,
+      minHeight: 2400,
       format: CompressFormat.jpeg,
     ).then((xFile) => xFile != null ? File(xFile.path) : null);
   }
@@ -116,9 +131,18 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Scan Receipt', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Scan Receipt',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
       ),
       body: Center(
         child: _isProcessing
@@ -127,7 +151,10 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
                 children: [
                   const CircularProgressIndicator(color: AppColors.primary),
                   const SizedBox(height: 24),
-                  Text(_status, style: const TextStyle(color: AppColors.textLight)),
+                  Text(
+                    _status,
+                    style: const TextStyle(color: AppColors.textLight),
+                  ),
                 ],
               )
             : Column(
@@ -139,12 +166,20 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.receipt_long, size: 64, color: AppColors.primary),
+                    child: const Icon(
+                      Icons.receipt_long,
+                      size: 64,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   const Text(
                     'Snap a photo of your receipt',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -188,7 +223,9 @@ class _ReceiptScannerScreenState extends ConsumerState<ReceiptScannerScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: isSecondary ? const BorderSide(color: AppColors.primary) : BorderSide.none,
+            side: isSecondary
+                ? const BorderSide(color: AppColors.primary)
+                : BorderSide.none,
           ),
           elevation: isSecondary ? 0 : 4,
         ),

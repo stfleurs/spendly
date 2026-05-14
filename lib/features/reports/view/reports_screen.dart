@@ -8,7 +8,7 @@ import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/providers/date_provider.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/features/budget/repository/category_repository.dart';
-import 'package:spendly/core/models/category.dart';
+import 'package:spendly/core/models/category.dart' as model;
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class ReportsScreen extends ConsumerWidget {
@@ -18,7 +18,7 @@ class ReportsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final selectedDate = ref.watch(selectedDateProvider);
-    final transactionsAsync = ref.watch(transactionsStreamProvider(userId));
+    final transactionsAsync = ref.watch(transactionsByMonthProvider((userId: userId, month: selectedDate)));
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
 
     final l10n = AppLocalizations.of(context)!;
@@ -36,12 +36,7 @@ class ReportsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(24),
               child: Center(child: Text('Error: $e')),
             ),
-            data: (allTransactions) {
-              // Filter to selected month
-              final transactions = allTransactions.where((t) {
-                return t.date.year == selectedDate.year &&
-                    t.date.month == selectedDate.month;
-              }).toList();
+            data: (transactions) {
 
               // Calculate totals
               int totalIncome = 0;
@@ -134,7 +129,9 @@ class ReportsScreen extends ConsumerWidget {
                             height: 200,
                             child: _buildPieChart(spentByCategory, categoriesAsync),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 32),
+                          // Legend
+                          _buildLegend(spentByCategory, categoriesAsync),
                         ],
                       ),
                     ),
@@ -147,7 +144,7 @@ class ReportsScreen extends ConsumerWidget {
                       loading: () => const MainCard(child: Center(child: CircularProgressIndicator())),
                       error: (e, s) => const SizedBox.shrink(),
                       data: (categories) {
-                        final Map<String, Category> catMap = {
+                        final Map<String, model.Category> catMap = {
                           for (final c in categories) c.id: c
                         };
 
@@ -213,12 +210,12 @@ class ReportsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPieChart(Map<String, int> spentByCategory, AsyncValue<List<Category>> categoriesAsync) {
+  Widget _buildPieChart(Map<String, int> spentByCategory, AsyncValue<List<model.Category>> categoriesAsync) {
     return categoriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, s) => const SizedBox.shrink(),
       data: (categories) {
-        final Map<String, Category> catMap = {for (final c in categories) c.id: c};
+        final Map<String, model.Category> catMap = {for (final c in categories) c.id: c};
         final sortedEntries = spentByCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
         
         final List<Color> sectionColors = [
@@ -245,13 +242,58 @@ class ReportsScreen extends ConsumerWidget {
                 value: amount.toDouble(),
                 title: '', // Hide title on segments
                 radius: 60,
-                badgeWidget: index < 3 ? _buildPieBadge(cat?.name ?? '?') : null,
+                badgeWidget: index < 5 ? _buildPieBadge(cat?.name ?? '?') : null,
                 badgePositionPercentageOffset: 1.3,
               );
             }).toList(),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLegend(Map<String, int> spentByCategory, AsyncValue<List<model.Category>> categoriesAsync) {
+    return categoriesAsync.maybeWhen(
+      data: (categories) {
+        final Map<String, model.Category> catMap = {for (final c in categories) c.id: c};
+        final sortedEntries = spentByCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+        
+        final List<Color> sectionColors = [
+          AppColors.primary,
+          const Color(0xFFF6C022),
+          const Color(0xFF4FD1C5),
+          const Color(0xFF63B3ED),
+          const Color(0xFFB794F4),
+          const Color(0xFFCBD5E0),
+        ];
+
+        return Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          children: sortedEntries.asMap().entries.map((entry) {
+            final index = entry.key;
+            final cat = catMap[entry.value.key];
+            final color = sectionColors[index % sectionColors.length];
+            
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  cat?.name ?? '?',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textDark, fontWeight: FontWeight.bold),
+                ),
+              ],
+            );
+          }).toList(),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
     );
   }
 

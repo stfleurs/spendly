@@ -141,7 +141,7 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
                           _sectionLabel('CURRENCY'),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
-                            value: _selectedCurrency,
+                            initialValue: _selectedCurrency,
                             decoration: _inputDecoration('Select currency'),
                             items: ['USD', 'HTG', 'EUR', 'CAD', 'DOP']
                                 .map((c) => DropdownMenuItem(
@@ -230,7 +230,7 @@ class _AddUpcomingScreenState extends ConsumerState<AddUpcomingScreen> {
                                 children: [
                                   Expanded(
                                     child: DropdownButtonFormField<Category>(
-                                      value: _selectedCategory,
+                                      initialValue: _selectedCategory,
                                       decoration: _inputDecoration('Select a category'),
                                       items: categories
                                           .map((c) => DropdownMenuItem(

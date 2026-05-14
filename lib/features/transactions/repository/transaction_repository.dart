@@ -47,6 +47,21 @@ class TransactionRepository {
             .toList());
   }
 
+  Stream<List<AppTransaction>> watchTransactionsByMonth(String userId, DateTime month) {
+    final startOfMonth = DateTime(month.year, month.month, 1);
+    final endOfMonth = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+
+    return _collection
+        .where('userId', isEqualTo: userId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfMonth))
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AppTransaction.fromJson({...doc.data(), 'id': doc.id}))
+            .toList());
+  }
+
   Future<List<AppTransaction>> getTransactionsPaginated(
     String userId, {
     DateTime? startAfterDate,
@@ -380,5 +395,9 @@ final transactionsStreamProvider =
     StreamProvider.family<List<AppTransaction>, String>((ref, userId) {
       return ref.watch(transactionRepositoryProvider).watchTransactions(userId);
     });
+
+final transactionsByMonthProvider = StreamProvider.family<List<AppTransaction>, ({String userId, DateTime month})>((ref, arg) {
+  return ref.watch(transactionRepositoryProvider).watchTransactionsByMonth(arg.userId, arg.month);
+});
 
 final planTransactionsProvider = StreamProvider.family<List<AppTransaction>, ({String userId, String templateId})>((ref, arg) { return ref.read(transactionRepositoryProvider).watchPlanTransactions(arg.userId, arg.templateId); });
