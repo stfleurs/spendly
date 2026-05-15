@@ -37,3 +37,13 @@ This document defines the immutable architectural rules for the Spendly financia
   - `exchangeRate`, `scaledRate`, & `rateScale`
   - `rateSource`
 - **Rationale**: Provides a complete forensic trail for every currency conversion.
+## 7. Envelope Allocation Integrity (Zero-Based Budgeting)
+- **Rule**: Income transactions MUST implicitly add to both `Account.balance` and `AppUser.readyToAssign`.
+- **Rule**: Expense transactions MUST implicitly subtract from both `Account.balance` and `Category.availableBalance`.
+- **Rule**: `AllocationEvent` records MUST atomically subtract from the funding source (e.g., `AppUser.readyToAssign` or another Category) and add to the target `Category.availableBalance`.
+- **Rationale**: Ensures the system behaves as a strict prescriptive allocation engine rather than a descriptive historical tracker.
+
+## 8. Budget Integrity Validation
+- **Rule**: The sum of all positive `Category.availableBalance` plus `AppUser.readyToAssign` MUST NEVER exceed the sum of all positive cash `Account.balance` equivalents.
+- **Rule**: Overspending (negative envelope balances) MUST NOT automatically pull from `ReadyToAssign`. Negative balances must be explicitly resolved by the user via `AllocationEvent`.
+- **Rationale**: Prevents money creation bugs and forces intentional user behavior for overspending.

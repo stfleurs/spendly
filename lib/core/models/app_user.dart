@@ -9,6 +9,7 @@ abstract class AppUser with _$AppUser {
     required String id,
     required String name,
     required String baseCurrency,
+    @Default(0) int readyToAssign, // Normalized in Base Currency
     required DateTime createdAt,
   }) = _AppUser;
 

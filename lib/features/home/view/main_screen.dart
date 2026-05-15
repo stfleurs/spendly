@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/features/home/view/dashboard_screen.dart';
 import 'package:spendly/features/accounts/view/accounts_screen.dart';
-import 'package:spendly/features/reports/view/reports_screen.dart';
 import 'package:spendly/features/transactions/view/transactions_screen.dart';
 import 'package:spendly/features/transactions/view/new_transaction_screen.dart';
 import 'package:spendly/features/ocr/view/receipt_scanner_screen.dart';
-import 'package:spendly/features/upcoming/view/upcoming_screen.dart';
 import 'package:spendly/features/upcoming/view/add_upcoming_screen.dart';
 import 'package:spendly/features/upcoming/view/add_plan_screen.dart';
-import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/features/budget/view/budget_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -19,86 +17,97 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0; // Default to Dashboard
+  int _selectedIndex = 0;
 
   final List<Widget> _screens = [
     const DashboardScreen(),
     const AccountsScreen(),
-    const ReportsScreen(),
+    const MyBudgetScreen(),
     const TransactionsScreen(),
-    const UpcomingScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
           // Current Screen
           Padding(
-            padding: const EdgeInsets.only(bottom: 90),
-            child: _screens[_selectedIndex],
+            padding: const EdgeInsets.only(bottom: 0), // Handle padding in screens or bar
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: _screens,
+            ),
           ),
 
-          // Custom Bottom Navigation Bar
+          // Glassmorphic Bottom Navigation Bar
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
+            left: 20,
+            right: 20,
+            bottom: 24,
             child: Container(
-              height: 100,
+              height: 80,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
-                ),
+                color: Colors.white.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _NavBarItem(
-                    icon: Icons.dashboard_outlined,
-                    label: 'Home',
-                    isSelected: _selectedIndex == 0,
-                    onTap: () => setState(() => _selectedIndex = 0),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _NavBarItem(
+                          icon: Icons.grid_view_rounded,
+                          label: 'HOME',
+                          isSelected: _selectedIndex == 0,
+                          onTap: () => setState(() => _selectedIndex = 0),
+                        ),
+                        _NavBarItem(
+                          icon: Icons.account_balance_wallet_rounded,
+                          label: 'WALLETS',
+                          isSelected: _selectedIndex == 1,
+                          onTap: () => setState(() => _selectedIndex = 1),
+                        ),
+                      ],
+                    ),
                   ),
-                  _NavBarItem(
-                    icon: Icons.account_balance_wallet_outlined,
-                    label: l10n.accounts,
-                    isSelected: _selectedIndex == 1,
-                    onTap: () => setState(() => _selectedIndex = 1),
-                  ),
-                  const SizedBox(width: 40), // Space for FAB
-                  _NavBarItem(
-                    icon: Icons.upcoming_outlined,
-                    label: 'Upcoming',
-                    isSelected: _selectedIndex == 4,
-                    onTap: () => setState(() => _selectedIndex = 4),
-                  ),
-                  _NavBarItem(
-                    icon: Icons.list_alt_outlined,
-                    label: l10n.activity,
-                    isSelected: _selectedIndex == 3,
-                    onTap: () => setState(() => _selectedIndex = 3),
+                  const SizedBox(width: 80), // Perfect gap for FAB
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _NavBarItem(
+                          icon: Icons.pie_chart_rounded,
+                          label: 'BUDGET',
+                          isSelected: _selectedIndex == 2,
+                          onTap: () => setState(() => _selectedIndex = 2),
+                        ),
+                        _NavBarItem(
+                          icon: Icons.receipt_long_rounded,
+                          label: 'HISTORY',
+                          isSelected: _selectedIndex == 3,
+                          onTap: () => setState(() => _selectedIndex = 3),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
 
-          // Speed-Dial FAB
-          const _SpeedDialFab(bottomNavHeight: 100),
+          // Speed-Dial FAB (Floating above the bar)
+          const _SpeedDialFab(bottomNavHeight: 128),
         ],
       ),
     );
@@ -384,24 +393,26 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+      borderRadius: BorderRadius.circular(20),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
-            color: isSelected ? AppColors.primary : AppColors.textLight,
-            size: 26,
+            color: isSelected ? AppColors.primary : AppColors.textLight.withValues(alpha: 0.5),
+            size: 24,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? AppColors.primary : AppColors.textLight,
-              fontSize: 10,
+              color: isSelected ? AppColors.primary : AppColors.textLight.withValues(alpha: 0.5),
+              fontSize: 8,
               fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
             ),
           ),
         ],

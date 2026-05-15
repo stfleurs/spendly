@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AppUser {
 
- String get id; String get name; String get baseCurrency; DateTime get createdAt;
+ String get id; String get name; String get baseCurrency; int get readyToAssign;// Normalized in Base Currency
+ DateTime get createdAt;
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $AppUserCopyWith<AppUser> get copyWith => _$AppUserCopyWithImpl<AppUser>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.readyToAssign, readyToAssign) || other.readyToAssign == readyToAssign)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,baseCurrency,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,baseCurrency,readyToAssign,createdAt);
 
 @override
 String toString() {
-  return 'AppUser(id: $id, name: $name, baseCurrency: $baseCurrency, createdAt: $createdAt)';
+  return 'AppUser(id: $id, name: $name, baseCurrency: $baseCurrency, readyToAssign: $readyToAssign, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $AppUserCopyWith<$Res>  {
   factory $AppUserCopyWith(AppUser value, $Res Function(AppUser) _then) = _$AppUserCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String baseCurrency, DateTime createdAt
+ String id, String name, String baseCurrency, int readyToAssign, DateTime createdAt
 });
 
 
@@ -65,12 +66,13 @@ class _$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? baseCurrency = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? baseCurrency = null,Object? readyToAssign = null,Object? createdAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,baseCurrency: null == baseCurrency ? _self.baseCurrency : baseCurrency // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,readyToAssign: null == readyToAssign ? _self.readyToAssign : readyToAssign // ignore: cast_nullable_to_non_nullable
+as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
@@ -156,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String baseCurrency,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String baseCurrency,  int readyToAssign,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.id,_that.name,_that.baseCurrency,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.baseCurrency,_that.readyToAssign,_that.createdAt);case _:
   return orElse();
 
 }
@@ -177,10 +179,10 @@ return $default(_that.id,_that.name,_that.baseCurrency,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String baseCurrency,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String baseCurrency,  int readyToAssign,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _AppUser():
-return $default(_that.id,_that.name,_that.baseCurrency,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.baseCurrency,_that.readyToAssign,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +199,10 @@ return $default(_that.id,_that.name,_that.baseCurrency,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String baseCurrency,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String baseCurrency,  int readyToAssign,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.id,_that.name,_that.baseCurrency,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.baseCurrency,_that.readyToAssign,_that.createdAt);case _:
   return null;
 
 }
@@ -212,12 +214,14 @@ return $default(_that.id,_that.name,_that.baseCurrency,_that.createdAt);case _:
 @JsonSerializable()
 
 class _AppUser extends AppUser {
-  const _AppUser({required this.id, required this.name, required this.baseCurrency, required this.createdAt}): super._();
+  const _AppUser({required this.id, required this.name, required this.baseCurrency, this.readyToAssign = 0, required this.createdAt}): super._();
   factory _AppUser.fromJson(Map<String, dynamic> json) => _$AppUserFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override final  String baseCurrency;
+@override@JsonKey() final  int readyToAssign;
+// Normalized in Base Currency
 @override final  DateTime createdAt;
 
 /// Create a copy of AppUser
@@ -233,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.readyToAssign, readyToAssign) || other.readyToAssign == readyToAssign)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,baseCurrency,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,baseCurrency,readyToAssign,createdAt);
 
 @override
 String toString() {
-  return 'AppUser(id: $id, name: $name, baseCurrency: $baseCurrency, createdAt: $createdAt)';
+  return 'AppUser(id: $id, name: $name, baseCurrency: $baseCurrency, readyToAssign: $readyToAssign, createdAt: $createdAt)';
 }
 
 
@@ -253,7 +257,7 @@ abstract mixin class _$AppUserCopyWith<$Res> implements $AppUserCopyWith<$Res> {
   factory _$AppUserCopyWith(_AppUser value, $Res Function(_AppUser) _then) = __$AppUserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String baseCurrency, DateTime createdAt
+ String id, String name, String baseCurrency, int readyToAssign, DateTime createdAt
 });
 
 
@@ -270,12 +274,13 @@ class __$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? baseCurrency = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? baseCurrency = null,Object? readyToAssign = null,Object? createdAt = null,}) {
   return _then(_AppUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,baseCurrency: null == baseCurrency ? _self.baseCurrency : baseCurrency // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,readyToAssign: null == readyToAssign ? _self.readyToAssign : readyToAssign // ignore: cast_nullable_to_non_nullable
+as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }

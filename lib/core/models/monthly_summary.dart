@@ -15,6 +15,7 @@ abstract class MonthlySummary with _$MonthlySummary {
     @Default(0) int expenses, // Normalized in Base Currency
     @Default(0) int netChange, // Normalized in Base Currency
     @Default({}) Map<String, int> categoryTotals, // Normalized in Base Currency
+    @Default({}) Map<String, int> categoryAllocations, // Assigned to envelopes this month
     @Default({}) Map<String, int> accountTotals, // Normalized in Base Currency
     @Default({}) Map<String, Map<String, int>> currencyBreakdown, // Namespaced RAW amounts (Rule #5)
     @Default(0) int transactionCount,

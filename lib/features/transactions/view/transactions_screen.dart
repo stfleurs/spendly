@@ -460,7 +460,16 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final isExpense = transaction.type.toLowerCase() == 'expense';
     final isIncome = transaction.type.toLowerCase() == 'income';
     final categoryName = catMap[transaction.categoryId]?.name ?? transaction.type.toUpperCase();
-    final amountStr = '${isExpense ? '-' : isIncome ? '+' : ''}${transaction.currency == 'HTG' ? 'G' : transaction.currency == 'EUR' ? '€' : '\$'}${(transaction.amount / 100).toStringAsFixed(2)}';
+    final sign = isExpense ? '-' : isIncome ? '+' : '';
+    final absAmount = (transaction.amount / 100).toStringAsFixed(2);
+    String amountStr;
+    if (transaction.currency == 'HTG') {
+      amountStr = '$sign$absAmount G';
+    } else if (transaction.currency == 'EUR') {
+      amountStr = '$sign€$absAmount';
+    } else {
+      amountStr = '$sign\$$absAmount';
+    }
 
     final l10n = AppLocalizations.of(context)!;
     final day = transaction.date.day.toString().padLeft(2, '0');

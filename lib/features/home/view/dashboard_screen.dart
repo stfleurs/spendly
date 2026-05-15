@@ -10,6 +10,8 @@ import 'package:spendly/features/transactions/repository/transaction_repository.
 import 'package:spendly/features/upcoming/providers/upcoming_provider.dart';
 import 'package:spendly/features/upcoming/view/upcoming_screen.dart';
 import 'package:spendly/core/providers/date_provider.dart';
+import 'package:spendly/core/providers/app_user_provider.dart';
+import 'package:spendly/features/budget/view/allocation_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -26,6 +28,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final selectedDate = ref.watch(selectedDateProvider);
     final monthlySummaryAsync = ref.watch(monthlySummaryProvider((userId: userId, month: selectedDate)));
     final transactionsAsync = ref.watch(transactionsStreamProvider(userId));
+    final appUserAsync = ref.watch(appUserStreamProvider(userId));
 
     return CustomScrollView(
       slivers: [
@@ -36,6 +39,88 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Ready To Assign (New) ──────────────────────────
+                appUserAsync.when(
+                  data: (user) {
+                    final amount = user?.readyToAssign ?? 0;
+                    if (amount == 0) return const SizedBox.shrink();
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.info_outline, color: Colors.white70, size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'READY TO ASSIGN',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 10,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  Text(
+                                    user?.baseCurrency == 'HTG' 
+                                        ? '${(amount / 100).toStringAsFixed(2)} G' 
+                                        : '\$${(amount / 100).toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 24,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) => const AllocationBottomSheet(),
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: const Text(
+                                'ASSIGN',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (e, s) => const SizedBox.shrink(),
+                ),
                 // ── Top Area: Current Month Snapshot ──────────────────────
                 monthlySummaryAsync.when(
                   data: (summary) {
@@ -61,7 +146,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '\$${(spent / 100).toStringAsFixed(0)}',
+                                _formatCurrency(spent, appUserAsync.value?.baseCurrency ?? 'USD', decimal: 0),
                                 style: const TextStyle(
                                   color: AppColors.textDark,
                                   fontSize: 42,
@@ -84,8 +169,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildMiniStat('INCOME', '\$${(income / 100).toStringAsFixed(0)}', AppColors.income),
-                              _buildMiniStat('SAVINGS EST.', '\$${((income - spent) / 100).toStringAsFixed(0)}', AppColors.primary),
+                              _buildMiniStat('INCOME', _formatCurrency(income, appUserAsync.value?.baseCurrency ?? 'USD', decimal: 0), AppColors.income),
+                              _buildMiniStat('SAVINGS EST.', _formatCurrency(income - spent, appUserAsync.value?.baseCurrency ?? 'USD', decimal: 0), AppColors.primary),
                             ],
                           ),
                         ],
@@ -189,7 +274,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: Column(
                         children: recentTxs.map((tx) {
                           final isExpense = tx.type.toLowerCase() == 'expense';
-                          final sign = isExpense ? '-' : '+';
                           final color = isExpense ? AppColors.textDark : AppColors.income;
                           final dateStr = DateFormat('MMM d').format(tx.date);
 
@@ -215,7 +299,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               style: const TextStyle(color: AppColors.textLight, fontSize: 12),
                             ),
                             trailing: Text(
-                              '$sign\$${(tx.amount / 100).toStringAsFixed(2)}',
+                              _formatCurrency(tx.amount, tx.currency, showSign: true),
                               style: TextStyle(
                                 color: color,
                                 fontWeight: FontWeight.bold,
@@ -257,7 +341,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               children: [
                                 const Text('Total Assets & Balances', style: TextStyle(color: AppColors.textDark)),
                                 Text(
-                                  '\$${(totalNetWorth / 100).toStringAsFixed(2)}',
+                                  _formatCurrency(totalNetWorth, appUserAsync.value?.baseCurrency ?? 'USD'),
                                   style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
                                 ),
                               ],
@@ -309,6 +393,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final upcomingTotal = stats['upcomingTotal'] as int;
     final overdueCount = stats['overdueCount'] as int;
     final dueSoonCount = stats['dueSoonCount'] as int;
+    final baseCurrency = ref.watch(appUserStreamProvider(userId)).value?.baseCurrency ?? 'USD';
 
     final hasOverdue = overdueCount > 0;
     final Color headerColor = hasOverdue ? AppColors.expense : AppColors.primary;
@@ -357,7 +442,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 children: [
                   _upcomingStat(
                     label: 'TOTAL',
-                    value: '\$${(upcomingTotal / 100).toStringAsFixed(0)}',
+                    value: _formatCurrency(upcomingTotal, baseCurrency, decimal: 0),
                     color: AppColors.primary,
                   ),
                   const SizedBox(width: 1),
@@ -481,5 +566,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         sections: sections,
       ),
     );
+  }
+
+  String _formatCurrency(int amountInCents, String currencyCode, {bool showSign = false, int decimal = 2}) {
+    String symbol = '\$';
+    if (currencyCode == 'HTG') symbol = 'G';
+    if (currencyCode == 'EUR') symbol = '€';
+    
+    final isNegative = amountInCents < 0;
+    final absAmount = amountInCents.abs() / 100;
+    final formatted = absAmount.toStringAsFixed(decimal);
+    
+    final sign = isNegative ? '-' : (showSign ? '+' : '');
+    
+    if (currencyCode == 'HTG') return '$sign$formatted $symbol';
+    return '$sign$symbol$formatted';
   }
 }

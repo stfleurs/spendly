@@ -18,6 +18,11 @@ _MonthlySummary _$MonthlySummaryFromJson(Map<String, dynamic> json) =>
             (k, e) => MapEntry(k, (e as num).toInt()),
           ) ??
           const {},
+      categoryAllocations:
+          (json['categoryAllocations'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, (e as num).toInt()),
+          ) ??
+          const {},
       accountTotals:
           (json['accountTotals'] as Map<String, dynamic>?)?.map(
             (k, e) => MapEntry(k, (e as num).toInt()),
@@ -41,6 +46,7 @@ Map<String, dynamic> _$MonthlySummaryToJson(
   'expenses': instance.expenses,
   'netChange': instance.netChange,
   'categoryTotals': instance.categoryTotals,
+  'categoryAllocations': instance.categoryAllocations,
   'accountTotals': instance.accountTotals,
   'currencyBreakdown': instance.currencyBreakdown,
   'transactionCount': instance.transactionCount,

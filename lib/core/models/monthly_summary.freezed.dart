@@ -20,6 +20,7 @@ mixin _$MonthlySummary {
  int get expenses;// Normalized in Base Currency
  int get netChange;// Normalized in Base Currency
  Map<String, int> get categoryTotals;// Normalized in Base Currency
+ Map<String, int> get categoryAllocations;// Assigned to envelopes this month
  Map<String, int> get accountTotals;// Normalized in Base Currency
  Map<String, Map<String, int>> get currencyBreakdown;// Namespaced RAW amounts (Rule #5)
  int get transactionCount;@TimestampConverter() DateTime get lastUpdatedAt;
@@ -35,16 +36,16 @@ $MonthlySummaryCopyWith<MonthlySummary> get copyWith => _$MonthlySummaryCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MonthlySummary&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.income, income) || other.income == income)&&(identical(other.expenses, expenses) || other.expenses == expenses)&&(identical(other.netChange, netChange) || other.netChange == netChange)&&const DeepCollectionEquality().equals(other.categoryTotals, categoryTotals)&&const DeepCollectionEquality().equals(other.accountTotals, accountTotals)&&const DeepCollectionEquality().equals(other.currencyBreakdown, currencyBreakdown)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MonthlySummary&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.income, income) || other.income == income)&&(identical(other.expenses, expenses) || other.expenses == expenses)&&(identical(other.netChange, netChange) || other.netChange == netChange)&&const DeepCollectionEquality().equals(other.categoryTotals, categoryTotals)&&const DeepCollectionEquality().equals(other.categoryAllocations, categoryAllocations)&&const DeepCollectionEquality().equals(other.accountTotals, accountTotals)&&const DeepCollectionEquality().equals(other.currencyBreakdown, currencyBreakdown)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,income,expenses,netChange,const DeepCollectionEquality().hash(categoryTotals),const DeepCollectionEquality().hash(accountTotals),const DeepCollectionEquality().hash(currencyBreakdown),transactionCount,lastUpdatedAt);
+int get hashCode => Object.hash(runtimeType,id,userId,income,expenses,netChange,const DeepCollectionEquality().hash(categoryTotals),const DeepCollectionEquality().hash(categoryAllocations),const DeepCollectionEquality().hash(accountTotals),const DeepCollectionEquality().hash(currencyBreakdown),transactionCount,lastUpdatedAt);
 
 @override
 String toString() {
-  return 'MonthlySummary(id: $id, userId: $userId, income: $income, expenses: $expenses, netChange: $netChange, categoryTotals: $categoryTotals, accountTotals: $accountTotals, currencyBreakdown: $currencyBreakdown, transactionCount: $transactionCount, lastUpdatedAt: $lastUpdatedAt)';
+  return 'MonthlySummary(id: $id, userId: $userId, income: $income, expenses: $expenses, netChange: $netChange, categoryTotals: $categoryTotals, categoryAllocations: $categoryAllocations, accountTotals: $accountTotals, currencyBreakdown: $currencyBreakdown, transactionCount: $transactionCount, lastUpdatedAt: $lastUpdatedAt)';
 }
 
 
@@ -55,7 +56,7 @@ abstract mixin class $MonthlySummaryCopyWith<$Res>  {
   factory $MonthlySummaryCopyWith(MonthlySummary value, $Res Function(MonthlySummary) _then) = _$MonthlySummaryCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, int income, int expenses, int netChange, Map<String, int> categoryTotals, Map<String, int> accountTotals, Map<String, Map<String, int>> currencyBreakdown, int transactionCount,@TimestampConverter() DateTime lastUpdatedAt
+ String id, String userId, int income, int expenses, int netChange, Map<String, int> categoryTotals, Map<String, int> categoryAllocations, Map<String, int> accountTotals, Map<String, Map<String, int>> currencyBreakdown, int transactionCount,@TimestampConverter() DateTime lastUpdatedAt
 });
 
 
@@ -72,7 +73,7 @@ class _$MonthlySummaryCopyWithImpl<$Res>
 
 /// Create a copy of MonthlySummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? income = null,Object? expenses = null,Object? netChange = null,Object? categoryTotals = null,Object? accountTotals = null,Object? currencyBreakdown = null,Object? transactionCount = null,Object? lastUpdatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? income = null,Object? expenses = null,Object? netChange = null,Object? categoryTotals = null,Object? categoryAllocations = null,Object? accountTotals = null,Object? currencyBreakdown = null,Object? transactionCount = null,Object? lastUpdatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -80,6 +81,7 @@ as String,income: null == income ? _self.income : income // ignore: cast_nullabl
 as int,expenses: null == expenses ? _self.expenses : expenses // ignore: cast_nullable_to_non_nullable
 as int,netChange: null == netChange ? _self.netChange : netChange // ignore: cast_nullable_to_non_nullable
 as int,categoryTotals: null == categoryTotals ? _self.categoryTotals : categoryTotals // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,categoryAllocations: null == categoryAllocations ? _self.categoryAllocations : categoryAllocations // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,accountTotals: null == accountTotals ? _self.accountTotals : accountTotals // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,currencyBreakdown: null == currencyBreakdown ? _self.currencyBreakdown : currencyBreakdown // ignore: cast_nullable_to_non_nullable
 as Map<String, Map<String, int>>,transactionCount: null == transactionCount ? _self.transactionCount : transactionCount // ignore: cast_nullable_to_non_nullable
@@ -169,10 +171,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  int income,  int expenses,  int netChange,  Map<String, int> categoryTotals,  Map<String, int> accountTotals,  Map<String, Map<String, int>> currencyBreakdown,  int transactionCount, @TimestampConverter()  DateTime lastUpdatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  int income,  int expenses,  int netChange,  Map<String, int> categoryTotals,  Map<String, int> categoryAllocations,  Map<String, int> accountTotals,  Map<String, Map<String, int>> currencyBreakdown,  int transactionCount, @TimestampConverter()  DateTime lastUpdatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MonthlySummary() when $default != null:
-return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChange,_that.categoryTotals,_that.accountTotals,_that.currencyBreakdown,_that.transactionCount,_that.lastUpdatedAt);case _:
+return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChange,_that.categoryTotals,_that.categoryAllocations,_that.accountTotals,_that.currencyBreakdown,_that.transactionCount,_that.lastUpdatedAt);case _:
   return orElse();
 
 }
@@ -190,10 +192,10 @@ return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChang
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  int income,  int expenses,  int netChange,  Map<String, int> categoryTotals,  Map<String, int> accountTotals,  Map<String, Map<String, int>> currencyBreakdown,  int transactionCount, @TimestampConverter()  DateTime lastUpdatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  int income,  int expenses,  int netChange,  Map<String, int> categoryTotals,  Map<String, int> categoryAllocations,  Map<String, int> accountTotals,  Map<String, Map<String, int>> currencyBreakdown,  int transactionCount, @TimestampConverter()  DateTime lastUpdatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _MonthlySummary():
-return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChange,_that.categoryTotals,_that.accountTotals,_that.currencyBreakdown,_that.transactionCount,_that.lastUpdatedAt);case _:
+return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChange,_that.categoryTotals,_that.categoryAllocations,_that.accountTotals,_that.currencyBreakdown,_that.transactionCount,_that.lastUpdatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +212,10 @@ return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChang
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  int income,  int expenses,  int netChange,  Map<String, int> categoryTotals,  Map<String, int> accountTotals,  Map<String, Map<String, int>> currencyBreakdown,  int transactionCount, @TimestampConverter()  DateTime lastUpdatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  int income,  int expenses,  int netChange,  Map<String, int> categoryTotals,  Map<String, int> categoryAllocations,  Map<String, int> accountTotals,  Map<String, Map<String, int>> currencyBreakdown,  int transactionCount, @TimestampConverter()  DateTime lastUpdatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _MonthlySummary() when $default != null:
-return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChange,_that.categoryTotals,_that.accountTotals,_that.currencyBreakdown,_that.transactionCount,_that.lastUpdatedAt);case _:
+return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChange,_that.categoryTotals,_that.categoryAllocations,_that.accountTotals,_that.currencyBreakdown,_that.transactionCount,_that.lastUpdatedAt);case _:
   return null;
 
 }
@@ -225,7 +227,7 @@ return $default(_that.id,_that.userId,_that.income,_that.expenses,_that.netChang
 @JsonSerializable()
 
 class _MonthlySummary extends MonthlySummary {
-  const _MonthlySummary({required this.id, required this.userId, this.income = 0, this.expenses = 0, this.netChange = 0, final  Map<String, int> categoryTotals = const {}, final  Map<String, int> accountTotals = const {}, final  Map<String, Map<String, int>> currencyBreakdown = const {}, this.transactionCount = 0, @TimestampConverter() required this.lastUpdatedAt}): _categoryTotals = categoryTotals,_accountTotals = accountTotals,_currencyBreakdown = currencyBreakdown,super._();
+  const _MonthlySummary({required this.id, required this.userId, this.income = 0, this.expenses = 0, this.netChange = 0, final  Map<String, int> categoryTotals = const {}, final  Map<String, int> categoryAllocations = const {}, final  Map<String, int> accountTotals = const {}, final  Map<String, Map<String, int>> currencyBreakdown = const {}, this.transactionCount = 0, @TimestampConverter() required this.lastUpdatedAt}): _categoryTotals = categoryTotals,_categoryAllocations = categoryAllocations,_accountTotals = accountTotals,_currencyBreakdown = currencyBreakdown,super._();
   factory _MonthlySummary.fromJson(Map<String, dynamic> json) => _$MonthlySummaryFromJson(json);
 
 @override final  String id;
@@ -246,8 +248,17 @@ class _MonthlySummary extends MonthlySummary {
 }
 
 // Normalized in Base Currency
- final  Map<String, int> _accountTotals;
+ final  Map<String, int> _categoryAllocations;
 // Normalized in Base Currency
+@override@JsonKey() Map<String, int> get categoryAllocations {
+  if (_categoryAllocations is EqualUnmodifiableMapView) return _categoryAllocations;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_categoryAllocations);
+}
+
+// Assigned to envelopes this month
+ final  Map<String, int> _accountTotals;
+// Assigned to envelopes this month
 @override@JsonKey() Map<String, int> get accountTotals {
   if (_accountTotals is EqualUnmodifiableMapView) return _accountTotals;
   // ignore: implicit_dynamic_type
@@ -280,16 +291,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MonthlySummary&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.income, income) || other.income == income)&&(identical(other.expenses, expenses) || other.expenses == expenses)&&(identical(other.netChange, netChange) || other.netChange == netChange)&&const DeepCollectionEquality().equals(other._categoryTotals, _categoryTotals)&&const DeepCollectionEquality().equals(other._accountTotals, _accountTotals)&&const DeepCollectionEquality().equals(other._currencyBreakdown, _currencyBreakdown)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MonthlySummary&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.income, income) || other.income == income)&&(identical(other.expenses, expenses) || other.expenses == expenses)&&(identical(other.netChange, netChange) || other.netChange == netChange)&&const DeepCollectionEquality().equals(other._categoryTotals, _categoryTotals)&&const DeepCollectionEquality().equals(other._categoryAllocations, _categoryAllocations)&&const DeepCollectionEquality().equals(other._accountTotals, _accountTotals)&&const DeepCollectionEquality().equals(other._currencyBreakdown, _currencyBreakdown)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,income,expenses,netChange,const DeepCollectionEquality().hash(_categoryTotals),const DeepCollectionEquality().hash(_accountTotals),const DeepCollectionEquality().hash(_currencyBreakdown),transactionCount,lastUpdatedAt);
+int get hashCode => Object.hash(runtimeType,id,userId,income,expenses,netChange,const DeepCollectionEquality().hash(_categoryTotals),const DeepCollectionEquality().hash(_categoryAllocations),const DeepCollectionEquality().hash(_accountTotals),const DeepCollectionEquality().hash(_currencyBreakdown),transactionCount,lastUpdatedAt);
 
 @override
 String toString() {
-  return 'MonthlySummary(id: $id, userId: $userId, income: $income, expenses: $expenses, netChange: $netChange, categoryTotals: $categoryTotals, accountTotals: $accountTotals, currencyBreakdown: $currencyBreakdown, transactionCount: $transactionCount, lastUpdatedAt: $lastUpdatedAt)';
+  return 'MonthlySummary(id: $id, userId: $userId, income: $income, expenses: $expenses, netChange: $netChange, categoryTotals: $categoryTotals, categoryAllocations: $categoryAllocations, accountTotals: $accountTotals, currencyBreakdown: $currencyBreakdown, transactionCount: $transactionCount, lastUpdatedAt: $lastUpdatedAt)';
 }
 
 
@@ -300,7 +311,7 @@ abstract mixin class _$MonthlySummaryCopyWith<$Res> implements $MonthlySummaryCo
   factory _$MonthlySummaryCopyWith(_MonthlySummary value, $Res Function(_MonthlySummary) _then) = __$MonthlySummaryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, int income, int expenses, int netChange, Map<String, int> categoryTotals, Map<String, int> accountTotals, Map<String, Map<String, int>> currencyBreakdown, int transactionCount,@TimestampConverter() DateTime lastUpdatedAt
+ String id, String userId, int income, int expenses, int netChange, Map<String, int> categoryTotals, Map<String, int> categoryAllocations, Map<String, int> accountTotals, Map<String, Map<String, int>> currencyBreakdown, int transactionCount,@TimestampConverter() DateTime lastUpdatedAt
 });
 
 
@@ -317,7 +328,7 @@ class __$MonthlySummaryCopyWithImpl<$Res>
 
 /// Create a copy of MonthlySummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? income = null,Object? expenses = null,Object? netChange = null,Object? categoryTotals = null,Object? accountTotals = null,Object? currencyBreakdown = null,Object? transactionCount = null,Object? lastUpdatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? income = null,Object? expenses = null,Object? netChange = null,Object? categoryTotals = null,Object? categoryAllocations = null,Object? accountTotals = null,Object? currencyBreakdown = null,Object? transactionCount = null,Object? lastUpdatedAt = null,}) {
   return _then(_MonthlySummary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -325,6 +336,7 @@ as String,income: null == income ? _self.income : income // ignore: cast_nullabl
 as int,expenses: null == expenses ? _self.expenses : expenses // ignore: cast_nullable_to_non_nullable
 as int,netChange: null == netChange ? _self.netChange : netChange // ignore: cast_nullable_to_non_nullable
 as int,categoryTotals: null == categoryTotals ? _self._categoryTotals : categoryTotals // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,categoryAllocations: null == categoryAllocations ? _self._categoryAllocations : categoryAllocations // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,accountTotals: null == accountTotals ? _self._accountTotals : accountTotals // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,currencyBreakdown: null == currencyBreakdown ? _self._currencyBreakdown : currencyBreakdown // ignore: cast_nullable_to_non_nullable
 as Map<String, Map<String, int>>,transactionCount: null == transactionCount ? _self.transactionCount : transactionCount // ignore: cast_nullable_to_non_nullable

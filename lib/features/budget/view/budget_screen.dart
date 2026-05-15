@@ -5,8 +5,8 @@ import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/features/budget/providers/budget_provider.dart';
 import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
+import 'package:spendly/features/budget/view/allocation_bottom_sheet.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
-import 'package:spendly/features/home/providers/insights_provider.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class MyBudgetScreen extends ConsumerWidget {
@@ -27,11 +27,73 @@ class MyBudgetScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 24),
               
-              // Category Budgets
               budgetAsync.when(
                 data: (state) {
                   return Column(
                     children: [
+                      // Ready To Assign Banner
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              )
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'READY TO ASSIGN',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _formatCurrency(state.readyToAssign, state.baseCurrency),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 36,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                width: 140,
+                                child: ElevatedButton(
+                                  onPressed: () => showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => const AllocationBottomSheet(),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: const Text('ASSIGN', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Envelope List
                       MainCard(
                         padding: EdgeInsets.zero,
                         child: Column(
@@ -42,9 +104,9 @@ class MyBudgetScreen extends ConsumerWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    l10n.spendingByCategory,
-                                    style: const TextStyle(
+                                  const Text(
+                                    'ENVELOPES',
+                                    style: TextStyle(
                                       color: AppColors.textLight,
                                       fontWeight: FontWeight.w900,
                                       fontSize: 12,
@@ -69,10 +131,10 @@ class MyBudgetScreen extends ConsumerWidget {
                                 child: Center(
                                   child: Column(
                                     children: [
-                                      Icon(Icons.pie_chart_outline, color: AppColors.primaryLight, size: 48),
+                                      Icon(Icons.account_balance_wallet_outlined, color: AppColors.primaryLight, size: 48),
                                       SizedBox(height: 16),
                                       Text(
-                                        'No budget categories yet.\nTap below to set up your first one!',
+                                        'No envelopes yet.\nTap below to set up your first one!',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(color: AppColors.textLight, height: 1.5, fontWeight: FontWeight.bold),
                                       ),
@@ -80,7 +142,7 @@ class MyBudgetScreen extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                            ...state.items.map((item) => _CategoryBudgetItemWidget(item: item, userId: userId)),
+                            ...state.items.map((item) => _CategoryBudgetItemWidget(item: item, baseCurrency: state.baseCurrency)),
                           ],
                         ),
                       ),
@@ -117,8 +179,21 @@ class MyBudgetScreen extends ConsumerWidget {
     );
   }
 
+  String _formatCurrency(int amountInCents, String currencyCode) {
+    String symbol = '\$';
+    if (currencyCode == 'HTG') symbol = 'G';
+    if (currencyCode == 'EUR') symbol = '€';
+    
+    final isNegative = amountInCents < 0;
+    final absAmount = amountInCents.abs() / 100;
+    final formatted = absAmount.toStringAsFixed(2);
+    
+    if (currencyCode == 'HTG') return '${isNegative ? '-' : ''}$formatted $symbol';
+    if (isNegative) return '-$symbol$formatted';
+    return '$symbol$formatted';
+  }
+
   Widget _buildAddCategoryButton(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return MainCard(
       padding: EdgeInsets.zero,
       child: InkWell(
@@ -136,9 +211,9 @@ class MyBudgetScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.add_circle_outline, color: AppColors.primary),
               const SizedBox(width: 12),
-              Text(
-                l10n.category.toUpperCase(),
-                style: const TextStyle(
+              const Text(
+                'NEW ENVELOPE',
+                style: TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.1,
@@ -152,143 +227,115 @@ class MyBudgetScreen extends ConsumerWidget {
   }
 }
 
-class _CategoryBudgetItemWidget extends ConsumerWidget {
+class _CategoryBudgetItemWidget extends StatelessWidget {
   final CategoryBudgetItem item;
-  final String userId;
+  final String baseCurrency;
 
   const _CategoryBudgetItemWidget({
     required this.item,
-    required this.userId,
+    required this.baseCurrency,
   });
 
+  String _formatCurrency(int amountInCents) {
+    String symbol = '\$';
+    if (baseCurrency == 'HTG') symbol = 'G';
+    if (baseCurrency == 'EUR') symbol = '€';
+    
+    final isNegative = amountInCents < 0;
+    final absAmount = amountInCents.abs() / 100;
+    final formatted = absAmount.toStringAsFixed(2);
+    
+    if (baseCurrency == 'HTG') return '${isNegative ? '-' : ''}$formatted $symbol';
+    if (isNegative) return '-$symbol$formatted';
+    return '$symbol$formatted';
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+  Widget build(BuildContext context) {
     final category = item.category;
-
-    String currencySymbol = '\$';
-    if (category.currency == 'HTG') currencySymbol = 'G';
-    if (category.currency == 'EUR') currencySymbol = '€';
-
-    final spentStr = '$currencySymbol${(item.spentAmount / 100).toStringAsFixed(2)}';
-
-    String assignedStr = 'No limit';
-    bool hasTarget = category.monthlyTarget != null && category.monthlyTarget! > 0;
-    bool isTrendingHigh = false;
-
-    if (hasTarget) {
-      assignedStr = '$currencySymbol${(category.monthlyTarget! / 100).toStringAsFixed(2)}';
-    }
-
-    final comparisonAsync = ref.watch(monthlyComparisonProvider((
-      userId: userId,
-      categoryId: category.id,
-      categoryName: category.name,
-    )));
+    final available = item.availableBalance;
+    final isNegative = available < 0;
+    
+    final amountColor = isNegative ? Colors.red.shade400 : AppColors.textDark;
+    final amountStr = _formatCurrency(available);
 
     return InkWell(
       onTap: () => showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => CategoryFormBottomSheet(category: category),
+        builder: (context) => AllocationBottomSheet(initialTarget: category),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            // Row 1: Name & Spent
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    category.name,
-                    style: const TextStyle(
-                      color: AppColors.textDark,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          category.name,
+                          style: const TextStyle(
+                            color: AppColors.textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.settings_outlined, size: 16, color: AppColors.textLight),
+                        onPressed: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => CategoryFormBottomSheet(category: category),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (category.monthlyTarget != null && category.monthlyTarget! > 0) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Goal: ${_formatCurrency(category.monthlyTarget!)}',
+                      style: const TextStyle(
+                        color: AppColors.textLight,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  ]
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  amountStr,
+                  style: TextStyle(
+                    color: amountColor,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
                   ),
                 ),
-                const SizedBox(width: 8),
                 Text(
-                  spentStr,
-                  style: const TextStyle(
-                    color: AppColors.textDark,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
+                  isNegative ? 'overspent' : 'available',
+                  style: TextStyle(
+                    color: isNegative ? Colors.red.shade300 : AppColors.textLight,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
             ),
-            
-            const SizedBox(height: 8),
-            
-            // Row 2: Target & Trend
-            comparisonAsync.when(
-              data: (comparison) {
-                if (comparison == null) {
-                  return Text(
-                    hasTarget ? '${l10n.assigned}: $assignedStr' : 'No set target',
-                    style: const TextStyle(
-                      color: AppColors.textLight,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  );
-                }
-
-                isTrendingHigh = comparison.percentageChange > 10;
-                final trendColor = isTrendingHigh ? const Color(0xFFECA00A) : AppColors.primary;
-
-                return Row(
-                  children: [
-                    if (hasTarget) ...[
-                      Text(
-                        '${l10n.assigned}: $assignedStr',
-                        style: const TextStyle(
-                          color: AppColors.textLight,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      child: Text(
-                        comparison.trendMessage,
-                        style: TextStyle(
-                          color: trendColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                );
-              },
-              loading: () => const Text('Loading trends...', style: TextStyle(color: AppColors.textLight, fontSize: 12)),
-              error: (e, s) => const SizedBox.shrink(),
-            ),
-
-            // Row 3: Soft Progress Bar
-            if (hasTarget) ...[
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: item.progress > 1.0 ? 1.0 : item.progress,
-                  backgroundColor: AppColors.primaryLight.withValues(alpha: 0.3),
-                  color: isTrendingHigh ? const Color(0xFFECA00A) : AppColors.primary,
-                  minHeight: 6,
-                ),
-              ),
-            ],
           ],
         ),
       ),

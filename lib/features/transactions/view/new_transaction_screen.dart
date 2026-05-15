@@ -66,9 +66,10 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   }
 
   Future<void> _save() async {
-    if (_selectedAccount == null || _selectedCategory == null) {
+    final isExpense = _selectedType.toUpperCase() == 'EXPENSE';
+    if (_selectedAccount == null || (isExpense && _selectedCategory == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select account and category')),
+        SnackBar(content: Text(isExpense ? 'Please select account and category' : 'Please select an account')),
       );
       return;
     }
@@ -146,11 +147,11 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
       rateQuoteCurrency: _selectedCurrency,
       date: widget.transaction?.date ?? DateTime.now(),
       accountId: _selectedAccount!.id,
-      categoryId: _selectedCategory!.id,
+      categoryId: isExpense ? _selectedCategory!.id : '',
       note: _payeeController.text.trim(),
       // Add search tokens for manual indexing
       searchTokens: AppTransaction.createSearchTokens(
-          _payeeController.text.trim(), _selectedCategory!.name),
+          _payeeController.text.trim(), isExpense ? _selectedCategory!.name : null),
       // Add audit fields for manual entries too
       originalAmount: centsValue,
       originalCurrency: _selectedCurrency,
@@ -418,16 +419,16 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                       accountsAsync.when(
                         data: (accounts) {
                           if (accounts.isEmpty) return const Text('No accounts found');
-                          return DropdownButton<Account>(
-                            value: _selectedAccount,
+                          return DropdownButton<String>(
+                            value: _selectedAccount?.id,
                             isExpanded: true,
                             underline: const SizedBox(),
                             hint: const Text('Select Account'),
                             items: accounts.map((acc) {
                               final balance = ref.watch(accountBalanceProvider((userId: userId, accountId: acc.id)));
                               final isNegative = balance < 0;
-                              return DropdownMenuItem(
-                                value: acc,
+                              return DropdownMenuItem<String>(
+                                value: acc.id,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -445,9 +446,10 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                                 ),
                               );
                             }).toList(),
-                            onChanged: (val) => setState(() {
-                              _selectedAccount = val;
-                              if (val != null) _selectedCurrency = val.currency;
+                            onChanged: (id) => setState(() {
+                              final acc = accounts.cast<Account?>().firstWhere((a) => a?.id == id, orElse: () => null);
+                              _selectedAccount = acc;
+                              if (acc != null) _selectedCurrency = acc.currency;
                             }),
                           );
                         },
@@ -467,48 +469,53 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                           ),
                         ),
 
-                      const SizedBox(height: 24),
-                      const Divider(color: AppColors.primaryLight),
-                      const SizedBox(height: 24),
-                      Text(l10n.category,
-                          style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
-                      const SizedBox(height: 8),
-                      categoriesAsync.when(
-                        data: (categories) {
-                          return Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButton<Category>(
-                                  value: _selectedCategory,
-                                  isExpanded: true,
-                                  underline: const SizedBox(),
-                                  hint: const Text('Select Category'),
-                                  items: categories.map((cat) {
-                                    return DropdownMenuItem(value: cat, child: Text(cat.name));
-                                  }).toList(),
-                                  onChanged: (val) => setState(() => _selectedCategory = val),
+                      if (_selectedType.toUpperCase() == 'EXPENSE') ...[
+                        const SizedBox(height: 24),
+                        const Divider(color: AppColors.primaryLight),
+                        const SizedBox(height: 24),
+                        Text(l10n.category,
+                            style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.1)),
+                        const SizedBox(height: 8),
+                        categoriesAsync.when(
+                          data: (categories) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: DropdownButton<String>(
+                                    value: _selectedCategory?.id,
+                                    isExpanded: true,
+                                    underline: const SizedBox(),
+                                    hint: const Text('Select Category'),
+                                    items: categories.map((cat) {
+                                      return DropdownMenuItem<String>(value: cat.id, child: Text(cat.name));
+                                    }).toList(),
+                                    onChanged: (id) => setState(() {
+                                      final cat = categories.cast<Category?>().firstWhere((c) => c?.id == id, orElse: () => null);
+                                      _selectedCategory = cat;
+                                    }),
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 20),
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (context) => const CategoryFormBottomSheet(category: null),
-                                  ).then((_) {
-                                    // Refresh categories after potentially adding one
-                                    ref.invalidate(categoriesStreamProvider(userId));
-                                  });
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                        loading: () => const LinearProgressIndicator(),
-                        error: (e, s) => Text('Error: $e'),
-                      ),
+                                IconButton(
+                                  icon: const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 20),
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (context) => const CategoryFormBottomSheet(category: null),
+                                    ).then((_) {
+                                      // Refresh categories after potentially adding one
+                                      ref.invalidate(categoriesStreamProvider(userId));
+                                    });
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                          loading: () => const LinearProgressIndicator(),
+                          error: (e, s) => Text('Error: $e'),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.primaryLight),
                       const SizedBox(height: 24),

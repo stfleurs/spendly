@@ -4,6 +4,7 @@ import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/features/transactions/repository/transaction_repository.dart';
 import 'package:spendly/core/models/app_transaction.dart';
 import 'package:spendly/core/models/monthly_summary.dart';
+import 'package:spendly/core/providers/app_user_provider.dart';
 
 /// Computes the current balance of an account by summing its transactions relative to its initial balance.
 final accountBalanceProvider = Provider.family<int, ({String userId, String accountId})>((ref, arg) {
@@ -38,36 +39,59 @@ final availableFundsProvider = Provider.family<int, ({String userId, String acco
 /// Computes the total current net worth across all accounts.
 final totalNetWorthProvider = Provider.family<int, String>((ref, userId) {
   final accounts = ref.watch(accountsStreamProvider(userId)).value ?? [];
-  int total = 0;
-  for (final account in accounts) {
-    // Note: Assuming 1:1 for now, normalization to base currency will happen here later
-    total += ref.watch(accountBalanceProvider((userId: userId, accountId: account.id)));
-  }
-  return total;
+  final userAsync = ref.watch(appUserStreamProvider(userId));
+  
+  return userAsync.when(
+    data: (user) {
+      final baseCurrency = user?.baseCurrency ?? 'USD';
+      int total = 0;
+      for (final account in accounts) {
+        final balance = ref.watch(accountBalanceProvider((userId: userId, accountId: account.id)));
+        
+        if (account.currency == baseCurrency) {
+          total += balance;
+        } else {
+          double rate = 1.0;
+          if (account.currency == 'USD' && baseCurrency == 'HTG') rate = 135.0;
+          else if (account.currency == 'HTG' && baseCurrency == 'USD') rate = 1 / 135.0;
+          total += (balance * rate).round();
+        }
+      }
+      return total;
+    },
+    loading: () => 0,
+    error: (_, __) => 0,
+  );
 });
 
 /// Computes a daily cumulative timeline of net worth for a given period.
 final netWorthTimelineProvider = FutureProvider.family<List<({DateTime date, int balance})>, ({String userId, int days})>((ref, arg) async {
   final repo = ref.read(transactionRepositoryProvider);
   final accounts = ref.watch(accountsStreamProvider(arg.userId)).value ?? [];
+  final user = ref.read(appUserStreamProvider(arg.userId)).value;
+  final baseCurrency = user?.baseCurrency ?? 'USD';
   
   if (accounts.isEmpty) return [];
 
-  // 1. Current Net Worth
+  // 1. Current Net Worth (Converted)
   int currentNetWorth = 0;
   for (final account in accounts) {
-    currentNetWorth += account.currentBalance ?? account.balance;
+    final balance = account.currentBalance ?? account.balance;
+    if (account.currency == baseCurrency) {
+      currentNetWorth += balance;
+    } else {
+      double rate = 1.0;
+      if (account.currency == 'USD' && baseCurrency == 'HTG') rate = 135.0;
+      else if (account.currency == 'HTG' && baseCurrency == 'USD') rate = 1 / 135.0;
+      currentNetWorth += (balance * rate).round();
+    }
   }
 
-  // 2. Fetch transactions for the period (plus a bit of buffer)
+  // 2. Fetch transactions
   final now = DateTime.now();
   final startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: arg.days));
-  
-  // We fetch a larger limit to ensure we cover the requested days.
-  // In a real app, we'd query by date range.
   final transactions = await repo.getTransactionsPaginated(arg.userId, limit: 1000);
   
-  // 3. Sort DESC (most recent first) to work backwards
   final sortedTxs = List<AppTransaction>.from(transactions)..sort((a, b) => b.date.compareTo(a.date));
   
   final Map<DateTime, int> dailyCheckpoints = {};
@@ -79,11 +103,12 @@ final netWorthTimelineProvider = FutureProvider.family<List<({DateTime date, int
   for (final tx in sortedTxs) {
     if (tx.date.isBefore(startDate)) break;
 
+    // We use amountInBaseCurrency here because we want the timeline in base currency!
     final type = tx.type.toLowerCase();
     if (type == 'income') {
-      runningTotal -= tx.amount;
+      runningTotal -= tx.amountInBaseCurrency;
     } else if (type == 'expense') {
-      runningTotal += tx.amount;
+      runningTotal += tx.amountInBaseCurrency;
     }
     
     final dateKey = DateTime(tx.date.year, tx.date.month, tx.date.day);
@@ -93,17 +118,9 @@ final netWorthTimelineProvider = FutureProvider.family<List<({DateTime date, int
   final List<({DateTime date, int balance})> timeline = [];
   int lastKnownBalance = runningTotal;
 
-  // Generate the timeline for each day in the range
   for (int i = 0; i <= arg.days; i++) {
     final currentDate = startDate.add(Duration(days: i));
     final dateKey = DateTime(currentDate.year, currentDate.month, currentDate.day);
-    
-    // If we have multiple transactions on one day, the loop above stores the balance 
-    // AFTER the earliest transaction of that day (because we're working backwards).
-    // Wait, working backwards:
-    // Today: balance = 100.
-    // Tx today (income 10): balance becomes 90 (at start of today).
-    // Tx yesterday (expense 5): balance becomes 95 (at start of yesterday).
     
     if (dailyCheckpoints.containsKey(dateKey)) {
       lastKnownBalance = dailyCheckpoints[dateKey]!;
