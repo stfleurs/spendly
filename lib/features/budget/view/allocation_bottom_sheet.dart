@@ -10,6 +10,7 @@ import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/providers/date_provider.dart';
 import 'package:spendly/core/providers/app_user_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:spendly/core/providers/exchange_rate_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class AllocationBottomSheet extends ConsumerStatefulWidget {
@@ -29,6 +30,7 @@ class AllocationBottomSheet extends ConsumerStatefulWidget {
 class _AllocationBottomSheetState extends ConsumerState<AllocationBottomSheet> {
   final _amountController = TextEditingController();
   Category? _selectedCategory;
+  String? _selectedCurrency;
   bool _isSaving = false;
 
   @override
@@ -47,14 +49,39 @@ class _AllocationBottomSheetState extends ConsumerState<AllocationBottomSheet> {
     if (_selectedCategory == null) return;
     
     final amountText = _amountController.text.replaceAll(',', '');
-    final amountCents = ((double.tryParse(amountText) ?? 0) * 100).toInt();
-    
-    if (amountCents <= 0) return;
+    final amountInput = double.tryParse(amountText) ?? 0;
+    if (amountInput <= 0) return;
 
     setState(() => _isSaving = true);
 
     try {
       final userId = ref.read(authStateProvider).value?.uid ?? '';
+      final appUser = ref.read(appUserStreamProvider(userId)).value;
+      final baseCurrency = appUser?.baseCurrency ?? 'USD';
+      final currency = _selectedCurrency ?? baseCurrency;
+
+      // 1. Convert to Base Currency Cents (Accounting Truth)
+      int amountCents;
+      if (currency == baseCurrency) {
+        amountCents = (amountInput * 100).toInt();
+      } else {
+        final rate = ref.read(exchangeRateProvider((
+          userId: userId,
+          from: currency,
+          to: baseCurrency,
+        )));
+        
+        // Use the same scaled logic for consistency
+        const scale = 1000000;
+        final scaledRate = (rate * scale).round();
+        final rawCents = (amountInput * 100).toInt();
+        amountCents = (rawCents * scaledRate) ~/ scale;
+      }
+      
+      if (amountCents <= 0) {
+        throw Exception('Converted amount too small to move');
+      }
+
       final selectedDate = ref.read(selectedDateProvider);
       final monthId = DateFormat('yyyy_MM').format(selectedDate);
 
@@ -87,6 +114,11 @@ class _AllocationBottomSheetState extends ConsumerState<AllocationBottomSheet> {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
     final appUserAsync = ref.watch(appUserStreamProvider(userId));
+
+    // Default to base currency once loaded
+    if (_selectedCurrency == null && appUserAsync.hasValue) {
+      _selectedCurrency = appUserAsync.value?.baseCurrency;
+    }
 
     return Container(
       padding: EdgeInsets.only(
@@ -231,24 +263,54 @@ class _AllocationBottomSheetState extends ConsumerState<AllocationBottomSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textDark,
-              ),
-              decoration: InputDecoration(
-                hintText: '0.00',
-                border: InputBorder.none,
-                prefixText: _selectedCategory != null ? (appUserAsync.value?.baseCurrency == 'HTG' ? '' : '\$') : '',
-                suffixText: appUserAsync.value?.baseCurrency == 'HTG' ? ' G' : '',
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _amountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '0.00',
+                      border: InputBorder.none,
+                      prefixText: _selectedCurrency == 'USD' ? r'$' : '',
+                      suffixText: _selectedCurrency == 'HTG' ? ' G' : '',
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                    ],
+                    autofocus: true,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedCurrency ?? appUserAsync.value?.baseCurrency ?? 'USD',
+                      icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.primary),
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      onChanged: (val) => setState(() => _selectedCurrency = val),
+                      items: ['USD', 'HTG'].map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(c),
+                      )).toList(),
+                    ),
+                  ),
+                ),
               ],
-              autofocus: true,
             ),
             
             const SizedBox(height: 40),
