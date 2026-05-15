@@ -47,3 +47,8 @@ This document defines the immutable architectural rules for the Spendly financia
 - **Rule**: The sum of all positive `Category.availableBalance` plus `AppUser.readyToAssign` MUST NEVER exceed the sum of all positive cash `Account.balance` equivalents.
 - **Rule**: Overspending (negative envelope balances) MUST NOT automatically pull from `ReadyToAssign`. Negative balances must be explicitly resolved by the user via `AllocationEvent`.
 - **Rationale**: Prevents money creation bugs and forces intentional user behavior for overspending.
+
+# ── Self-Healing & Verification ──────────────────────────────────────
+- **Rule**: The system provides a `syncAccountBalance` mechanism that iterates over the source-of-truth transaction ledger to verify and repair the `Account.currentBalance` snapshot.
+- **Strategy**: This should be triggered if a ledger drift is detected or upon major structural updates.
+- **Verification**: Net Worth calculation MUST ALWAYS rely on these verified snapshots to ensure historical accuracy across multi-currency environments.

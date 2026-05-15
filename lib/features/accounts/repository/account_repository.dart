@@ -144,6 +144,46 @@ class AccountRepository {
     batch.set(summaryRef, updates, SetOptions(merge: true));
   }
 
+  /// Recalculates the account balance from scratch using the transaction ledger.
+  /// This is the "Self-Healing" mechanism to prevent snapshot corruption.
+  Future<void> syncAccountBalance(String userId, String accountId) async {
+    final accountDoc = await _collection.doc(accountId).get();
+    if (!accountDoc.exists) return;
+    
+    final account = Account.fromJson({...accountDoc.data()!, 'id': accountId});
+    
+    // 1. Fetch all transactions for this account
+    final txsSnapshot = await _firestore
+        .collection('transactions')
+        .where('accountId', isEqualTo: accountId)
+        .get();
+        
+    int runningBalance = account.balance; // Start with initial balance
+    
+    for (final doc in txsSnapshot.docs) {
+      final tx = AppTransaction.fromJson({...doc.data(), 'id': doc.id});
+      final type = tx.type.toLowerCase();
+      
+      if (type == 'income') {
+        runningBalance += tx.amount;
+      } else if (type == 'expense') {
+        runningBalance -= tx.amount;
+      } else if (type == 'transfer') {
+        // Transfers are tricky - check if we are 'from' or 'to'
+        // But for now, AppTransaction doesn't have from/to, it's just 'transfer' type.
+        // Assuming 'transfer' in this context means expense from this account
+        runningBalance -= tx.amount;
+      }
+    }
+
+    // 2. Update the snapshot
+    await _collection.doc(accountId).update({
+      'currentBalance': runningBalance,
+      'lastCalculatedAt': DateTime.now(),
+      'ledgerVersion': FieldValue.increment(1),
+    });
+  }
+
 }
 
 final accountRepositoryProvider = Provider<AccountRepository>((ref) {
