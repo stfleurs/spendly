@@ -22,7 +22,10 @@ mixin _$AppTransaction {
  int get scaledRate;// (exchangeRate * rateScale).round()
  String get rateSource;// FX Metadata
  String get rateBaseCurrency; String get rateQuoteCurrency;// Original payment data
- int? get originalAmount; String? get originalCurrency; String? get sourceHash; List<String>? get searchTokens;
+ int? get originalAmount; String? get originalCurrency; String? get sourceHash; List<String>? get searchTokens;// --- Server Reconciliation & Mutation Tracking ---
+ String? get idempotencyKey; String get mutationState;// pending | confirmed | reconciled | failed | corrected
+ int get mutationVersion; String get mutationSource; String? get failureReason; String? get parentMutationId;@TimestampNullableConverter() DateTime? get confirmedAt;@TimestampNullableConverter() DateTime? get reconciledAt;// Multi-device synchronization
+ String? get deviceId; int? get mutationSequence;
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -35,16 +38,16 @@ $AppTransactionCopyWith<AppTransaction> get copyWith => _$AppTransactionCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.note, note) || other.note == note)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.billId, billId) || other.billId == billId)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.amountInBaseCurrency, amountInBaseCurrency) || other.amountInBaseCurrency == amountInBaseCurrency)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate)&&(identical(other.rateScale, rateScale) || other.rateScale == rateScale)&&(identical(other.scaledRate, scaledRate) || other.scaledRate == scaledRate)&&(identical(other.rateSource, rateSource) || other.rateSource == rateSource)&&(identical(other.rateBaseCurrency, rateBaseCurrency) || other.rateBaseCurrency == rateBaseCurrency)&&(identical(other.rateQuoteCurrency, rateQuoteCurrency) || other.rateQuoteCurrency == rateQuoteCurrency)&&(identical(other.originalAmount, originalAmount) || other.originalAmount == originalAmount)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.sourceHash, sourceHash) || other.sourceHash == sourceHash)&&const DeepCollectionEquality().equals(other.searchTokens, searchTokens));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.note, note) || other.note == note)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.billId, billId) || other.billId == billId)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.amountInBaseCurrency, amountInBaseCurrency) || other.amountInBaseCurrency == amountInBaseCurrency)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate)&&(identical(other.rateScale, rateScale) || other.rateScale == rateScale)&&(identical(other.scaledRate, scaledRate) || other.scaledRate == scaledRate)&&(identical(other.rateSource, rateSource) || other.rateSource == rateSource)&&(identical(other.rateBaseCurrency, rateBaseCurrency) || other.rateBaseCurrency == rateBaseCurrency)&&(identical(other.rateQuoteCurrency, rateQuoteCurrency) || other.rateQuoteCurrency == rateQuoteCurrency)&&(identical(other.originalAmount, originalAmount) || other.originalAmount == originalAmount)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.sourceHash, sourceHash) || other.sourceHash == sourceHash)&&const DeepCollectionEquality().equals(other.searchTokens, searchTokens)&&(identical(other.idempotencyKey, idempotencyKey) || other.idempotencyKey == idempotencyKey)&&(identical(other.mutationState, mutationState) || other.mutationState == mutationState)&&(identical(other.mutationVersion, mutationVersion) || other.mutationVersion == mutationVersion)&&(identical(other.mutationSource, mutationSource) || other.mutationSource == mutationSource)&&(identical(other.failureReason, failureReason) || other.failureReason == failureReason)&&(identical(other.parentMutationId, parentMutationId) || other.parentMutationId == parentMutationId)&&(identical(other.confirmedAt, confirmedAt) || other.confirmedAt == confirmedAt)&&(identical(other.reconciledAt, reconciledAt) || other.reconciledAt == reconciledAt)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.mutationSequence, mutationSequence) || other.mutationSequence == mutationSequence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,note,receiptUrl,receiptId,billId,templateId,amountInBaseCurrency,baseCurrency,exchangeRate,rateScale,scaledRate,rateSource,rateBaseCurrency,rateQuoteCurrency,originalAmount,originalCurrency,sourceHash,const DeepCollectionEquality().hash(searchTokens)]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,note,receiptUrl,receiptId,billId,templateId,amountInBaseCurrency,baseCurrency,exchangeRate,rateScale,scaledRate,rateSource,rateBaseCurrency,rateQuoteCurrency,originalAmount,originalCurrency,sourceHash,const DeepCollectionEquality().hash(searchTokens),idempotencyKey,mutationState,mutationVersion,mutationSource,failureReason,parentMutationId,confirmedAt,reconciledAt,deviceId,mutationSequence]);
 
 @override
 String toString() {
-  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, note: $note, receiptUrl: $receiptUrl, receiptId: $receiptId, billId: $billId, templateId: $templateId, amountInBaseCurrency: $amountInBaseCurrency, baseCurrency: $baseCurrency, exchangeRate: $exchangeRate, rateScale: $rateScale, scaledRate: $scaledRate, rateSource: $rateSource, rateBaseCurrency: $rateBaseCurrency, rateQuoteCurrency: $rateQuoteCurrency, originalAmount: $originalAmount, originalCurrency: $originalCurrency, sourceHash: $sourceHash, searchTokens: $searchTokens)';
+  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, note: $note, receiptUrl: $receiptUrl, receiptId: $receiptId, billId: $billId, templateId: $templateId, amountInBaseCurrency: $amountInBaseCurrency, baseCurrency: $baseCurrency, exchangeRate: $exchangeRate, rateScale: $rateScale, scaledRate: $scaledRate, rateSource: $rateSource, rateBaseCurrency: $rateBaseCurrency, rateQuoteCurrency: $rateQuoteCurrency, originalAmount: $originalAmount, originalCurrency: $originalCurrency, sourceHash: $sourceHash, searchTokens: $searchTokens, idempotencyKey: $idempotencyKey, mutationState: $mutationState, mutationVersion: $mutationVersion, mutationSource: $mutationSource, failureReason: $failureReason, parentMutationId: $parentMutationId, confirmedAt: $confirmedAt, reconciledAt: $reconciledAt, deviceId: $deviceId, mutationSequence: $mutationSequence)';
 }
 
 
@@ -55,7 +58,7 @@ abstract mixin class $AppTransactionCopyWith<$Res>  {
   factory $AppTransactionCopyWith(AppTransaction value, $Res Function(AppTransaction) _then) = _$AppTransactionCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String type, int amount, String currency,@TimestampConverter() DateTime date, String accountId, String categoryId, String? note, String? receiptUrl, String? receiptId, String? billId, String? templateId, int amountInBaseCurrency, String baseCurrency, double exchangeRate, int rateScale, int scaledRate, String rateSource, String rateBaseCurrency, String rateQuoteCurrency, int? originalAmount, String? originalCurrency, String? sourceHash, List<String>? searchTokens
+ String id, String userId, String type, int amount, String currency,@TimestampConverter() DateTime date, String accountId, String categoryId, String? note, String? receiptUrl, String? receiptId, String? billId, String? templateId, int amountInBaseCurrency, String baseCurrency, double exchangeRate, int rateScale, int scaledRate, String rateSource, String rateBaseCurrency, String rateQuoteCurrency, int? originalAmount, String? originalCurrency, String? sourceHash, List<String>? searchTokens, String? idempotencyKey, String mutationState, int mutationVersion, String mutationSource, String? failureReason, String? parentMutationId,@TimestampNullableConverter() DateTime? confirmedAt,@TimestampNullableConverter() DateTime? reconciledAt, String? deviceId, int? mutationSequence
 });
 
 
@@ -72,7 +75,7 @@ class _$AppTransactionCopyWithImpl<$Res>
 
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? note = freezed,Object? receiptUrl = freezed,Object? receiptId = freezed,Object? billId = freezed,Object? templateId = freezed,Object? amountInBaseCurrency = null,Object? baseCurrency = null,Object? exchangeRate = null,Object? rateScale = null,Object? scaledRate = null,Object? rateSource = null,Object? rateBaseCurrency = null,Object? rateQuoteCurrency = null,Object? originalAmount = freezed,Object? originalCurrency = freezed,Object? sourceHash = freezed,Object? searchTokens = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? note = freezed,Object? receiptUrl = freezed,Object? receiptId = freezed,Object? billId = freezed,Object? templateId = freezed,Object? amountInBaseCurrency = null,Object? baseCurrency = null,Object? exchangeRate = null,Object? rateScale = null,Object? scaledRate = null,Object? rateSource = null,Object? rateBaseCurrency = null,Object? rateQuoteCurrency = null,Object? originalAmount = freezed,Object? originalCurrency = freezed,Object? sourceHash = freezed,Object? searchTokens = freezed,Object? idempotencyKey = freezed,Object? mutationState = null,Object? mutationVersion = null,Object? mutationSource = null,Object? failureReason = freezed,Object? parentMutationId = freezed,Object? confirmedAt = freezed,Object? reconciledAt = freezed,Object? deviceId = freezed,Object? mutationSequence = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -99,7 +102,17 @@ as String,originalAmount: freezed == originalAmount ? _self.originalAmount : ori
 as int?,originalCurrency: freezed == originalCurrency ? _self.originalCurrency : originalCurrency // ignore: cast_nullable_to_non_nullable
 as String?,sourceHash: freezed == sourceHash ? _self.sourceHash : sourceHash // ignore: cast_nullable_to_non_nullable
 as String?,searchTokens: freezed == searchTokens ? _self.searchTokens : searchTokens // ignore: cast_nullable_to_non_nullable
-as List<String>?,
+as List<String>?,idempotencyKey: freezed == idempotencyKey ? _self.idempotencyKey : idempotencyKey // ignore: cast_nullable_to_non_nullable
+as String?,mutationState: null == mutationState ? _self.mutationState : mutationState // ignore: cast_nullable_to_non_nullable
+as String,mutationVersion: null == mutationVersion ? _self.mutationVersion : mutationVersion // ignore: cast_nullable_to_non_nullable
+as int,mutationSource: null == mutationSource ? _self.mutationSource : mutationSource // ignore: cast_nullable_to_non_nullable
+as String,failureReason: freezed == failureReason ? _self.failureReason : failureReason // ignore: cast_nullable_to_non_nullable
+as String?,parentMutationId: freezed == parentMutationId ? _self.parentMutationId : parentMutationId // ignore: cast_nullable_to_non_nullable
+as String?,confirmedAt: freezed == confirmedAt ? _self.confirmedAt : confirmedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,reconciledAt: freezed == reconciledAt ? _self.reconciledAt : reconciledAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,deviceId: freezed == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String?,mutationSequence: freezed == mutationSequence ? _self.mutationSequence : mutationSequence // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -184,10 +197,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency, @TimestampConverter()  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl,  String? receiptId,  String? billId,  String? templateId,  int amountInBaseCurrency,  String baseCurrency,  double exchangeRate,  int rateScale,  int scaledRate,  String rateSource,  String rateBaseCurrency,  String rateQuoteCurrency,  int? originalAmount,  String? originalCurrency,  String? sourceHash,  List<String>? searchTokens)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency, @TimestampConverter()  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl,  String? receiptId,  String? billId,  String? templateId,  int amountInBaseCurrency,  String baseCurrency,  double exchangeRate,  int rateScale,  int scaledRate,  String rateSource,  String rateBaseCurrency,  String rateQuoteCurrency,  int? originalAmount,  String? originalCurrency,  String? sourceHash,  List<String>? searchTokens,  String? idempotencyKey,  String mutationState,  int mutationVersion,  String mutationSource,  String? failureReason,  String? parentMutationId, @TimestampNullableConverter()  DateTime? confirmedAt, @TimestampNullableConverter()  DateTime? reconciledAt,  String? deviceId,  int? mutationSequence)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppTransaction() when $default != null:
-return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl,_that.receiptId,_that.billId,_that.templateId,_that.amountInBaseCurrency,_that.baseCurrency,_that.exchangeRate,_that.rateScale,_that.scaledRate,_that.rateSource,_that.rateBaseCurrency,_that.rateQuoteCurrency,_that.originalAmount,_that.originalCurrency,_that.sourceHash,_that.searchTokens);case _:
+return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl,_that.receiptId,_that.billId,_that.templateId,_that.amountInBaseCurrency,_that.baseCurrency,_that.exchangeRate,_that.rateScale,_that.scaledRate,_that.rateSource,_that.rateBaseCurrency,_that.rateQuoteCurrency,_that.originalAmount,_that.originalCurrency,_that.sourceHash,_that.searchTokens,_that.idempotencyKey,_that.mutationState,_that.mutationVersion,_that.mutationSource,_that.failureReason,_that.parentMutationId,_that.confirmedAt,_that.reconciledAt,_that.deviceId,_that.mutationSequence);case _:
   return orElse();
 
 }
@@ -205,10 +218,10 @@ return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency, @TimestampConverter()  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl,  String? receiptId,  String? billId,  String? templateId,  int amountInBaseCurrency,  String baseCurrency,  double exchangeRate,  int rateScale,  int scaledRate,  String rateSource,  String rateBaseCurrency,  String rateQuoteCurrency,  int? originalAmount,  String? originalCurrency,  String? sourceHash,  List<String>? searchTokens)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String type,  int amount,  String currency, @TimestampConverter()  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl,  String? receiptId,  String? billId,  String? templateId,  int amountInBaseCurrency,  String baseCurrency,  double exchangeRate,  int rateScale,  int scaledRate,  String rateSource,  String rateBaseCurrency,  String rateQuoteCurrency,  int? originalAmount,  String? originalCurrency,  String? sourceHash,  List<String>? searchTokens,  String? idempotencyKey,  String mutationState,  int mutationVersion,  String mutationSource,  String? failureReason,  String? parentMutationId, @TimestampNullableConverter()  DateTime? confirmedAt, @TimestampNullableConverter()  DateTime? reconciledAt,  String? deviceId,  int? mutationSequence)  $default,) {final _that = this;
 switch (_that) {
 case _AppTransaction():
-return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl,_that.receiptId,_that.billId,_that.templateId,_that.amountInBaseCurrency,_that.baseCurrency,_that.exchangeRate,_that.rateScale,_that.scaledRate,_that.rateSource,_that.rateBaseCurrency,_that.rateQuoteCurrency,_that.originalAmount,_that.originalCurrency,_that.sourceHash,_that.searchTokens);case _:
+return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl,_that.receiptId,_that.billId,_that.templateId,_that.amountInBaseCurrency,_that.baseCurrency,_that.exchangeRate,_that.rateScale,_that.scaledRate,_that.rateSource,_that.rateBaseCurrency,_that.rateQuoteCurrency,_that.originalAmount,_that.originalCurrency,_that.sourceHash,_that.searchTokens,_that.idempotencyKey,_that.mutationState,_that.mutationVersion,_that.mutationSource,_that.failureReason,_that.parentMutationId,_that.confirmedAt,_that.reconciledAt,_that.deviceId,_that.mutationSequence);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -225,10 +238,10 @@ return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String type,  int amount,  String currency, @TimestampConverter()  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl,  String? receiptId,  String? billId,  String? templateId,  int amountInBaseCurrency,  String baseCurrency,  double exchangeRate,  int rateScale,  int scaledRate,  String rateSource,  String rateBaseCurrency,  String rateQuoteCurrency,  int? originalAmount,  String? originalCurrency,  String? sourceHash,  List<String>? searchTokens)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String type,  int amount,  String currency, @TimestampConverter()  DateTime date,  String accountId,  String categoryId,  String? note,  String? receiptUrl,  String? receiptId,  String? billId,  String? templateId,  int amountInBaseCurrency,  String baseCurrency,  double exchangeRate,  int rateScale,  int scaledRate,  String rateSource,  String rateBaseCurrency,  String rateQuoteCurrency,  int? originalAmount,  String? originalCurrency,  String? sourceHash,  List<String>? searchTokens,  String? idempotencyKey,  String mutationState,  int mutationVersion,  String mutationSource,  String? failureReason,  String? parentMutationId, @TimestampNullableConverter()  DateTime? confirmedAt, @TimestampNullableConverter()  DateTime? reconciledAt,  String? deviceId,  int? mutationSequence)?  $default,) {final _that = this;
 switch (_that) {
 case _AppTransaction() when $default != null:
-return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl,_that.receiptId,_that.billId,_that.templateId,_that.amountInBaseCurrency,_that.baseCurrency,_that.exchangeRate,_that.rateScale,_that.scaledRate,_that.rateSource,_that.rateBaseCurrency,_that.rateQuoteCurrency,_that.originalAmount,_that.originalCurrency,_that.sourceHash,_that.searchTokens);case _:
+return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_that.date,_that.accountId,_that.categoryId,_that.note,_that.receiptUrl,_that.receiptId,_that.billId,_that.templateId,_that.amountInBaseCurrency,_that.baseCurrency,_that.exchangeRate,_that.rateScale,_that.scaledRate,_that.rateSource,_that.rateBaseCurrency,_that.rateQuoteCurrency,_that.originalAmount,_that.originalCurrency,_that.sourceHash,_that.searchTokens,_that.idempotencyKey,_that.mutationState,_that.mutationVersion,_that.mutationSource,_that.failureReason,_that.parentMutationId,_that.confirmedAt,_that.reconciledAt,_that.deviceId,_that.mutationSequence);case _:
   return null;
 
 }
@@ -240,7 +253,7 @@ return $default(_that.id,_that.userId,_that.type,_that.amount,_that.currency,_th
 @JsonSerializable()
 
 class _AppTransaction extends AppTransaction {
-  const _AppTransaction({required this.id, required this.userId, required this.type, required this.amount, required this.currency, @TimestampConverter() required this.date, required this.accountId, required this.categoryId, this.note, this.receiptUrl, this.receiptId, this.billId, this.templateId, this.amountInBaseCurrency = 0, this.baseCurrency = 'USD', this.exchangeRate = 1.0, this.rateScale = 1000000, this.scaledRate = 1000000, this.rateSource = 'manual', this.rateBaseCurrency = 'USD', this.rateQuoteCurrency = 'USD', this.originalAmount, this.originalCurrency, this.sourceHash, final  List<String>? searchTokens}): _searchTokens = searchTokens,super._();
+  const _AppTransaction({required this.id, required this.userId, required this.type, required this.amount, required this.currency, @TimestampConverter() required this.date, required this.accountId, required this.categoryId, this.note, this.receiptUrl, this.receiptId, this.billId, this.templateId, this.amountInBaseCurrency = 0, this.baseCurrency = 'USD', this.exchangeRate = 1.0, this.rateScale = 1000000, this.scaledRate = 1000000, this.rateSource = 'manual', this.rateBaseCurrency = 'USD', this.rateQuoteCurrency = 'USD', this.originalAmount, this.originalCurrency, this.sourceHash, final  List<String>? searchTokens, this.idempotencyKey, this.mutationState = 'pending', this.mutationVersion = 1, this.mutationSource = 'client', this.failureReason, this.parentMutationId, @TimestampNullableConverter() this.confirmedAt, @TimestampNullableConverter() this.reconciledAt, this.deviceId, this.mutationSequence}): _searchTokens = searchTokens,super._();
   factory _AppTransaction.fromJson(Map<String, dynamic> json) => _$AppTransactionFromJson(json);
 
 @override final  String id;
@@ -283,6 +296,19 @@ class _AppTransaction extends AppTransaction {
   return EqualUnmodifiableListView(value);
 }
 
+// --- Server Reconciliation & Mutation Tracking ---
+@override final  String? idempotencyKey;
+@override@JsonKey() final  String mutationState;
+// pending | confirmed | reconciled | failed | corrected
+@override@JsonKey() final  int mutationVersion;
+@override@JsonKey() final  String mutationSource;
+@override final  String? failureReason;
+@override final  String? parentMutationId;
+@override@TimestampNullableConverter() final  DateTime? confirmedAt;
+@override@TimestampNullableConverter() final  DateTime? reconciledAt;
+// Multi-device synchronization
+@override final  String? deviceId;
+@override final  int? mutationSequence;
 
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
@@ -297,16 +323,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.note, note) || other.note == note)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.billId, billId) || other.billId == billId)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.amountInBaseCurrency, amountInBaseCurrency) || other.amountInBaseCurrency == amountInBaseCurrency)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate)&&(identical(other.rateScale, rateScale) || other.rateScale == rateScale)&&(identical(other.scaledRate, scaledRate) || other.scaledRate == scaledRate)&&(identical(other.rateSource, rateSource) || other.rateSource == rateSource)&&(identical(other.rateBaseCurrency, rateBaseCurrency) || other.rateBaseCurrency == rateBaseCurrency)&&(identical(other.rateQuoteCurrency, rateQuoteCurrency) || other.rateQuoteCurrency == rateQuoteCurrency)&&(identical(other.originalAmount, originalAmount) || other.originalAmount == originalAmount)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.sourceHash, sourceHash) || other.sourceHash == sourceHash)&&const DeepCollectionEquality().equals(other._searchTokens, _searchTokens));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.note, note) || other.note == note)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.billId, billId) || other.billId == billId)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.amountInBaseCurrency, amountInBaseCurrency) || other.amountInBaseCurrency == amountInBaseCurrency)&&(identical(other.baseCurrency, baseCurrency) || other.baseCurrency == baseCurrency)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate)&&(identical(other.rateScale, rateScale) || other.rateScale == rateScale)&&(identical(other.scaledRate, scaledRate) || other.scaledRate == scaledRate)&&(identical(other.rateSource, rateSource) || other.rateSource == rateSource)&&(identical(other.rateBaseCurrency, rateBaseCurrency) || other.rateBaseCurrency == rateBaseCurrency)&&(identical(other.rateQuoteCurrency, rateQuoteCurrency) || other.rateQuoteCurrency == rateQuoteCurrency)&&(identical(other.originalAmount, originalAmount) || other.originalAmount == originalAmount)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.sourceHash, sourceHash) || other.sourceHash == sourceHash)&&const DeepCollectionEquality().equals(other._searchTokens, _searchTokens)&&(identical(other.idempotencyKey, idempotencyKey) || other.idempotencyKey == idempotencyKey)&&(identical(other.mutationState, mutationState) || other.mutationState == mutationState)&&(identical(other.mutationVersion, mutationVersion) || other.mutationVersion == mutationVersion)&&(identical(other.mutationSource, mutationSource) || other.mutationSource == mutationSource)&&(identical(other.failureReason, failureReason) || other.failureReason == failureReason)&&(identical(other.parentMutationId, parentMutationId) || other.parentMutationId == parentMutationId)&&(identical(other.confirmedAt, confirmedAt) || other.confirmedAt == confirmedAt)&&(identical(other.reconciledAt, reconciledAt) || other.reconciledAt == reconciledAt)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.mutationSequence, mutationSequence) || other.mutationSequence == mutationSequence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,note,receiptUrl,receiptId,billId,templateId,amountInBaseCurrency,baseCurrency,exchangeRate,rateScale,scaledRate,rateSource,rateBaseCurrency,rateQuoteCurrency,originalAmount,originalCurrency,sourceHash,const DeepCollectionEquality().hash(_searchTokens)]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,type,amount,currency,date,accountId,categoryId,note,receiptUrl,receiptId,billId,templateId,amountInBaseCurrency,baseCurrency,exchangeRate,rateScale,scaledRate,rateSource,rateBaseCurrency,rateQuoteCurrency,originalAmount,originalCurrency,sourceHash,const DeepCollectionEquality().hash(_searchTokens),idempotencyKey,mutationState,mutationVersion,mutationSource,failureReason,parentMutationId,confirmedAt,reconciledAt,deviceId,mutationSequence]);
 
 @override
 String toString() {
-  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, note: $note, receiptUrl: $receiptUrl, receiptId: $receiptId, billId: $billId, templateId: $templateId, amountInBaseCurrency: $amountInBaseCurrency, baseCurrency: $baseCurrency, exchangeRate: $exchangeRate, rateScale: $rateScale, scaledRate: $scaledRate, rateSource: $rateSource, rateBaseCurrency: $rateBaseCurrency, rateQuoteCurrency: $rateQuoteCurrency, originalAmount: $originalAmount, originalCurrency: $originalCurrency, sourceHash: $sourceHash, searchTokens: $searchTokens)';
+  return 'AppTransaction(id: $id, userId: $userId, type: $type, amount: $amount, currency: $currency, date: $date, accountId: $accountId, categoryId: $categoryId, note: $note, receiptUrl: $receiptUrl, receiptId: $receiptId, billId: $billId, templateId: $templateId, amountInBaseCurrency: $amountInBaseCurrency, baseCurrency: $baseCurrency, exchangeRate: $exchangeRate, rateScale: $rateScale, scaledRate: $scaledRate, rateSource: $rateSource, rateBaseCurrency: $rateBaseCurrency, rateQuoteCurrency: $rateQuoteCurrency, originalAmount: $originalAmount, originalCurrency: $originalCurrency, sourceHash: $sourceHash, searchTokens: $searchTokens, idempotencyKey: $idempotencyKey, mutationState: $mutationState, mutationVersion: $mutationVersion, mutationSource: $mutationSource, failureReason: $failureReason, parentMutationId: $parentMutationId, confirmedAt: $confirmedAt, reconciledAt: $reconciledAt, deviceId: $deviceId, mutationSequence: $mutationSequence)';
 }
 
 
@@ -317,7 +343,7 @@ abstract mixin class _$AppTransactionCopyWith<$Res> implements $AppTransactionCo
   factory _$AppTransactionCopyWith(_AppTransaction value, $Res Function(_AppTransaction) _then) = __$AppTransactionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String type, int amount, String currency,@TimestampConverter() DateTime date, String accountId, String categoryId, String? note, String? receiptUrl, String? receiptId, String? billId, String? templateId, int amountInBaseCurrency, String baseCurrency, double exchangeRate, int rateScale, int scaledRate, String rateSource, String rateBaseCurrency, String rateQuoteCurrency, int? originalAmount, String? originalCurrency, String? sourceHash, List<String>? searchTokens
+ String id, String userId, String type, int amount, String currency,@TimestampConverter() DateTime date, String accountId, String categoryId, String? note, String? receiptUrl, String? receiptId, String? billId, String? templateId, int amountInBaseCurrency, String baseCurrency, double exchangeRate, int rateScale, int scaledRate, String rateSource, String rateBaseCurrency, String rateQuoteCurrency, int? originalAmount, String? originalCurrency, String? sourceHash, List<String>? searchTokens, String? idempotencyKey, String mutationState, int mutationVersion, String mutationSource, String? failureReason, String? parentMutationId,@TimestampNullableConverter() DateTime? confirmedAt,@TimestampNullableConverter() DateTime? reconciledAt, String? deviceId, int? mutationSequence
 });
 
 
@@ -334,7 +360,7 @@ class __$AppTransactionCopyWithImpl<$Res>
 
 /// Create a copy of AppTransaction
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? note = freezed,Object? receiptUrl = freezed,Object? receiptId = freezed,Object? billId = freezed,Object? templateId = freezed,Object? amountInBaseCurrency = null,Object? baseCurrency = null,Object? exchangeRate = null,Object? rateScale = null,Object? scaledRate = null,Object? rateSource = null,Object? rateBaseCurrency = null,Object? rateQuoteCurrency = null,Object? originalAmount = freezed,Object? originalCurrency = freezed,Object? sourceHash = freezed,Object? searchTokens = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? type = null,Object? amount = null,Object? currency = null,Object? date = null,Object? accountId = null,Object? categoryId = null,Object? note = freezed,Object? receiptUrl = freezed,Object? receiptId = freezed,Object? billId = freezed,Object? templateId = freezed,Object? amountInBaseCurrency = null,Object? baseCurrency = null,Object? exchangeRate = null,Object? rateScale = null,Object? scaledRate = null,Object? rateSource = null,Object? rateBaseCurrency = null,Object? rateQuoteCurrency = null,Object? originalAmount = freezed,Object? originalCurrency = freezed,Object? sourceHash = freezed,Object? searchTokens = freezed,Object? idempotencyKey = freezed,Object? mutationState = null,Object? mutationVersion = null,Object? mutationSource = null,Object? failureReason = freezed,Object? parentMutationId = freezed,Object? confirmedAt = freezed,Object? reconciledAt = freezed,Object? deviceId = freezed,Object? mutationSequence = freezed,}) {
   return _then(_AppTransaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -361,7 +387,17 @@ as String,originalAmount: freezed == originalAmount ? _self.originalAmount : ori
 as int?,originalCurrency: freezed == originalCurrency ? _self.originalCurrency : originalCurrency // ignore: cast_nullable_to_non_nullable
 as String?,sourceHash: freezed == sourceHash ? _self.sourceHash : sourceHash // ignore: cast_nullable_to_non_nullable
 as String?,searchTokens: freezed == searchTokens ? _self._searchTokens : searchTokens // ignore: cast_nullable_to_non_nullable
-as List<String>?,
+as List<String>?,idempotencyKey: freezed == idempotencyKey ? _self.idempotencyKey : idempotencyKey // ignore: cast_nullable_to_non_nullable
+as String?,mutationState: null == mutationState ? _self.mutationState : mutationState // ignore: cast_nullable_to_non_nullable
+as String,mutationVersion: null == mutationVersion ? _self.mutationVersion : mutationVersion // ignore: cast_nullable_to_non_nullable
+as int,mutationSource: null == mutationSource ? _self.mutationSource : mutationSource // ignore: cast_nullable_to_non_nullable
+as String,failureReason: freezed == failureReason ? _self.failureReason : failureReason // ignore: cast_nullable_to_non_nullable
+as String?,parentMutationId: freezed == parentMutationId ? _self.parentMutationId : parentMutationId // ignore: cast_nullable_to_non_nullable
+as String?,confirmedAt: freezed == confirmedAt ? _self.confirmedAt : confirmedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,reconciledAt: freezed == reconciledAt ? _self.reconciledAt : reconciledAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,deviceId: freezed == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String?,mutationSequence: freezed == mutationSequence ? _self.mutationSequence : mutationSequence // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

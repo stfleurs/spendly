@@ -6,37 +6,49 @@ part of 'app_transaction.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_AppTransaction _$AppTransactionFromJson(Map<String, dynamic> json) =>
-    _AppTransaction(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      type: json['type'] as String,
-      amount: (json['amount'] as num).toInt(),
-      currency: json['currency'] as String,
-      date: const TimestampConverter().fromJson(json['date']),
-      accountId: json['accountId'] as String,
-      categoryId: json['categoryId'] as String,
-      note: json['note'] as String?,
-      receiptUrl: json['receiptUrl'] as String?,
-      receiptId: json['receiptId'] as String?,
-      billId: json['billId'] as String?,
-      templateId: json['templateId'] as String?,
-      amountInBaseCurrency:
-          (json['amountInBaseCurrency'] as num?)?.toInt() ?? 0,
-      baseCurrency: json['baseCurrency'] as String? ?? 'USD',
-      exchangeRate: (json['exchangeRate'] as num?)?.toDouble() ?? 1.0,
-      rateScale: (json['rateScale'] as num?)?.toInt() ?? 1000000,
-      scaledRate: (json['scaledRate'] as num?)?.toInt() ?? 1000000,
-      rateSource: json['rateSource'] as String? ?? 'manual',
-      rateBaseCurrency: json['rateBaseCurrency'] as String? ?? 'USD',
-      rateQuoteCurrency: json['rateQuoteCurrency'] as String? ?? 'USD',
-      originalAmount: (json['originalAmount'] as num?)?.toInt(),
-      originalCurrency: json['originalCurrency'] as String?,
-      sourceHash: json['sourceHash'] as String?,
-      searchTokens: (json['searchTokens'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-    );
+_AppTransaction _$AppTransactionFromJson(
+  Map<String, dynamic> json,
+) => _AppTransaction(
+  id: json['id'] as String,
+  userId: json['userId'] as String,
+  type: json['type'] as String,
+  amount: (json['amount'] as num).toInt(),
+  currency: json['currency'] as String,
+  date: const TimestampConverter().fromJson(json['date']),
+  accountId: json['accountId'] as String,
+  categoryId: json['categoryId'] as String,
+  note: json['note'] as String?,
+  receiptUrl: json['receiptUrl'] as String?,
+  receiptId: json['receiptId'] as String?,
+  billId: json['billId'] as String?,
+  templateId: json['templateId'] as String?,
+  amountInBaseCurrency: (json['amountInBaseCurrency'] as num?)?.toInt() ?? 0,
+  baseCurrency: json['baseCurrency'] as String? ?? 'USD',
+  exchangeRate: (json['exchangeRate'] as num?)?.toDouble() ?? 1.0,
+  rateScale: (json['rateScale'] as num?)?.toInt() ?? 1000000,
+  scaledRate: (json['scaledRate'] as num?)?.toInt() ?? 1000000,
+  rateSource: json['rateSource'] as String? ?? 'manual',
+  rateBaseCurrency: json['rateBaseCurrency'] as String? ?? 'USD',
+  rateQuoteCurrency: json['rateQuoteCurrency'] as String? ?? 'USD',
+  originalAmount: (json['originalAmount'] as num?)?.toInt(),
+  originalCurrency: json['originalCurrency'] as String?,
+  sourceHash: json['sourceHash'] as String?,
+  searchTokens: (json['searchTokens'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
+  idempotencyKey: json['idempotencyKey'] as String?,
+  mutationState: json['mutationState'] as String? ?? 'pending',
+  mutationVersion: (json['mutationVersion'] as num?)?.toInt() ?? 1,
+  mutationSource: json['mutationSource'] as String? ?? 'client',
+  failureReason: json['failureReason'] as String?,
+  parentMutationId: json['parentMutationId'] as String?,
+  confirmedAt: const TimestampNullableConverter().fromJson(json['confirmedAt']),
+  reconciledAt: const TimestampNullableConverter().fromJson(
+    json['reconciledAt'],
+  ),
+  deviceId: json['deviceId'] as String?,
+  mutationSequence: (json['mutationSequence'] as num?)?.toInt(),
+);
 
 Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
     <String, dynamic>{
@@ -65,4 +77,18 @@ Map<String, dynamic> _$AppTransactionToJson(_AppTransaction instance) =>
       'originalCurrency': instance.originalCurrency,
       'sourceHash': instance.sourceHash,
       'searchTokens': instance.searchTokens,
+      'idempotencyKey': instance.idempotencyKey,
+      'mutationState': instance.mutationState,
+      'mutationVersion': instance.mutationVersion,
+      'mutationSource': instance.mutationSource,
+      'failureReason': instance.failureReason,
+      'parentMutationId': instance.parentMutationId,
+      'confirmedAt': const TimestampNullableConverter().toJson(
+        instance.confirmedAt,
+      ),
+      'reconciledAt': const TimestampNullableConverter().toJson(
+        instance.reconciledAt,
+      ),
+      'deviceId': instance.deviceId,
+      'mutationSequence': instance.mutationSequence,
     };

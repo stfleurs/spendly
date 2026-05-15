@@ -39,6 +39,20 @@ abstract class AppTransaction with _$AppTransaction {
     
     String? sourceHash,
     List<String>? searchTokens,
+
+    // --- Server Reconciliation & Mutation Tracking ---
+    String? idempotencyKey,
+    @Default('pending') String mutationState, // pending | confirmed | reconciled | failed | corrected
+    @Default(1) int mutationVersion,
+    @Default('client') String mutationSource,
+    String? failureReason,
+    String? parentMutationId,
+    @TimestampNullableConverter() DateTime? confirmedAt,
+    @TimestampNullableConverter() DateTime? reconciledAt,
+
+    // Multi-device synchronization
+    String? deviceId,
+    int? mutationSequence,
   }) = _AppTransaction;
 
   const AppTransaction._();

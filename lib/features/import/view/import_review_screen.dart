@@ -13,6 +13,7 @@ import 'package:spendly/core/providers/date_provider.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/core/providers/exchange_rate_provider.dart';
+import 'package:spendly/core/providers/device_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
@@ -359,8 +360,15 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
 
 
 
+          final deviceId = ref.read(deviceIdProvider).value;
+          final sequence = await ref.read(mutationSequenceProvider.notifier).increment();
+
           final tx = AppTransaction(
             id: const Uuid().v4(),
+            idempotencyKey: uniqueSourceHash,
+            mutationSource: 'import',
+            deviceId: deviceId,
+            mutationSequence: sequence,
             userId: userId,
             accountId: widget.accountId,
             amount: amountCents,

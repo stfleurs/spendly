@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:spendly/shared/widgets/app_header.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
@@ -16,6 +17,7 @@ import 'package:spendly/core/providers/balance_provider.dart';
 import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 import 'package:spendly/core/providers/exchange_rate_provider.dart';
+import 'package:spendly/core/providers/device_provider.dart';
 
 class NewTransactionScreen extends ConsumerStatefulWidget {
   /// Pass an existing transaction to enter edit mode.
@@ -41,9 +43,12 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
 
   static const List<String> _currencies = ['USD', 'HTG', 'EUR', 'CAD'];
 
+  late final String _idempotencyKey;
+
   @override
   void initState() {
     super.initState();
+    _idempotencyKey = widget.transaction?.idempotencyKey ?? const Uuid().v4();
     final t = widget.transaction;
     _amountController = TextEditingController(
       text: t != null ? (t.amount / 100).toStringAsFixed(2) : '0.00',
@@ -131,8 +136,16 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     final int scaledRate = (rate * rateScale).round();
     final int normalizedAmount = (centsValue * scaledRate) ~/ rateScale;
 
+    final deviceId = ref.read(deviceIdProvider).value;
+    final sequence = await ref.read(mutationSequenceProvider.notifier).increment();
+
     final transaction = AppTransaction(
       id: widget.transaction?.id ?? '',
+      idempotencyKey: _idempotencyKey,
+      mutationVersion: (widget.transaction?.mutationVersion ?? 0) + 1,
+      parentMutationId: widget.transaction?.idempotencyKey,
+      deviceId: deviceId,
+      mutationSequence: sequence,
       userId: ref.read(authRepositoryProvider).currentUser?.uid ?? '',
       type: _selectedType.toLowerCase(),
       amount: centsValue,

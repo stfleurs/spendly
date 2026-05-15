@@ -19,6 +19,7 @@ import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/core/providers/exchange_rate_provider.dart';
 import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/category.dart' as model;
+import 'package:spendly/core/providers/device_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
@@ -54,10 +55,13 @@ class _ReceiptConfirmationScreenState
   late final double _originalTax;
   late final String _originalCurrency;
   double _currentExchangeRate = 1.0;
+  
+  late final String _idempotencyKey;
 
   @override
   void initState() {
     super.initState();
+    _idempotencyKey = const Uuid().v4();
     _merchantController = TextEditingController(text: widget.receipt.merchant);
 
     // Store original values (derived from OCR or initial scan)
@@ -275,8 +279,14 @@ class _ReceiptConfirmationScreenState
       final int scaledRate = (rateToBase * rateScale).round();
       final int normalizedAmount = (totalCents * scaledRate) ~/ rateScale;
 
+      final deviceId = ref.read(deviceIdProvider).value;
+      final sequence = await ref.read(mutationSequenceProvider.notifier).increment();
+
       final transaction = AppTransaction(
         id: const Uuid().v4(),
+        idempotencyKey: _idempotencyKey,
+        deviceId: deviceId,
+        mutationSequence: sequence,
         userId: userId,
         accountId: _selectedAccountId!,
         amount: totalCents,

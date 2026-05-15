@@ -9,6 +9,7 @@ import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/features/ocr/repository/receipt_repository.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/providers/exchange_rate_provider.dart';
+import 'package:spendly/core/providers/device_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
@@ -31,10 +32,13 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
   bool _isLoading = false;
   File? _imageFile;
   final _picker = ImagePicker();
+  
+  late final String _idempotencyKey;
 
   @override
   void initState() {
     super.initState();
+    _idempotencyKey = const Uuid().v4();
     final remaining = widget.bill.amount - widget.bill.paidAmount;
     _amountController = TextEditingController(
       text: (remaining / 100).toStringAsFixed(2),
@@ -547,8 +551,14 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
       final int scaledRateToBase = (rateToBase * rateScale).round();
       final int normalizedAmount = (accountAmountCents * scaledRateToBase) ~/ rateScale;
 
+      final deviceId = ref.read(deviceIdProvider).value;
+      final sequence = await ref.read(mutationSequenceProvider.notifier).increment();
+
       final tx = AppTransaction(
         id: txId,
+        idempotencyKey: _idempotencyKey,
+        deviceId: deviceId,
+        mutationSequence: sequence,
         userId: widget.userId,
         type: 'expense',
         amount: accountAmountCents,       // what leaves the account
