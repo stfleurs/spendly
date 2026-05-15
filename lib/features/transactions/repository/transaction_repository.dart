@@ -99,6 +99,18 @@ class TransactionRepository {
     TransactionSource source = TransactionSource.manual,
   }) async {
     try {
+      // 0. Idempotency Check (Intent protection)
+      if (transaction.idempotencyKey != null) {
+        final existing = await _collection
+            .where('idempotencyKey', isEqualTo: transaction.idempotencyKey)
+            .limit(1)
+            .get();
+        if (existing.docs.isNotEmpty) {
+          debugPrint('Spendly: Duplicate transaction intent detected (${transaction.idempotencyKey})');
+          return TransactionInsertResult.duplicate;
+        }
+      }
+
       if (transaction.sourceHash != null) {
         if (await isDuplicate(transaction.accountId, transaction.sourceHash!)) {
           return TransactionInsertResult.duplicate;
@@ -110,7 +122,7 @@ class TransactionRepository {
       // 1. Transaction Doc
       final txData = transaction.toJson();
       txData.remove('id');
-      final txRef = _collection.doc();
+      final txRef = transaction.id.isEmpty ? _collection.doc() : _collection.doc(transaction.id);
       batch.set(txRef, txData);
 
       // 2. Account Update (O(1) Snapshot Update)

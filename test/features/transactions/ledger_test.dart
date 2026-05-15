@@ -28,6 +28,35 @@ void main() {
       'lastTransactionAt': DateTime(2026, 1, 1),
       'lastCalculatedAt': DateTime(2026, 1, 1),
     });
+
+    // 1. Setup User document (required for ledgerVersion update)
+    await fakeFirestore.collection('users').doc(userId).set({
+      'id': userId,
+      'ledgerVersion': 1,
+    });
+
+    // 2. Setup Category document (required for expense allocation)
+    await fakeFirestore
+        .collection('users')
+        .doc(userId)
+        .collection('categories')
+        .doc('food')
+        .set({
+      'id': 'food',
+      'name': 'Food',
+      'availableBalance': 500000,
+    });
+
+    await fakeFirestore
+        .collection('users')
+        .doc(userId)
+        .collection('categories')
+        .doc('salary')
+        .set({
+      'id': 'salary',
+      'name': 'Salary',
+      'availableBalance': 0,
+    });
   });
 
   test('Adding an HTG expense should update native balance and USD summary with namespaced metadata', () async {
