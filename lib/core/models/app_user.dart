@@ -11,6 +11,9 @@ abstract class AppUser with _$AppUser {
     required String baseCurrency,
     @Default(0) int readyToAssign, // Normalized in Base Currency
     required DateTime createdAt,
+    @Default({}) Map<String, double> exchangeRates,
+    @Default('manual') String rateMode,
+    @Default(1) int ledgerVersion,
   }) = _AppUser;
 
   const AppUser._();

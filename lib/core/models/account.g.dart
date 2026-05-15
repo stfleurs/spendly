@@ -24,6 +24,10 @@ _Account _$AccountFromJson(Map<String, dynamic> json) => _Account(
   ),
   lastLedgerMutationId: json['lastLedgerMutationId'] as String?,
   creditLimit: (json['creditLimit'] as num?)?.toInt() ?? 0,
+  snapshotHealthy: json['snapshotHealthy'] as bool? ?? true,
+  lastReconciledAt: const TimestampNullableConverter().fromJson(
+    json['lastReconciledAt'],
+  ),
   color: json['color'] as String?,
 );
 
@@ -45,5 +49,9 @@ Map<String, dynamic> _$AccountToJson(_Account instance) => <String, dynamic>{
   ),
   'lastLedgerMutationId': instance.lastLedgerMutationId,
   'creditLimit': instance.creditLimit,
+  'snapshotHealthy': instance.snapshotHealthy,
+  'lastReconciledAt': const TimestampNullableConverter().toJson(
+    instance.lastReconciledAt,
+  ),
   'color': instance.color,
 };

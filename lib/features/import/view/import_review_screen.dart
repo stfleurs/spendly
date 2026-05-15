@@ -349,7 +349,7 @@ class _ImportReviewScreenState extends ConsumerState<ImportReviewScreen> {
           final account = accounts?.firstWhere((a) => a.id == widget.accountId);
           final String txCurrency = account?.currency ?? 'USD';
           final baseCurrency = ref.read(currencyProvider);
-          final double rate = ref.read(exchangeRateProvider((from: txCurrency, to: baseCurrency)));
+          final double rate = ref.read(exchangeRateProvider((userId: userId, from: txCurrency, to: baseCurrency)));
           
           // Rule #2: Scaled Integer Math
           const int rateScale = 1000000;

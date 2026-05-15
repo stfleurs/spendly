@@ -542,7 +542,7 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
       }
 
       // Normalize to base currency
-      final rateToBase = ref.read(exchangeRateProvider((from: selectedAccount.currency, to: baseCurrency)));
+      final rateToBase = ref.read(exchangeRateProvider((userId: widget.userId, from: selectedAccount.currency, to: baseCurrency)));
       const int rateScale = 1000000;
       final int scaledRateToBase = (rateToBase * rateScale).round();
       final int normalizedAmount = (accountAmountCents * scaledRateToBase) ~/ rateScale;

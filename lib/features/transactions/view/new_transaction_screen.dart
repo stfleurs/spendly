@@ -124,7 +124,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
         return;
       }
     } else {
-      rate = ref.read(exchangeRateProvider((from: _selectedCurrency, to: baseCurrency)));
+      rate = ref.read(exchangeRateProvider((userId: userId, from: _selectedCurrency, to: baseCurrency)));
     }
 
     const int rateScale = 1000000;

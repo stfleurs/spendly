@@ -20,7 +20,7 @@ mixin _$Account {
  int get transactionCount;@TimestampNullableConverter() DateTime? get lastTransactionAt; int get ledgerVersion;// Version stamp for audit/reconciliation
 @TimestampNullableConverter() DateTime? get lastCalculatedAt;// Last time the snapshot was verified against history
  String? get lastLedgerMutationId;// ID of the last transaction that modified this account
- int get creditLimit; String? get color;
+ int get creditLimit; bool get snapshotHealthy;@TimestampNullableConverter() DateTime? get lastReconciledAt; String? get color;
 /// Create a copy of Account
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +33,16 @@ $AccountCopyWith<Account> get copyWith => _$AccountCopyWithImpl<Account>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Account&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastTransactionAt, lastTransactionAt) || other.lastTransactionAt == lastTransactionAt)&&(identical(other.ledgerVersion, ledgerVersion) || other.ledgerVersion == ledgerVersion)&&(identical(other.lastCalculatedAt, lastCalculatedAt) || other.lastCalculatedAt == lastCalculatedAt)&&(identical(other.lastLedgerMutationId, lastLedgerMutationId) || other.lastLedgerMutationId == lastLedgerMutationId)&&(identical(other.creditLimit, creditLimit) || other.creditLimit == creditLimit)&&(identical(other.color, color) || other.color == color));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Account&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastTransactionAt, lastTransactionAt) || other.lastTransactionAt == lastTransactionAt)&&(identical(other.ledgerVersion, ledgerVersion) || other.ledgerVersion == ledgerVersion)&&(identical(other.lastCalculatedAt, lastCalculatedAt) || other.lastCalculatedAt == lastCalculatedAt)&&(identical(other.lastLedgerMutationId, lastLedgerMutationId) || other.lastLedgerMutationId == lastLedgerMutationId)&&(identical(other.creditLimit, creditLimit) || other.creditLimit == creditLimit)&&(identical(other.snapshotHealthy, snapshotHealthy) || other.snapshotHealthy == snapshotHealthy)&&(identical(other.lastReconciledAt, lastReconciledAt) || other.lastReconciledAt == lastReconciledAt)&&(identical(other.color, color) || other.color == color));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,type,currency,balance,currentBalance,transactionCount,lastTransactionAt,ledgerVersion,lastCalculatedAt,lastLedgerMutationId,creditLimit,color);
+int get hashCode => Object.hash(runtimeType,id,userId,name,type,currency,balance,currentBalance,transactionCount,lastTransactionAt,ledgerVersion,lastCalculatedAt,lastLedgerMutationId,creditLimit,snapshotHealthy,lastReconciledAt,color);
 
 @override
 String toString() {
-  return 'Account(id: $id, userId: $userId, name: $name, type: $type, currency: $currency, balance: $balance, currentBalance: $currentBalance, transactionCount: $transactionCount, lastTransactionAt: $lastTransactionAt, ledgerVersion: $ledgerVersion, lastCalculatedAt: $lastCalculatedAt, lastLedgerMutationId: $lastLedgerMutationId, creditLimit: $creditLimit, color: $color)';
+  return 'Account(id: $id, userId: $userId, name: $name, type: $type, currency: $currency, balance: $balance, currentBalance: $currentBalance, transactionCount: $transactionCount, lastTransactionAt: $lastTransactionAt, ledgerVersion: $ledgerVersion, lastCalculatedAt: $lastCalculatedAt, lastLedgerMutationId: $lastLedgerMutationId, creditLimit: $creditLimit, snapshotHealthy: $snapshotHealthy, lastReconciledAt: $lastReconciledAt, color: $color)';
 }
 
 
@@ -53,7 +53,7 @@ abstract mixin class $AccountCopyWith<$Res>  {
   factory $AccountCopyWith(Account value, $Res Function(Account) _then) = _$AccountCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String name, String type, String currency, int balance, int? currentBalance, int transactionCount,@TimestampNullableConverter() DateTime? lastTransactionAt, int ledgerVersion,@TimestampNullableConverter() DateTime? lastCalculatedAt, String? lastLedgerMutationId, int creditLimit, String? color
+ String id, String userId, String name, String type, String currency, int balance, int? currentBalance, int transactionCount,@TimestampNullableConverter() DateTime? lastTransactionAt, int ledgerVersion,@TimestampNullableConverter() DateTime? lastCalculatedAt, String? lastLedgerMutationId, int creditLimit, bool snapshotHealthy,@TimestampNullableConverter() DateTime? lastReconciledAt, String? color
 });
 
 
@@ -70,7 +70,7 @@ class _$AccountCopyWithImpl<$Res>
 
 /// Create a copy of Account
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? type = null,Object? currency = null,Object? balance = null,Object? currentBalance = freezed,Object? transactionCount = null,Object? lastTransactionAt = freezed,Object? ledgerVersion = null,Object? lastCalculatedAt = freezed,Object? lastLedgerMutationId = freezed,Object? creditLimit = null,Object? color = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? type = null,Object? currency = null,Object? balance = null,Object? currentBalance = freezed,Object? transactionCount = null,Object? lastTransactionAt = freezed,Object? ledgerVersion = null,Object? lastCalculatedAt = freezed,Object? lastLedgerMutationId = freezed,Object? creditLimit = null,Object? snapshotHealthy = null,Object? lastReconciledAt = freezed,Object? color = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -85,7 +85,9 @@ as DateTime?,ledgerVersion: null == ledgerVersion ? _self.ledgerVersion : ledger
 as int,lastCalculatedAt: freezed == lastCalculatedAt ? _self.lastCalculatedAt : lastCalculatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,lastLedgerMutationId: freezed == lastLedgerMutationId ? _self.lastLedgerMutationId : lastLedgerMutationId // ignore: cast_nullable_to_non_nullable
 as String?,creditLimit: null == creditLimit ? _self.creditLimit : creditLimit // ignore: cast_nullable_to_non_nullable
-as int,color: freezed == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
+as int,snapshotHealthy: null == snapshotHealthy ? _self.snapshotHealthy : snapshotHealthy // ignore: cast_nullable_to_non_nullable
+as bool,lastReconciledAt: freezed == lastReconciledAt ? _self.lastReconciledAt : lastReconciledAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,color: freezed == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -171,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String type,  String currency,  int balance,  int? currentBalance,  int transactionCount, @TimestampNullableConverter()  DateTime? lastTransactionAt,  int ledgerVersion, @TimestampNullableConverter()  DateTime? lastCalculatedAt,  String? lastLedgerMutationId,  int creditLimit,  String? color)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String type,  String currency,  int balance,  int? currentBalance,  int transactionCount, @TimestampNullableConverter()  DateTime? lastTransactionAt,  int ledgerVersion, @TimestampNullableConverter()  DateTime? lastCalculatedAt,  String? lastLedgerMutationId,  int creditLimit,  bool snapshotHealthy, @TimestampNullableConverter()  DateTime? lastReconciledAt,  String? color)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Account() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that.balance,_that.currentBalance,_that.transactionCount,_that.lastTransactionAt,_that.ledgerVersion,_that.lastCalculatedAt,_that.lastLedgerMutationId,_that.creditLimit,_that.color);case _:
+return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that.balance,_that.currentBalance,_that.transactionCount,_that.lastTransactionAt,_that.ledgerVersion,_that.lastCalculatedAt,_that.lastLedgerMutationId,_that.creditLimit,_that.snapshotHealthy,_that.lastReconciledAt,_that.color);case _:
   return orElse();
 
 }
@@ -192,10 +194,10 @@ return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String type,  String currency,  int balance,  int? currentBalance,  int transactionCount, @TimestampNullableConverter()  DateTime? lastTransactionAt,  int ledgerVersion, @TimestampNullableConverter()  DateTime? lastCalculatedAt,  String? lastLedgerMutationId,  int creditLimit,  String? color)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String type,  String currency,  int balance,  int? currentBalance,  int transactionCount, @TimestampNullableConverter()  DateTime? lastTransactionAt,  int ledgerVersion, @TimestampNullableConverter()  DateTime? lastCalculatedAt,  String? lastLedgerMutationId,  int creditLimit,  bool snapshotHealthy, @TimestampNullableConverter()  DateTime? lastReconciledAt,  String? color)  $default,) {final _that = this;
 switch (_that) {
 case _Account():
-return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that.balance,_that.currentBalance,_that.transactionCount,_that.lastTransactionAt,_that.ledgerVersion,_that.lastCalculatedAt,_that.lastLedgerMutationId,_that.creditLimit,_that.color);case _:
+return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that.balance,_that.currentBalance,_that.transactionCount,_that.lastTransactionAt,_that.ledgerVersion,_that.lastCalculatedAt,_that.lastLedgerMutationId,_that.creditLimit,_that.snapshotHealthy,_that.lastReconciledAt,_that.color);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -212,10 +214,10 @@ return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String type,  String currency,  int balance,  int? currentBalance,  int transactionCount, @TimestampNullableConverter()  DateTime? lastTransactionAt,  int ledgerVersion, @TimestampNullableConverter()  DateTime? lastCalculatedAt,  String? lastLedgerMutationId,  int creditLimit,  String? color)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String type,  String currency,  int balance,  int? currentBalance,  int transactionCount, @TimestampNullableConverter()  DateTime? lastTransactionAt,  int ledgerVersion, @TimestampNullableConverter()  DateTime? lastCalculatedAt,  String? lastLedgerMutationId,  int creditLimit,  bool snapshotHealthy, @TimestampNullableConverter()  DateTime? lastReconciledAt,  String? color)?  $default,) {final _that = this;
 switch (_that) {
 case _Account() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that.balance,_that.currentBalance,_that.transactionCount,_that.lastTransactionAt,_that.ledgerVersion,_that.lastCalculatedAt,_that.lastLedgerMutationId,_that.creditLimit,_that.color);case _:
+return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that.balance,_that.currentBalance,_that.transactionCount,_that.lastTransactionAt,_that.ledgerVersion,_that.lastCalculatedAt,_that.lastLedgerMutationId,_that.creditLimit,_that.snapshotHealthy,_that.lastReconciledAt,_that.color);case _:
   return null;
 
 }
@@ -227,7 +229,7 @@ return $default(_that.id,_that.userId,_that.name,_that.type,_that.currency,_that
 @JsonSerializable()
 
 class _Account extends Account {
-  const _Account({required this.id, required this.userId, required this.name, required this.type, required this.currency, required this.balance, this.currentBalance, this.transactionCount = 0, @TimestampNullableConverter() this.lastTransactionAt, this.ledgerVersion = 1, @TimestampNullableConverter() this.lastCalculatedAt, this.lastLedgerMutationId, this.creditLimit = 0, this.color}): super._();
+  const _Account({required this.id, required this.userId, required this.name, required this.type, required this.currency, required this.balance, this.currentBalance, this.transactionCount = 0, @TimestampNullableConverter() this.lastTransactionAt, this.ledgerVersion = 1, @TimestampNullableConverter() this.lastCalculatedAt, this.lastLedgerMutationId, this.creditLimit = 0, this.snapshotHealthy = true, @TimestampNullableConverter() this.lastReconciledAt, this.color}): super._();
   factory _Account.fromJson(Map<String, dynamic> json) => _$AccountFromJson(json);
 
 @override final  String id;
@@ -248,6 +250,8 @@ class _Account extends Account {
 @override final  String? lastLedgerMutationId;
 // ID of the last transaction that modified this account
 @override@JsonKey() final  int creditLimit;
+@override@JsonKey() final  bool snapshotHealthy;
+@override@TimestampNullableConverter() final  DateTime? lastReconciledAt;
 @override final  String? color;
 
 /// Create a copy of Account
@@ -263,16 +267,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Account&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastTransactionAt, lastTransactionAt) || other.lastTransactionAt == lastTransactionAt)&&(identical(other.ledgerVersion, ledgerVersion) || other.ledgerVersion == ledgerVersion)&&(identical(other.lastCalculatedAt, lastCalculatedAt) || other.lastCalculatedAt == lastCalculatedAt)&&(identical(other.lastLedgerMutationId, lastLedgerMutationId) || other.lastLedgerMutationId == lastLedgerMutationId)&&(identical(other.creditLimit, creditLimit) || other.creditLimit == creditLimit)&&(identical(other.color, color) || other.color == color));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Account&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance)&&(identical(other.transactionCount, transactionCount) || other.transactionCount == transactionCount)&&(identical(other.lastTransactionAt, lastTransactionAt) || other.lastTransactionAt == lastTransactionAt)&&(identical(other.ledgerVersion, ledgerVersion) || other.ledgerVersion == ledgerVersion)&&(identical(other.lastCalculatedAt, lastCalculatedAt) || other.lastCalculatedAt == lastCalculatedAt)&&(identical(other.lastLedgerMutationId, lastLedgerMutationId) || other.lastLedgerMutationId == lastLedgerMutationId)&&(identical(other.creditLimit, creditLimit) || other.creditLimit == creditLimit)&&(identical(other.snapshotHealthy, snapshotHealthy) || other.snapshotHealthy == snapshotHealthy)&&(identical(other.lastReconciledAt, lastReconciledAt) || other.lastReconciledAt == lastReconciledAt)&&(identical(other.color, color) || other.color == color));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,type,currency,balance,currentBalance,transactionCount,lastTransactionAt,ledgerVersion,lastCalculatedAt,lastLedgerMutationId,creditLimit,color);
+int get hashCode => Object.hash(runtimeType,id,userId,name,type,currency,balance,currentBalance,transactionCount,lastTransactionAt,ledgerVersion,lastCalculatedAt,lastLedgerMutationId,creditLimit,snapshotHealthy,lastReconciledAt,color);
 
 @override
 String toString() {
-  return 'Account(id: $id, userId: $userId, name: $name, type: $type, currency: $currency, balance: $balance, currentBalance: $currentBalance, transactionCount: $transactionCount, lastTransactionAt: $lastTransactionAt, ledgerVersion: $ledgerVersion, lastCalculatedAt: $lastCalculatedAt, lastLedgerMutationId: $lastLedgerMutationId, creditLimit: $creditLimit, color: $color)';
+  return 'Account(id: $id, userId: $userId, name: $name, type: $type, currency: $currency, balance: $balance, currentBalance: $currentBalance, transactionCount: $transactionCount, lastTransactionAt: $lastTransactionAt, ledgerVersion: $ledgerVersion, lastCalculatedAt: $lastCalculatedAt, lastLedgerMutationId: $lastLedgerMutationId, creditLimit: $creditLimit, snapshotHealthy: $snapshotHealthy, lastReconciledAt: $lastReconciledAt, color: $color)';
 }
 
 
@@ -283,7 +287,7 @@ abstract mixin class _$AccountCopyWith<$Res> implements $AccountCopyWith<$Res> {
   factory _$AccountCopyWith(_Account value, $Res Function(_Account) _then) = __$AccountCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String name, String type, String currency, int balance, int? currentBalance, int transactionCount,@TimestampNullableConverter() DateTime? lastTransactionAt, int ledgerVersion,@TimestampNullableConverter() DateTime? lastCalculatedAt, String? lastLedgerMutationId, int creditLimit, String? color
+ String id, String userId, String name, String type, String currency, int balance, int? currentBalance, int transactionCount,@TimestampNullableConverter() DateTime? lastTransactionAt, int ledgerVersion,@TimestampNullableConverter() DateTime? lastCalculatedAt, String? lastLedgerMutationId, int creditLimit, bool snapshotHealthy,@TimestampNullableConverter() DateTime? lastReconciledAt, String? color
 });
 
 
@@ -300,7 +304,7 @@ class __$AccountCopyWithImpl<$Res>
 
 /// Create a copy of Account
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? type = null,Object? currency = null,Object? balance = null,Object? currentBalance = freezed,Object? transactionCount = null,Object? lastTransactionAt = freezed,Object? ledgerVersion = null,Object? lastCalculatedAt = freezed,Object? lastLedgerMutationId = freezed,Object? creditLimit = null,Object? color = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? type = null,Object? currency = null,Object? balance = null,Object? currentBalance = freezed,Object? transactionCount = null,Object? lastTransactionAt = freezed,Object? ledgerVersion = null,Object? lastCalculatedAt = freezed,Object? lastLedgerMutationId = freezed,Object? creditLimit = null,Object? snapshotHealthy = null,Object? lastReconciledAt = freezed,Object? color = freezed,}) {
   return _then(_Account(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -315,7 +319,9 @@ as DateTime?,ledgerVersion: null == ledgerVersion ? _self.ledgerVersion : ledger
 as int,lastCalculatedAt: freezed == lastCalculatedAt ? _self.lastCalculatedAt : lastCalculatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,lastLedgerMutationId: freezed == lastLedgerMutationId ? _self.lastLedgerMutationId : lastLedgerMutationId // ignore: cast_nullable_to_non_nullable
 as String?,creditLimit: null == creditLimit ? _self.creditLimit : creditLimit // ignore: cast_nullable_to_non_nullable
-as int,color: freezed == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
+as int,snapshotHealthy: null == snapshotHealthy ? _self.snapshotHealthy : snapshotHealthy // ignore: cast_nullable_to_non_nullable
+as bool,lastReconciledAt: freezed == lastReconciledAt ? _self.lastReconciledAt : lastReconciledAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,color: freezed == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

@@ -267,7 +267,7 @@ class _ReceiptConfirmationScreenState
 
       final baseCurrency = ref.read(currencyProvider);
       final double rateToBase = ref.read(
-        exchangeRateProvider((from: _selectedCurrency, to: baseCurrency)),
+        exchangeRateProvider((userId: userId, from: _selectedCurrency, to: baseCurrency)),
       );
 
       // Rule #2: Scaled Integer Math

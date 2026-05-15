@@ -43,6 +43,18 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
 
+      match /financial_summary/{doc} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /daily_net_worth/{doc} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /allocations/{allocId} {
+        allow read, write: if isOwner(userId);
+      }
+
       // Receipt learning data
       match /receipt_learning/{version} {
         allow read, write: if isOwner(userId);
@@ -74,15 +86,22 @@ service cloud.firestore {
     }
 
     match /transactions/{txId} {
-      allow read, write: if signedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      // List queries are filtered by userId in the app; resource is null on queries so we can't check it.
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
     match /accounts/{accId} {
-      allow read, write: if signedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
     match /receipts/{rcptId} {
-      allow read, write: if signedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
     // Default deny

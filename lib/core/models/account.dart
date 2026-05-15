@@ -20,6 +20,8 @@ abstract class Account with _$Account {
     @TimestampNullableConverter() DateTime? lastCalculatedAt, // Last time the snapshot was verified against history
     String? lastLedgerMutationId, // ID of the last transaction that modified this account
     @Default(0) int creditLimit,
+    @Default(true) bool snapshotHealthy,
+    @TimestampNullableConverter() DateTime? lastReconciledAt,
     String? color,
   }) = _Account;
 

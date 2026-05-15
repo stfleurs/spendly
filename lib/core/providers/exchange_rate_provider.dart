@@ -1,12 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendly/core/providers/app_user_provider.dart';
 
-/// Provides the current exchange rate for a currency pair.
-/// In a production app, this would fetch from an external API and cache results.
-final ProviderFamily<double, ({String from, String to})> exchangeRateProvider = Provider.family<double, ({String from, String to})>((ref, arg) {
+/// Provides the current exchange rate for a currency pair, scoped to a user.
+final ProviderFamily<double, ({String userId, String from, String to})> exchangeRateProvider = Provider.family<double, ({String userId, String from, String to})>((ref, arg) {
   if (arg.from == arg.to) return 1.0;
   
-  // Mock rates for common pairs in this app
-  final rates = {
+  final user = ref.watch(appUserStreamProvider(arg.userId)).value;
+  final userRates = user?.exchangeRates ?? {};
+
+  final key = '${arg.from}_${arg.to}';
+  if (userRates.containsKey(key)) return userRates[key]!;
+
+  // Fallback to hardcoded/mock rates if user hasn't defined a custom one
+  final mockRates = {
     'USD_HTG': 135.0,
     'HTG_USD': 1 / 135.0,
     'EUR_USD': 1.08,
@@ -15,15 +21,14 @@ final ProviderFamily<double, ({String from, String to})> exchangeRateProvider = 
     'USD_CAD': 1 / 0.74,
   };
 
-  final key = '${arg.from}_${arg.to}';
-  if (rates.containsKey(key)) return rates[key]!;
+  if (mockRates.containsKey(key)) return mockRates[key]!;
 
   // Fallback: If we don't have a direct pair, try going through USD as a base
   if (arg.to == 'USD') {
-     // We already checked above, but just in case
+     // No direct rate to USD found in mock or user rates
   } else if (arg.from != 'USD') {
-     final rateToUsd = ref.read(exchangeRateProvider((from: arg.from, to: 'USD')));
-     final usdToTarget = ref.read(exchangeRateProvider((from: 'USD', to: arg.to)));
+     final rateToUsd = ref.read(exchangeRateProvider((userId: arg.userId, from: arg.from, to: 'USD')));
+     final usdToTarget = ref.read(exchangeRateProvider((userId: arg.userId, from: 'USD', to: arg.to)));
      return rateToUsd * usdToTarget;
   }
 

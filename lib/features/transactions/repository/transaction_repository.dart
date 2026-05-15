@@ -156,6 +156,17 @@ class TransactionRepository {
       // 3. Update Monthly Summary
       _updateMonthlySummary(batch, transaction.userId, transaction);
 
+      // 4. Update Financial Summary (Net Worth Snapshot)
+      _updateFinancialSummary(batch, transaction.userId, transaction);
+
+      // 5. Update Daily Net Worth
+      _updateDailyNetWorth(batch, transaction.userId, transaction);
+
+      // 6. Increment User Ledger Version
+      batch.update(_firestore.collection('users').doc(transaction.userId), {
+        'ledgerVersion': FieldValue.increment(1),
+      });
+
       await batch.commit();
       return TransactionInsertResult.success;
     } catch (e) {
@@ -243,6 +254,19 @@ class TransactionRepository {
     _updateMonthlySummary(batch, transaction.userId, oldTx, isDelete: true);
     _updateMonthlySummary(batch, transaction.userId, transaction);
 
+    // 6. Update Financial Summary
+    _updateFinancialSummary(batch, transaction.userId, oldTx, isDelete: true);
+    _updateFinancialSummary(batch, transaction.userId, transaction);
+
+    // 7. Update Daily Net Worth
+    _updateDailyNetWorth(batch, transaction.userId, oldTx, isDelete: true);
+    _updateDailyNetWorth(batch, transaction.userId, transaction);
+
+    // 8. Increment User Ledger Version
+    batch.update(_firestore.collection('users').doc(transaction.userId), {
+      'ledgerVersion': FieldValue.increment(1),
+    });
+
     await batch.commit();
   }
 
@@ -286,6 +310,17 @@ class TransactionRepository {
 
     // 3. Update Monthly Summary
     _updateMonthlySummary(batch, transaction.userId, transaction, isDelete: true);
+
+    // 4. Update Financial Summary
+    _updateFinancialSummary(batch, transaction.userId, transaction, isDelete: true);
+
+    // 5. Update Daily Net Worth
+    _updateDailyNetWorth(batch, transaction.userId, transaction, isDelete: true);
+
+    // 6. Increment User Ledger Version
+    batch.update(_firestore.collection('users').doc(transaction.userId), {
+      'ledgerVersion': FieldValue.increment(1),
+    });
 
     await batch.commit();
   }
@@ -340,7 +375,93 @@ class TransactionRepository {
 
       // 5. Update Monthly Summary
       _updateMonthlySummaryInTransaction(tx, transaction.userId, transaction);
+
+      // 6. Update Financial Summary
+      _updateFinancialSummaryInTransaction(tx, transaction.userId, transaction);
+
+      // 7. Update Daily Net Worth
+      _updateDailyNetWorthInTransaction(tx, transaction.userId, transaction);
+
+      // 8. Increment User Ledger Version
+      tx.update(_firestore.collection('users').doc(transaction.userId), {
+        'ledgerVersion': FieldValue.increment(1),
+      });
     });
+  }
+
+  void _updateFinancialSummaryInTransaction(
+    Transaction tx,
+    String userId,
+    AppTransaction transaction, {
+    bool isDelete = false,
+  }) {
+    final summaryRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('financial_summary')
+        .doc('main');
+
+    final isExpense = transaction.type.toLowerCase() == 'expense';
+    final isIncome = transaction.type.toLowerCase() == 'income';
+    final normalizedAmount = transaction.amountInBaseCurrency;
+
+    int netWorthDelta = 0;
+    if (isIncome) {
+      netWorthDelta = isDelete ? -normalizedAmount : normalizedAmount;
+    } else if (isExpense) {
+      netWorthDelta = isDelete ? normalizedAmount : -normalizedAmount;
+    }
+
+    tx.set(
+      summaryRef,
+      {
+        'netWorth': FieldValue.increment(netWorthDelta),
+        'updatedAt': DateTime.now(),
+        'ledgerVersion': FieldValue.increment(1),
+        'reconciled': false,
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  void _updateDailyNetWorthInTransaction(
+    Transaction tx,
+    String userId,
+    AppTransaction transaction, {
+    bool isDelete = false,
+  }) {
+    final dateId =
+        "${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}";
+    final dailyRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('daily_net_worth')
+        .doc(dateId);
+
+    final isExpense = transaction.type.toLowerCase() == 'expense';
+    final isIncome = transaction.type.toLowerCase() == 'income';
+    final normalizedAmount = transaction.amountInBaseCurrency;
+
+    int netWorthDelta = 0;
+    if (isIncome) {
+      netWorthDelta = isDelete ? -normalizedAmount : normalizedAmount;
+    } else if (isExpense) {
+      netWorthDelta = isDelete ? normalizedAmount : -normalizedAmount;
+    }
+
+    tx.set(
+      dailyRef,
+      {
+        'netWorth': FieldValue.increment(netWorthDelta),
+        'date': Timestamp.fromDate(DateTime(
+          transaction.date.year,
+          transaction.date.month,
+          transaction.date.day,
+        )),
+        'ledgerVersion': FieldValue.increment(1),
+      },
+      SetOptions(merge: true),
+    );
   }
 
   Future<void> addAllocationEvent(AllocationEvent event) async {
@@ -519,6 +640,81 @@ class TransactionRepository {
     };
 
     batch.set(summaryRef, updates, SetOptions(merge: true));
+  }
+
+  void _updateFinancialSummary(
+    WriteBatch batch,
+    String userId,
+    AppTransaction transaction, {
+    bool isDelete = false,
+  }) {
+    final summaryRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('financial_summary')
+        .doc('main');
+
+    final isExpense = transaction.type.toLowerCase() == 'expense';
+    final isIncome = transaction.type.toLowerCase() == 'income';
+    final normalizedAmount = transaction.amountInBaseCurrency;
+
+    int netWorthDelta = 0;
+    if (isIncome) {
+      netWorthDelta = isDelete ? -normalizedAmount : normalizedAmount;
+    } else if (isExpense) {
+      netWorthDelta = isDelete ? normalizedAmount : -normalizedAmount;
+    }
+
+    batch.set(
+      summaryRef,
+      {
+        'netWorth': FieldValue.increment(netWorthDelta),
+        'updatedAt': DateTime.now(),
+        'ledgerVersion': FieldValue.increment(1),
+        'reconciled': false, // Mark as dirty for server-side reconciliation
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  void _updateDailyNetWorth(
+    WriteBatch batch,
+    String userId,
+    AppTransaction transaction, {
+    bool isDelete = false,
+  }) {
+    final dateId =
+        "${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}";
+    final dailyRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('daily_net_worth')
+        .doc(dateId);
+
+    final isExpense = transaction.type.toLowerCase() == 'expense';
+    final isIncome = transaction.type.toLowerCase() == 'income';
+    final normalizedAmount = transaction.amountInBaseCurrency;
+
+    int netWorthDelta = 0;
+    if (isIncome) {
+      netWorthDelta = isDelete ? -normalizedAmount : normalizedAmount;
+    } else if (isExpense) {
+      netWorthDelta = isDelete ? normalizedAmount : -normalizedAmount;
+    }
+
+    batch.set(
+      dailyRef,
+      {
+        'netWorth': FieldValue.increment(netWorthDelta),
+        'date': Timestamp.fromDate(DateTime(
+          transaction.date.year,
+          transaction.date.month,
+          transaction.date.day,
+        )),
+        'ledgerVersion': FieldValue.increment(1),
+      },
+      SetOptions(merge: true),
+    );
   }
 }
 

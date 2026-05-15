@@ -14,6 +14,8 @@ import 'package:spendly/features/transactions/repository/transaction_repository.
 import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/providers/security_provider.dart';
 import 'package:spendly/core/providers/export_provider.dart';
+import 'package:spendly/features/settings/view/financial_settings_screen.dart';
+import 'package:spendly/features/debug/view/financial_integrity_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -110,6 +112,37 @@ class SettingsScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+
+                  // Financial Policy Settings
+                  MainCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionHeader('FINANCIAL POLICY'),
+                        const SizedBox(height: 16),
+                        _buildSettingTile(
+                          context,
+                          title: 'Currency & Exchange Rates',
+                          isSelected: false,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => const FinancialSettingsScreen()),
+                            );
+                          },
+                        ),
+                        _buildDivider(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Text(
+                            'Control how your net worth and cross-currency transactions are calculated.',
+                            style: TextStyle(color: AppColors.textLight, fontSize: 11),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
 
                   // Security Settings
                   MainCard(
@@ -215,6 +248,17 @@ class SettingsScreen extends ConsumerWidget {
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+                              );
+                            },
+                          ),
+                          _buildDivider(),
+                          _buildSettingTile(
+                            context,
+                            title: 'Financial Integrity Dashboard',
+                            isSelected: false,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => const FinancialIntegrityScreen()),
                               );
                             },
                           ),
