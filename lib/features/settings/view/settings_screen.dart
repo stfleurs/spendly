@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/shared/widgets/app_header.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
+import 'package:spendly/core/services/subscription_service.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
+import 'package:spendly/features/settings/view/premium_paywall_screen.dart';
 import 'package:spendly/core/providers/locale_provider.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
@@ -42,6 +45,9 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Column(
                 children: [
+                  _buildPremiumCard(context, ref, ref.watch(isPremiumProvider)),
+                  const SizedBox(height: 24),
+
                   // Language Settings
                   MainCard(
                     child: Column(
@@ -219,6 +225,51 @@ class SettingsScreen extends ConsumerWidget {
                       children: [
                         _buildSectionHeader('ACCOUNT'), // Add to l10n if needed, but for now hardcoded
                         const SizedBox(height: 16),
+                        _buildSettingTile(
+                          context,
+                          title: 'Restore Purchases',
+                          isSelected: false,
+                          onTap: () async {
+                            final scaffoldMessenger = ScaffoldMessenger.of(context);
+                            scaffoldMessenger.showSnackBar(
+                              const SnackBar(content: Text('Restoring purchases...')),
+                            );
+                            try {
+                              final result = await ref.read(subscriptionServiceProvider).restorePurchases();
+                              if (result.isSuccess) {
+                                if (result.hasPremium) {
+                                  scaffoldMessenger.showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Successfully restored! Premium is active.'),
+                                      backgroundColor: AppColors.income,
+                                    ),
+                                  );
+                                } else {
+                                  scaffoldMessenger.showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Restoration complete. No active premium found.'),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                scaffoldMessenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text('Restore failed: ${result.errorMessage}'),
+                                    backgroundColor: AppColors.expense,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text('Restore failed: $e'),
+                                  backgroundColor: AppColors.expense,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        _buildDivider(),
                         _buildSettingTile(
                           context,
                           title: l10n.logOut,
@@ -444,8 +495,183 @@ class SettingsScreen extends ConsumerWidget {
       }
     } catch (e) {
       scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Export failed: $e'), backgroundColor: AppColors.expense),
       );
     }
+  }
+
+  Widget _buildPremiumCard(BuildContext context, WidgetRef ref, bool isPremium) {
+    if (isPremium) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.verified, color: AppColors.primary, size: 28),
+                  SizedBox(width: 12),
+                  Text(
+                    'Receet Pro Premium Active',
+                    style: TextStyle(
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Thank you for your support! You have unlimited access to premium tools and financial insights.',
+                style: TextStyle(
+                  color: AppColors.textDark,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      await RevenueCatUI.presentCustomerCenter();
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Unable to open Customer Center: $e')),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.tune, size: 18),
+                  label: const Text('Manage Subscription'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF322E73), // Calm deep indigo
+              Color(0xFF5E46E6), // Professional primary violet
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF322E73).withValues(alpha: 0.15),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            )
+          ],
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.auto_awesome, color: Colors.white, size: 14),
+                      SizedBox(width: 6),
+                      Text(
+                        'RECEET PRO PREMIUM',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Unlock Complete Financial Clarity',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Enable advanced tools like unlimited envelopes, smart CSV/JSON data exports, cloud backups, and smart financial analysis.',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const PremiumPaywallScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.textDark,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Explore Premium Plans',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

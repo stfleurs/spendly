@@ -18,3 +18,4 @@
 # Suppress warnings for missing classes during R8 shrinking
 -dontwarn com.google.android.play.core.**
 -dontwarn com.google.mlkit.vision.text.**
+-dontwarn com.gemalto.jp2.**

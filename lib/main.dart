@@ -15,16 +15,23 @@ import 'package:spendly/shared/widgets/lock_screen.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/providers/security_provider.dart';
+import 'package:spendly/core/services/subscription_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  
+  // Initialize RevenueCat SDK immediately in anonymous mode asynchronously at app startup
+  final subService = SubscriptionService();
+  subService.init(); // Run in background to prevent blocking main thread / VM timeouts
+  
   final sharedPrefs = await SharedPreferences.getInstance();
   
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+        subscriptionServiceProvider.overrideWithValue(subService),
       ],
       child: const SpendlyApp(),
     ),
@@ -36,6 +43,12 @@ class SpendlyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keep RevenueCat user identity dynamically synced with Firebase Auth state safely via ref.listen
+    ref.listen(authStateProvider, (previous, next) {
+      final user = next.value;
+      ref.read(subscriptionServiceProvider).syncUserIdentity(user?.uid);
+    });
+    
     final locale = ref.watch(localeProvider);
 
     return MaterialApp(
