@@ -8,6 +8,7 @@ import 'package:spendly/core/models/account.dart';
 import 'package:spendly/core/models/category.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/core/providers/locale_provider.dart';
+import 'package:spendly/core/providers/security_provider.dart';
 import 'package:spendly/features/home/view/main_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -25,19 +26,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Page 1: Profile
   final _nameController = TextEditingController();
 
-  // Page 2: Preferences handled by providers (localeProvider, currencyProvider)
-
-  // Page 3: Accounts
-  final List<Account> _pendingAccounts = [
-    const Account(id: '', userId: '', name: 'Main Checking', type: 'CHECKING', currency: 'USD', balance: 0)
+  // Page 3: Goals
+  String? _selectedGoal;
+  final List<String> _goals = [
+    'Stop overspending',
+    'Save more money',
+    'Pay bills on time',
+    'Track where money goes',
+    'Feel less stressed about money'
   ];
 
-  // Page 4: Categories
-  final List<Map<String, dynamic>> _defaultCategories = [
-    {'name': 'Rent', 'group': 'Housing', 'target': 0.0, 'enabled': true},
-    {'name': 'Groceries', 'group': 'Food', 'target': 0.0, 'enabled': true},
-    {'name': 'Transport', 'group': 'Lifestyle', 'target': 0.0, 'enabled': true},
+  // Page 4: Envelopes
+  final List<Map<String, dynamic>> _suggestedEnvelopes = [
+    {'name': 'Rent / Housing', 'group': 'Housing', 'selected': true},
+    {'name': 'Groceries', 'group': 'Food', 'selected': true},
+    {'name': 'Transport', 'group': 'Lifestyle', 'selected': true},
+    {'name': 'Eating Out', 'group': 'Food', 'selected': false},
+    {'name': 'Bills', 'group': 'Utilities', 'selected': true},
+    {'name': 'Savings', 'group': 'Savings', 'selected': true},
+    {'name': 'Fun Money', 'group': 'Entertainment', 'selected': false},
+    {'name': 'Emergency Fund', 'group': 'Savings', 'selected': false},
   ];
+
+  final _customEnvelopeController = TextEditingController();
 
   bool _isLoading = false;
 
@@ -45,10 +56,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
+    _customEnvelopeController.dispose();
     super.dispose();
   }
 
   void _nextPage() {
+    if (_currentPage == 2 && _selectedGoal == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a budgeting goal')),
+      );
+      return;
+    }
+
     if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     } else {
@@ -74,28 +93,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         await user.updateDisplayName(_nameController.text.trim());
       }
 
-      // Save Accounts
-      final accountRepo = ref.read(accountRepositoryProvider);
-      for (var acc in _pendingAccounts) {
-        await accountRepo.addAccount(acc.copyWith(userId: userId, currency: ref.read(currencyProvider)));
+      // Save user goal locally for future personalization
+      if (_selectedGoal != null) {
+        final prefs = ref.read(sharedPreferencesProvider);
+        await prefs.setString('user_budgeting_goal', _selectedGoal!);
       }
 
-      // Save Categories
+      // Automatically create a default 'Main Wallet' account
+      final accountRepo = ref.read(accountRepositoryProvider);
+      await accountRepo.addAccount(Account(
+        id: '',
+        userId: userId,
+        name: 'Main Wallet',
+        type: 'CASH',
+        currency: ref.read(currencyProvider),
+        balance: 0,
+      ));
+
+      // Save Selected Envelopes
       final categoryRepo = ref.read(categoryRepositoryProvider);
-      for (var cat in _defaultCategories) {
-        if (cat['enabled']) {
+      for (var env in _suggestedEnvelopes) {
+        if (env['selected']) {
           await categoryRepo.addCategory(Category(
             id: '',
             userId: userId,
-            name: cat['name'],
-            group: cat['group'],
-            monthlyTarget: (cat['target'] * 100).toInt(),
+            name: env['name'],
+            group: env['group'],
+            monthlyTarget: 0, // Users will set targets later
             currency: ref.read(currencyProvider),
+            recurrence: 'Monthly',
           ));
         }
       }
 
-      // Invalidate providers
+      // Invalidate providers so Dashboard loads fresh
       ref.invalidate(accountsStreamProvider(userId));
       ref.invalidate(categoriesStreamProvider(userId));
 
@@ -129,8 +160,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 _buildNamePage(),
                 _buildPreferencesPage(),
-                _buildAccountsPage(),
-                _buildCategoriesPage(),
+                _buildGoalPage(),
+                _buildEnvelopesPage(),
               ],
             ),
           ),
@@ -191,7 +222,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildNamePage() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(32.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +255,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final currentLocale = ref.watch(localeProvider);
     final currentCurrency = ref.watch(currencyProvider);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(32.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,7 +284,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('en')),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildChoiceChip(
+                  label: "FRANÇAIS",
+                  isSelected: currentLocale.languageCode == 'fr',
+                  onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('fr')),
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildChoiceChip(
                   label: "KREYÒL",
@@ -291,6 +330,216 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
+  Widget _buildGoalPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "What's your biggest budgeting goal?",
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark, height: 1.2),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "We'll customize your experience to help you achieve this.",
+            style: TextStyle(fontSize: 16, color: AppColors.textLight),
+          ),
+          const SizedBox(height: 32),
+          ..._goals.map((goal) => GestureDetector(
+                onTap: () => setState(() => _selectedGoal = goal),
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: _selectedGoal == goal ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _selectedGoal == goal ? AppColors.primary : Colors.transparent,
+                      width: 2,
+                    ),
+                    boxShadow: _selectedGoal == goal ? [] : [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _selectedGoal == goal ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                        color: _selectedGoal == goal ? AppColors.primary : AppColors.textLight,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          goal,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: _selectedGoal == goal ? FontWeight.w900 : FontWeight.w600,
+                            color: _selectedGoal == goal ? AppColors.primary : AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnvelopesPage() {
+    return Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "What do you want your money to cover?",
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark, height: 1.2),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Select the Envelopes you need. You can always adjust these later.",
+            style: TextStyle(fontSize: 16, color: AppColors.textLight),
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  ..._suggestedEnvelopes.asMap().entries.map((entry) {
+                    final int idx = entry.key;
+                    final Map<String, dynamic> env = entry.value;
+                    final bool isSelected = env['selected'];
+                    
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _suggestedEnvelopes[idx]['selected'] = !isSelected;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primary : Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isSelected ? AppColors.primary : AppColors.primaryLight,
+                            width: 1.5,
+                          ),
+                          boxShadow: isSelected ? [
+                            BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
+                          ] : [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isSelected) const Icon(Icons.check, color: Colors.white, size: 18),
+                            if (isSelected) const SizedBox(width: 6),
+                            Text(
+                              env['name'],
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? Colors.white : AppColors.textDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                  GestureDetector(
+                    onTap: _showAddCustomEnvelopeDialog,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: AppColors.textLight.withValues(alpha: 0.5),
+                          style: BorderStyle.solid,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, color: AppColors.textLight, size: 18),
+                          SizedBox(width: 6),
+                          Text(
+                            "Add Custom",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddCustomEnvelopeDialog() {
+    _customEnvelopeController.clear();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text("Custom Envelope", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: _customEnvelopeController,
+            decoration: const InputDecoration(
+              hintText: "e.g. Gym, Pet, Travel",
+              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("CANCEL", style: TextStyle(color: AppColors.textLight)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final name = _customEnvelopeController.text.trim();
+                if (name.isNotEmpty) {
+                  setState(() {
+                    _suggestedEnvelopes.add({
+                      'name': name,
+                      'group': 'Other', // default group for custom
+                      'selected': true,
+                    });
+                  });
+                }
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text("ADD", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildChoiceChip({required String label, required bool isSelected, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -305,218 +554,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? AppColors.primary : AppColors.textLight,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAccountsPage() {
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Your Accounts",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "Add all the places where you keep your money.",
-            style: TextStyle(fontSize: 16, color: AppColors.textLight),
-          ),
-          const SizedBox(height: 32),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _pendingAccounts.length + 1,
-              itemBuilder: (context, index) {
-                if (index == _pendingAccounts.length) {
-                  return _buildAddAccountButton();
-                }
-                final acc = _pendingAccounts[index];
-                return _buildAccountCard(acc, index);
-              },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppColors.primary : AppColors.textLight,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAccountCard(Account acc, int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(acc.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0F2F5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(acc.currency, style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: "0.00",
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) {
-                    final balanceValue = double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
-                    _pendingAccounts[index] = acc.copyWith(balance: (balanceValue * 100).toInt());
-                  },
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddAccountButton() {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _pendingAccounts.add(Account(
-            id: '',
-            userId: '',
-            name: 'New Account ${_pendingAccounts.length + 1}',
-            type: 'CASH',
-            currency: ref.read(currencyProvider),
-            balance: 0,
-          ));
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(top: 8),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), style: BorderStyle.solid, width: 2),
         ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text(
-              "ADD ANOTHER ACCOUNT",
-              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoriesPage() {
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Set Categories",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "Customize your budget categories, target amounts, and frequencies.",
-            style: TextStyle(fontSize: 16, color: AppColors.textLight),
-          ),
-          const SizedBox(height: 32),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _defaultCategories.length,
-              itemBuilder: (context, index) {
-                final cat = _defaultCategories[index];
-                return _buildCategoryCard(cat, index);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryCard(Map<String, dynamic> cat, int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Checkbox(
-                value: cat['enabled'],
-                onChanged: (val) => setState(() => _defaultCategories[index]['enabled'] = val!),
-                activeColor: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Text(cat['name'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: "0.00",
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) {
-                    final targetValue = double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
-                    _defaultCategories[index]['target'] = targetValue;
-                  },
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0F2F5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(ref.watch(currencyProvider), style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

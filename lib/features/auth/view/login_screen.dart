@@ -44,6 +44,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _loginWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authRepositoryProvider).signInWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Login failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -132,6 +148,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   l10n.logIn,
                                   style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2),
                                 ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _isLoading ? null : _loginWithGoogle,
+                          icon: Image.network(
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
+                            height: 24,
+                          ),
+                          label: const Text(
+                            'Sign in with Google',
+                            style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textDark,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            side: BorderSide(color: AppColors.textLight.withValues(alpha: 0.3)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
                         ),
                       ),
                     ],

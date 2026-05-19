@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/features/auth/repository/auth_repository.dart';
-import 'package:spendly/features/auth/services/user_seeder.dart';
+
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/shared/widgets/main_card.dart';
 import 'package:spendly/features/auth/view/login_screen.dart';
@@ -40,14 +40,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final credential = await ref.read(authRepositoryProvider).signUp(
+      await ref.read(authRepositoryProvider).signUp(
             _emailController.text.trim(),
             _passwordController.text.trim(),
           );
       
-      if (credential.user != null) {
-        await ref.read(userSeederProvider).seedUser(credential.user!.uid);
-      }
+      // AuthGate in main.dart will handle navigation upon successful signup
       // AuthGate in main.dart will handle navigation
     } catch (e) {
       if (mounted) {
@@ -59,6 +57,24 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  Future<void> _signupWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authRepositoryProvider).signInWithGoogle();
+      
+      // AuthGate will redirect to onboarding if necessary
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Signup failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +173,27 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   l10n.signUp,
                                   style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2),
                                 ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _isLoading ? null : _signupWithGoogle,
+                          icon: Image.network(
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
+                            height: 24,
+                          ),
+                          label: const Text(
+                            'Sign up with Google',
+                            style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textDark,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            side: BorderSide(color: AppColors.textLight.withValues(alpha: 0.3)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
                         ),
                       ),
                     ],
