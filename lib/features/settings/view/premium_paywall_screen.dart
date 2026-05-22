@@ -316,6 +316,8 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
       badgeText = 'LIFETIME ACCESS';
     }
 
+    final hasIntroductoryPrice = storeProduct.introductoryPrice != null;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
@@ -396,6 +398,17 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
                         fontSize: 12,
                       ),
                     ),
+                    if (hasIntroductoryPrice) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Includes 7-day free trial',
+                        style: const TextStyle(
+                          color: AppColors.income,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
