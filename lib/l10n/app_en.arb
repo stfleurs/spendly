@@ -89,5 +89,9 @@
   "accountNameHint": "e.g. My Wallet, Bank",
   "completeSetup": "COMPLETE SETUP",
   "addAnotherAccount": "ADD ANOTHER ACCOUNT",
-  "atLeastOneAccount": "Please add at least one account"
+  "atLeastOneAccount": "Please add at least one account",
+  "deleteUserAccount": "Delete My User Account",
+  "deleteUserAccountWarning": "This action is permanent and will delete all your data, including accounts, transactions, and budget settings. This cannot be undone.",
+  "confirmDeleteUserAccount": "I understand, delete my account",
+  "reauthenticateRequired": "For security, you must re-authenticate before deleting your account."
 }

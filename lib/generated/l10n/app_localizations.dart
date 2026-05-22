@@ -639,6 +639,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please add at least one account'**
   String get atLeastOneAccount;
+
+  /// No description provided for @deleteUserAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete My User Account'**
+  String get deleteUserAccount;
+
+  /// No description provided for @deleteUserAccountWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is permanent and will delete all your data, including accounts, transactions, and budget settings. This cannot be undone.'**
+  String get deleteUserAccountWarning;
+
+  /// No description provided for @confirmDeleteUserAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand, delete my account'**
+  String get confirmDeleteUserAccount;
+
+  /// No description provided for @reauthenticateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'For security, you must re-authenticate before deleting your account.'**
+  String get reauthenticateRequired;
 }
 
 class _AppLocalizationsDelegate

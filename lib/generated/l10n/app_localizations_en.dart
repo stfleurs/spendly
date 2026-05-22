@@ -279,4 +279,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get atLeastOneAccount => 'Please add at least one account';
+
+  @override
+  String get deleteUserAccount => 'Delete My User Account';
+
+  @override
+  String get deleteUserAccountWarning =>
+      'This action is permanent and will delete all your data, including accounts, transactions, and budget settings. This cannot be undone.';
+
+  @override
+  String get confirmDeleteUserAccount => 'I understand, delete my account';
+
+  @override
+  String get reauthenticateRequired =>
+      'For security, you must re-authenticate before deleting your account.';
 }

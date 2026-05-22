@@ -18,6 +18,7 @@ import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/providers/security_provider.dart';
 import 'package:spendly/core/providers/export_provider.dart';
 import 'package:spendly/features/settings/view/financial_settings_screen.dart';
+import 'package:spendly/features/settings/view/delete_account_screen.dart';
 import 'package:spendly/features/debug/view/financial_integrity_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
@@ -267,6 +268,17 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                               );
                             }
+                          },
+                        ),
+                        _buildDivider(),
+                        _buildSettingTile(
+                          context,
+                          title: l10n.deleteUserAccount,
+                          isSelected: false,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => const DeleteAccountScreen()),
+                            );
                           },
                         ),
                         _buildDivider(),

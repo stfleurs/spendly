@@ -280,4 +280,18 @@ class AppLocalizationsHt extends AppLocalizations {
 
   @override
   String get atLeastOneAccount => 'Tanpri ajoute omwen yon kont';
+
+  @override
+  String get deleteUserAccount => 'Efase Kont Mwen';
+
+  @override
+  String get deleteUserAccountWarning =>
+      'Aksyon sa a pèmanan epi li pral efase tout done ou yo, ki gen ladan kont, tranzaksyon, ak paramèt bidjè. Sa pa ka anile.';
+
+  @override
+  String get confirmDeleteUserAccount => 'Mwen konprann, efase kont mwen';
+
+  @override
+  String get reauthenticateRequired =>
+      'Pou sekirite, ou dwe re-otantifye anvan ou efase kont ou.';
 }

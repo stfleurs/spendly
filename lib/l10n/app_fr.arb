@@ -89,5 +89,9 @@
   "accountNameHint": "ex: Mon Portefeuille, Banque",
   "completeSetup": "TERMINER LA CONFIGURATION",
   "addAnotherAccount": "AJOUTER UN AUTRE COMPTE",
-  "atLeastOneAccount": "Veuillez ajouter au moins un compte"
+  "atLeastOneAccount": "Veuillez ajouter au moins un compte",
+  "deleteUserAccount": "Supprimer mon compte utilisateur",
+  "deleteUserAccountWarning": "Cette action est permanente et supprimera toutes vos données, y compris les comptes, les transactions et les paramètres du budget. Cette opération est irréversible.",
+  "confirmDeleteUserAccount": "Je comprends, supprimer mon compte",
+  "reauthenticateRequired": "Pour des raisons de sécurité, vous devez vous réauthentifier avant de supprimer votre compte."
 }

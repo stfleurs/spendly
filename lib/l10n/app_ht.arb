@@ -89,5 +89,9 @@
   "accountNameHint": "ex: Bous mwen, Bank",
   "completeSetup": "FINI KONFIGIRASYON AN",
   "addAnotherAccount": "AJOUTE YON LÒT KONT",
-  "atLeastOneAccount": "Tanpri ajoute omwen yon kont"
+  "atLeastOneAccount": "Tanpri ajoute omwen yon kont",
+  "deleteUserAccount": "Efase Kont Mwen",
+  "deleteUserAccountWarning": "Aksyon sa a pèmanan epi li pral efase tout done ou yo, ki gen ladan kont, tranzaksyon, ak paramèt bidjè. Sa pa ka anile.",
+  "confirmDeleteUserAccount": "Mwen konprann, efase kont mwen",
+  "reauthenticateRequired": "Pou sekirite, ou dwe re-otantifye anvan ou efase kont ou."
 }

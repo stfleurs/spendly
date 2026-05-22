@@ -27,6 +27,14 @@ class AuthRepository {
     await GoogleSignIn().signOut();
   }
 
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      await user.delete();
+      await GoogleSignIn().signOut();
+    }
+  }
+
   Future<UserCredential?> signInWithGoogle() async {
     // Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
