@@ -659,7 +659,7 @@ class SettingsScreen extends ConsumerWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).push(
+                  Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const PremiumPaywallScreen()),
                   );
                 },

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 /// Service class interfacing with the RevenueCat SDK.
 class SubscriptionService {
   /// The entitlement ID configured in the RevenueCat Console.
-  static const entitlementId = 'premium';
+  static const entitlementId = 'Pro';
 
   bool _isInitialized = false;
 
@@ -24,8 +25,11 @@ class SubscriptionService {
         await Purchases.setLogLevel(LogLevel.warn);
       }
 
-      // 2. Configure SDK anonymously at app startup
-      final configuration = PurchasesConfiguration("test_CJGBaXqHUAcxzReNGQgwgrHSOUM");
+      // 2. Configure SDK with the correct platform-specific API key
+      final String apiKey = Platform.isAndroid
+          ? 'goog_pcGRKvDSqzHaXaJxCZToLKAAPrt' // Google Play key
+          : 'appl_REPLACE_WITH_YOUR_IOS_KEY';   // App Store key (TODO)
+      final configuration = PurchasesConfiguration(apiKey);
       await Purchases.configure(configuration);
       _isInitialized = true;
       debugPrint('RevenueCat: Successfully initialized anonymously');
