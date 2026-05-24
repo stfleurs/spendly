@@ -16,6 +16,7 @@ import 'package:spendly/shared/widgets/lock_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/providers/security_provider.dart';
 import 'package:spendly/core/services/subscription_service.dart';
+import 'package:spendly/features/settings/view/premium_paywall_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +24,7 @@ void main() async {
   
   // Initialize RevenueCat SDK immediately in anonymous mode asynchronously at app startup
   final subService = SubscriptionService();
-  subService.init(); // Run in background to prevent blocking main thread / VM timeouts
+  await subService.init(); // Wait for initialization to complete before app starts
   
   final sharedPrefs = await SharedPreferences.getInstance();
   
@@ -100,7 +101,6 @@ class AuthGate extends ConsumerWidget {
     );
   }
 }
-
 class SecurityGate extends ConsumerStatefulWidget {
   const SecurityGate({super.key});
 
@@ -115,10 +115,16 @@ class _SecurityGateState extends ConsumerState<SecurityGate> {
   Widget build(BuildContext context) {
     final security = ref.watch(securityProvider);
     final userId = ref.watch(authStateProvider).value?.uid;
+    final isPremium = ref.watch(isPremiumProvider);
 
     if (userId == null) return const LoginScreen();
 
-    // If security is disabled or already unlocked, show the app
+    // PAY-TO-PLAY GATE: If user is not premium, force the paywall
+    if (!isPremium) {
+      return const PremiumPaywallScreen();
+    }
+
+    // If premium and (security is disabled or already unlocked), show the app
     if (!security.isPinEnabled || _isUnlocked) {
       final accountsAsync = ref.watch(accountsStreamProvider(userId));
       return accountsAsync.when(

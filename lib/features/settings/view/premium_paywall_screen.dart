@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/services/subscription_service.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 
@@ -24,10 +25,29 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textDark),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: null, // Removed close button to enforce Pay-to-Play
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.logOut, color: AppColors.textLight),
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Sign Out?'),
+                  content: const Text('Are you sure you want to sign out?'),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                    TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sign Out')),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                await ref.read(firebaseAuthProvider).signOut();
+              }
+            },
+          ),
+        ],
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -362,12 +382,14 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          storeProduct.title.split('(').first.trim(),
-                          style: const TextStyle(
-                            color: AppColors.textDark,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                        Flexible(
+                          child: Text(
+                            storeProduct.title.split('(').first.trim(),
+                            style: const TextStyle(
+                              color: AppColors.textDark,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                         if (badgeText.isNotEmpty) ...[

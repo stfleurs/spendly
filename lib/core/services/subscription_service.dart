@@ -9,7 +9,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 /// Service class interfacing with the RevenueCat SDK.
 class SubscriptionService {
   /// The entitlement ID configured in the RevenueCat Console.
-  static const entitlementId = 'Pro';
+  static const entitlementId = 'pro';
 
   bool _isInitialized = false;
 
@@ -29,6 +29,12 @@ class SubscriptionService {
       final String apiKey = Platform.isAndroid
           ? 'goog_pcGRKvDSqzHaXaJxCZToLKAAPrt' // Google Play key
           : 'appl_REPLACE_WITH_YOUR_IOS_KEY';   // App Store key (TODO)
+
+      if (apiKey.contains('REPLACE_WITH_YOUR')) {
+        debugPrint('WARNING: RevenueCat API Key is not configured for this platform.');
+        if (!Platform.isAndroid) return; // Prevent crash/errors on iOS if key is missing
+      }
+
       final configuration = PurchasesConfiguration(apiKey);
       await Purchases.configure(configuration);
       _isInitialized = true;
@@ -193,7 +199,24 @@ final customerInfoProvider = StreamProvider<CustomerInfo>((ref) {
 
 /// FutureProvider that fetches available products/offerings from the RevenueCat dashboard.
 final offeringsProvider = FutureProvider<Offerings>((ref) async {
-  return await Purchases.getOfferings();
+  try {
+    debugPrint('RevenueCat: Fetching offerings...');
+    final offerings = await Purchases.getOfferings();
+    
+    if (offerings.current == null) {
+      debugPrint('RevenueCat WARNING: No "Current" offering is set in the dashboard.');
+    } else {
+      debugPrint('RevenueCat: Found current offering: ${offerings.current!.identifier}');
+      debugPrint('RevenueCat: Available packages: ${offerings.current!.availablePackages.length}');
+      for (var package in offerings.current!.availablePackages) {
+        debugPrint('  - Package: ${package.identifier} (Product: ${package.storeProduct.identifier})');
+      }
+    }
+    return offerings;
+  } catch (e) {
+    debugPrint('RevenueCat Error fetching offerings: $e');
+    rethrow;
+  }
 });
 
 /// A robust, future-proof computed boolean provider to check if the user is a Premium subscriber.
