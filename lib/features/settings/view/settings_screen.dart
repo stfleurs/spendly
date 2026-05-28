@@ -56,25 +56,49 @@ class SettingsScreen extends ConsumerWidget {
                       children: [
                         _buildSectionHeader(l10n.language),
                         const SizedBox(height: 16),
-                        _buildSettingTile(
-                          context,
-                          title: l10n.english,
-                          isSelected: currentLocale.languageCode == 'en',
-                          onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('en')),
-                        ),
-                        _buildDivider(),
-                        _buildSettingTile(
-                          context,
-                          title: l10n.french,
-                          isSelected: currentLocale.languageCode == 'fr',
-                          onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('fr')),
-                        ),
-                        _buildDivider(),
-                        _buildSettingTile(
-                          context,
-                          title: l10n.haitianCreole,
-                          isSelected: currentLocale.languageCode == 'ht',
-                          onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('ht')),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.primaryLight),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String?>(
+                              value: currentLocale.isDeviceDefault ? null : currentLocale.locale.languageCode,
+                              isExpanded: true,
+                              hint: Text(
+                                'Automatic',
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+                              ),
+                              items: [
+                                const DropdownMenuItem(
+                                  value: null,
+                                  child: Text('Automatic (Follow Device)',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textLight)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'en',
+                                  child: Text(l10n.english, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'fr',
+                                  child: Text(l10n.french, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'ht',
+                                  child: Text(l10n.haitianCreole, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                              onChanged: (val) {
+                                if (val == null) {
+                                  ref.read(localeProvider.notifier).resetToDeviceLocale();
+                                } else {
+                                  ref.read(localeProvider.notifier).setLocale(Locale(val));
+                                }
+                              },
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -89,32 +113,30 @@ class SettingsScreen extends ConsumerWidget {
                       children: [
                         _buildSectionHeader(l10n.preferredCurrency),
                         const SizedBox(height: 16),
-                        _buildSettingTile(
-                          context,
-                          title: 'USD (\$)',
-                          isSelected: currentCurrency == 'USD',
-                          onTap: () => ref.read(currencyProvider.notifier).setCurrency('USD'),
-                        ),
-                        _buildDivider(),
-                        _buildSettingTile(
-                          context,
-                          title: 'HTG (G)',
-                          isSelected: currentCurrency == 'HTG',
-                          onTap: () => ref.read(currencyProvider.notifier).setCurrency('HTG'),
-                        ),
-                        _buildDivider(),
-                        _buildSettingTile(
-                          context,
-                          title: 'EUR (€)',
-                          isSelected: currentCurrency == 'EUR',
-                          onTap: () => ref.read(currencyProvider.notifier).setCurrency('EUR'),
-                        ),
-                        _buildDivider(),
-                        _buildSettingTile(
-                          context,
-                          title: 'CAD (\$)',
-                          isSelected: currentCurrency == 'CAD',
-                          onTap: () => ref.read(currencyProvider.notifier).setCurrency('CAD'),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.primaryLight),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: currentCurrency,
+                              isExpanded: true,
+                              items: const [
+                                DropdownMenuItem(value: 'USD', child: Text('USD (\$)', style: TextStyle(fontWeight: FontWeight.bold))),
+                                DropdownMenuItem(value: 'HTG', child: Text('HTG (G)', style: TextStyle(fontWeight: FontWeight.bold))),
+                                DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', style: TextStyle(fontWeight: FontWeight.bold))),
+                                DropdownMenuItem(value: 'CAD', child: Text('CAD (\$)', style: TextStyle(fontWeight: FontWeight.bold))),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) {
+                                  ref.read(currencyProvider.notifier).setCurrency(val);
+                                }
+                              },
+                            ),
+                          ),
                         ),
                       ],
                     ),

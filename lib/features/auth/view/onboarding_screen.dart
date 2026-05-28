@@ -291,7 +291,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Expanded(
                 child: _buildChoiceChip(
                   label: "ENGLISH",
-                  isSelected: currentLocale.languageCode == 'en',
+                  isSelected: currentLocale.locale.languageCode == 'en',
                   onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('en')),
                 ),
               ),
@@ -299,7 +299,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Expanded(
                 child: _buildChoiceChip(
                   label: "FRANCAIS",
-                  isSelected: currentLocale.languageCode == 'fr',
+                  isSelected: currentLocale.locale.languageCode == 'fr',
                   onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('fr')),
                 ),
               ),
@@ -307,7 +307,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Expanded(
                 child: _buildChoiceChip(
                   label: "KREYOL",
-                  isSelected: currentLocale.languageCode == 'ht',
+                  isSelected: currentLocale.locale.languageCode == 'ht',
                   onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('ht')),
                 ),
               ),

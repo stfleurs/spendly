@@ -103,7 +103,8 @@ class SpendlyApp extends ConsumerWidget {
       }
     });
 
-    final locale = ref.watch(localeProvider);
+    final localeState = ref.watch(localeProvider);
+    final locale = localeState.locale;
     final observers = ref.watch(navigatorObserversProvider);
 
     return MaterialApp(
