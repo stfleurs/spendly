@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/models/app_transaction.dart';
@@ -135,9 +136,11 @@ class TransactionRepository {
         delta = -transaction.amount;
       }
 
-      final accRef = _firestore
-          .collection('accounts')
-          .doc(transaction.accountId);
+      final accRef = _firestore.collection('accounts').doc(transaction.accountId);
+      final userRef = _firestore.collection('users').doc(transaction.userId);
+      final userSnapshot = await userRef.get();
+      final previousTotalTxCount = (userSnapshot.data()?['totalTransactionCount'] as num?)?.toInt() ?? 0;
+      final updatedTotalTxCount = previousTotalTxCount + 1;
 
       batch.update(accRef, {
         'currentBalance': FieldValue.increment(delta),
@@ -150,7 +153,6 @@ class TransactionRepository {
 
       // 2.5 Envelope Allocation Logic
       if (isIncome) {
-        final userRef = _firestore.collection('users').doc(transaction.userId);
         batch.set(userRef, {
           'readyToAssign': FieldValue.increment(transaction.amountInBaseCurrency),
         }, SetOptions(merge: true));
@@ -175,11 +177,31 @@ class TransactionRepository {
       _updateDailyNetWorth(batch, transaction.userId, transaction);
 
       // 6. Increment User Ledger Version
-      batch.update(_firestore.collection('users').doc(transaction.userId), {
+      batch.set(userRef, {
+        'totalTransactionCount': FieldValue.increment(1),
         'ledgerVersion': FieldValue.increment(1),
-      });
+      }, SetOptions(merge: true));
 
       await batch.commit();
+      if (updatedTotalTxCount == 1) {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'first_transaction',
+          parameters: {
+            'user_id': transaction.userId,
+            'account_id': transaction.accountId,
+            'currency': transaction.currency,
+          },
+        );
+      } else if (updatedTotalTxCount == 3) {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'third_transaction',
+          parameters: {
+            'user_id': transaction.userId,
+            'account_id': transaction.accountId,
+            'currency': transaction.currency,
+          },
+        );
+      }
       return TransactionInsertResult.success;
     } catch (e) {
       debugPrint('Spendly: Error adding transaction: $e');
@@ -199,26 +221,27 @@ class TransactionRepository {
     });
 
     // 2. Calculate Balance Delta
-    int delta = 0;
+    int oldAccountDelta = 0;
+    int newAccountDelta = 0;
     int readyToAssignDelta = 0;
     int oldCategoryDelta = 0; // Amount to refund to old category
     int newCategoryDelta = 0; // Amount to deduct from new category
 
     // Reverse old
     if (oldTx.type.toLowerCase() == 'income') {
-      delta -= oldTx.amount;
+      oldAccountDelta -= oldTx.amount;
       readyToAssignDelta -= oldTx.amountInBaseCurrency;
     } else if (oldTx.type.toLowerCase() == 'expense') {
-      delta += oldTx.amount;
+      oldAccountDelta += oldTx.amount;
       oldCategoryDelta += oldTx.amountInBaseCurrency;
     }
 
     // Apply new
     if (transaction.type.toLowerCase() == 'income') {
-      delta += transaction.amount;
+      newAccountDelta += transaction.amount;
       readyToAssignDelta += transaction.amountInBaseCurrency;
     } else if (transaction.type.toLowerCase() == 'expense') {
-      delta -= transaction.amount;
+      newAccountDelta -= transaction.amount;
       newCategoryDelta -= transaction.amountInBaseCurrency;
     }
 
@@ -228,14 +251,39 @@ class TransactionRepository {
     batch.update(_collection.doc(transaction.id), data);
 
     // 4. Update Account Snapshot
-    final accRef = _firestore.collection('accounts').doc(transaction.accountId);
-    batch.update(accRef, {
-      'currentBalance': FieldValue.increment(delta),
-      'lastTransactionAt': transaction.date,
-      'ledgerVersion': FieldValue.increment(1),
-      'lastCalculatedAt': DateTime.now(),
-      'lastLedgerMutationId': transaction.id,
-    });
+    if (oldTx.accountId == transaction.accountId) {
+      final accountDelta = oldAccountDelta + newAccountDelta;
+      if (accountDelta != 0) {
+        final accRef = _firestore.collection('accounts').doc(transaction.accountId);
+        batch.update(accRef, {
+          'currentBalance': FieldValue.increment(accountDelta),
+          'lastTransactionAt': transaction.date,
+          'ledgerVersion': FieldValue.increment(1),
+          'lastCalculatedAt': DateTime.now(),
+          'lastLedgerMutationId': transaction.id,
+        });
+      }
+    } else {
+      if (oldAccountDelta != 0) {
+        final oldAccRef = _firestore.collection('accounts').doc(oldTx.accountId);
+        batch.update(oldAccRef, {
+          'currentBalance': FieldValue.increment(oldAccountDelta),
+          'ledgerVersion': FieldValue.increment(1),
+          'lastCalculatedAt': DateTime.now(),
+          'lastLedgerMutationId': transaction.id,
+        });
+      }
+      if (newAccountDelta != 0) {
+        final newAccRef = _firestore.collection('accounts').doc(transaction.accountId);
+        batch.update(newAccRef, {
+          'currentBalance': FieldValue.increment(newAccountDelta),
+          'lastTransactionAt': transaction.date,
+          'ledgerVersion': FieldValue.increment(1),
+          'lastCalculatedAt': DateTime.now(),
+          'lastLedgerMutationId': transaction.id,
+        });
+      }
+    }
 
     // 4.5 Update Envelopes
     if (readyToAssignDelta != 0) {
@@ -275,9 +323,10 @@ class TransactionRepository {
     _updateDailyNetWorth(batch, transaction.userId, transaction);
 
     // 8. Increment User Ledger Version
-    batch.update(_firestore.collection('users').doc(transaction.userId), {
+    batch.set(_firestore.collection('users').doc(transaction.userId), {
+      'totalTransactionCount': FieldValue.increment(-1),
       'ledgerVersion': FieldValue.increment(1),
-    });
+    }, SetOptions(merge: true));
 
     await batch.commit();
   }
