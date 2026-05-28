@@ -43,3 +43,11 @@ final appUserStreamProvider = StreamProvider.family<AppUser?, String>((ref, user
     );
   });
 });
+
+final userTotalTransactionCountProvider = StreamProvider.family<int, String>((ref, userId) {
+  final firestore = ref.watch(firestoreProvider);
+  return firestore.collection('users').doc(userId).snapshots().map((snapshot) {
+    final data = snapshot.data();
+    return (data?['totalTransactionCount'] as num?)?.toInt() ?? 0;
+  });
+});

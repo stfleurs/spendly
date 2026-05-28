@@ -65,12 +65,18 @@ class AccountRepository {
       for (final doc in chunk) {
         final tx = AppTransaction.fromJson({...doc.data(), 'id': doc.id});
         
-        // Update Monthly Summary (Revert the transaction's impact)
+        // Revert all derived ledgers impacted by this transaction
         _updateMonthlySummary(batch, account.userId, tx);
+        _updateFinancialSummary(batch, account.userId, tx);
+        _updateDailyNetWorth(batch, account.userId, tx);
+        _revertEnvelopeImpact(batch, account.userId, tx);
         
         // Delete Transaction
         batch.delete(doc.reference);
       }
+      batch.set(_firestore.collection('users').doc(account.userId), {
+        'totalTransactionCount': FieldValue.increment(-chunk.length),
+      }, SetOptions(merge: true));
       
       // If this is the last chunk, also delete the account
       if (chunk == chunks.last) {
@@ -142,6 +148,77 @@ class AccountRepository {
 
 
     batch.set(summaryRef, updates, SetOptions(merge: true));
+  }
+
+  void _updateFinancialSummary(
+    WriteBatch batch,
+    String userId,
+    AppTransaction transaction,
+  ) {
+    final summaryRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('financial_summary')
+        .doc('main');
+    final type = transaction.type.toLowerCase();
+    final amount = transaction.amountInBaseCurrency;
+    final netWorthDelta = type == 'income' ? -amount : (type == 'expense' ? amount : 0);
+    batch.set(summaryRef, {
+      'netWorth': FieldValue.increment(netWorthDelta),
+      'updatedAt': DateTime.now(),
+      'ledgerVersion': FieldValue.increment(1),
+      'reconciled': false,
+    }, SetOptions(merge: true));
+  }
+
+  void _updateDailyNetWorth(
+    WriteBatch batch,
+    String userId,
+    AppTransaction transaction,
+  ) {
+    final dateId =
+        "${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}";
+    final dailyRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('daily_net_worth')
+        .doc(dateId);
+    final type = transaction.type.toLowerCase();
+    final amount = transaction.amountInBaseCurrency;
+    final netWorthDelta = type == 'income' ? -amount : (type == 'expense' ? amount : 0);
+    batch.set(dailyRef, {
+      'netWorth': FieldValue.increment(netWorthDelta),
+      'date': Timestamp.fromDate(DateTime(
+        transaction.date.year,
+        transaction.date.month,
+        transaction.date.day,
+      )),
+      'ledgerVersion': FieldValue.increment(1),
+    }, SetOptions(merge: true));
+  }
+
+  void _revertEnvelopeImpact(
+    WriteBatch batch,
+    String userId,
+    AppTransaction transaction,
+  ) {
+    final type = transaction.type.toLowerCase();
+    if (type == 'income') {
+      batch.set(_firestore.collection('users').doc(userId), {
+        'readyToAssign': FieldValue.increment(-transaction.amountInBaseCurrency),
+      }, SetOptions(merge: true));
+      return;
+    }
+    if (type == 'expense' && transaction.categoryId.isNotEmpty) {
+      final catRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('categories')
+          .doc(transaction.categoryId);
+      batch.update(catRef, {
+        'availableBalance': FieldValue.increment(transaction.amountInBaseCurrency),
+      });
+    }
   }
 
   /// Recalculates the account balance from scratch using the transaction ledger.
