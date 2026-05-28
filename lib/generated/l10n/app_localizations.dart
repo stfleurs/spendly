@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// The name of the app
   ///
   /// In en, this message translates to:
-  /// **'Spendly'**
+  /// **'Receet Pro'**
   String get appName;
 
   /// Label for net worth section
@@ -625,7 +625,7 @@ abstract class AppLocalizations {
   /// Welcome title shown on onboarding screen
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Spendly'**
+  /// **'Welcome to Receet Pro'**
   String get welcomeSpendly;
 
   /// Subtitle text for the onboarding screen

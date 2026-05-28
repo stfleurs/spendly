@@ -1,0 +1,19 @@
+feat(currency): centralize formatting with locale-aware compact notation
+
+Replace ~20 duplicated inline formatting patterns and 3 hand-rolled
+_formatCurrency() methods with a single formatCents() utility.
+
+Key changes:
+- New lib/core/utils/currency_formatter.dart with formatCents() that:
+  - Uses NumberFormat from intl for locale-aware grouping separators
+  - Switches to compact notation ($1.2M) for values greater than or equal to $1M
+  - Supports all 4 currencies (USD $, EUR euro, HTG G suffix, CAD $)
+  - Handles sign display (+/- for transactions, - for negatives)
+  - Respects decimal overrides (0 decimals for LIMIT/AVAIL displays)
+- Migrated 10 feature files: dashboard_screen, budget_screen,
+  transactions_screen, accounts_screen, reports_screen, upcoming_screen,
+  bill_plan_detail_screen, mark_paid_sheet, allocation_bottom_sheet,
+  new_transaction_screen
+- New unit tests at test/core/utils/currency_formatter_test.dart
+
+Co-authored-by: CommandCodeBot <noreply@commandcode.ai>

@@ -1,0 +1,12 @@
+"feat(brand): rename app from Spendly to Receet Pro"  
+ 
+"Update all user-facing brand references:"  
+"- appName in ARB files (en/fr/ht)"  
+"- welcomeSpendly messages in all locales"  
+"- Flutter material title"  
+"- Export file names and share subjects"  
+"- Biometric auth prompt"  
+"- Receipt share text and subject"  
+"- Settings footer version label"  
+ 
+"Co-authored-by: CommandCodeBot <noreply@commandcode.ai>"  
