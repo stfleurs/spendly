@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const primary = Color(0xFF5E46E6);
-  static const primaryLight = Color(0xFFF4F3FF);
-  static const income = Color(0xFF00B050);
-  static const expense = Color(0xFFEA4335);
-  static const textDark = Color(0xFF322E73);
-  static const textLight = Color(0xFF9EA3C1);
-  static const background = Color(0xFFF8F9FE);
+  static const primary = Color(0xFF0F4C81);
+  static const primaryLight = Color(0xFFE8F1FA);
+  static const income = Color(0xFF0C9B63);
+  static const expense = Color(0xFFD64545);
+  static const textDark = Color(0xFF172B4D);
+  static const textLight = Color(0xFF6B7A90);
+  static const background = Color(0xFFF3F7FB);
   static const cardBackground = Colors.white;
+  static const navShadow = Color(0x1420324A);
 }
 
 class AppTheme {
@@ -19,23 +20,24 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         primary: AppColors.primary,
-        surface: AppColors.background,
+        surface: AppColors.cardBackground,
       ),
-      textTheme: GoogleFonts.interTextTheme().copyWith(
-        displayLarge: GoogleFonts.inter(
+      scaffoldBackgroundColor: AppColors.background,
+      textTheme: GoogleFonts.dmSansTextTheme().copyWith(
+        displayLarge: GoogleFonts.spaceGrotesk(
           color: AppColors.textDark,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
         ),
-        headlineLarge: GoogleFonts.inter(
+        headlineLarge: GoogleFonts.spaceGrotesk(
           color: AppColors.textDark,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
         ),
-        titleLarge: GoogleFonts.inter(
+        titleLarge: GoogleFonts.spaceGrotesk(
           color: AppColors.textDark,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
         ),
-        bodyLarge: GoogleFonts.inter(color: AppColors.textDark),
-        bodyMedium: GoogleFonts.inter(color: AppColors.textDark),
+        bodyLarge: GoogleFonts.dmSans(color: AppColors.textDark),
+        bodyMedium: GoogleFonts.dmSans(color: AppColors.textDark),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
