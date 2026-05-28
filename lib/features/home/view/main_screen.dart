@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:spendly/core/services/subscription_service.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/features/home/view/dashboard_screen.dart';
 import 'package:spendly/features/accounts/view/accounts_screen.dart';
@@ -8,15 +11,16 @@ import 'package:spendly/features/ocr/view/receipt_scanner_screen.dart';
 import 'package:spendly/features/upcoming/view/add_upcoming_screen.dart';
 import 'package:spendly/features/upcoming/view/add_plan_screen.dart';
 import 'package:spendly/features/budget/view/budget_screen.dart';
+import 'package:spendly/features/settings/view/premium_paywall_screen.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
@@ -49,13 +53,18 @@ class _MainScreenState extends State<MainScreen> {
             child: Container(
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFDFEFF), Color(0xFFF2F7FD)],
+                ),
                 borderRadius: BorderRadius.circular(40),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
+                    color: AppColors.navShadow,
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
                   ),
                 ],
               ),
@@ -107,7 +116,33 @@ class _MainScreenState extends State<MainScreen> {
           ),
 
           // Speed-Dial FAB (Floating above the bar)
-          const _SpeedDialFab(bottomNavHeight: 128),
+          _SpeedDialFab(
+            bottomNavHeight: 128,
+            isPremium: ref.watch(isPremiumProvider),
+            onPremiumFeatureTapped: () async {
+              final userId = ref.read(authStateProvider).value?.uid ?? '';
+              ref.read(firebaseObservabilityServiceProvider).logEvent(
+                'premium_feature_tapped',
+                parameters: {
+                  'user_id': userId,
+                  'feature': 'ai_receipt_scanning',
+                },
+              );
+              await showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => FractionallySizedBox(
+                  heightFactor: 0.94,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    child: const PremiumPaywallScreen(),
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -120,7 +155,13 @@ class _MainScreenState extends State<MainScreen> {
 
 class _SpeedDialFab extends StatefulWidget {
   final double bottomNavHeight;
-  const _SpeedDialFab({required this.bottomNavHeight});
+  final bool isPremium;
+  final Future<void> Function() onPremiumFeatureTapped;
+  const _SpeedDialFab({
+    required this.bottomNavHeight,
+    required this.isPremium,
+    required this.onPremiumFeatureTapped,
+  });
 
   @override
   State<_SpeedDialFab> createState() => _SpeedDialFabState();
@@ -181,7 +222,7 @@ class _SpeedDialFabState extends State<_SpeedDialFab>
 
     return Stack(
       children: [
-        // ── Dimming overlay ─────────────────────────────────────────────────
+        // Dimming overlay
         if (_isOpen)
           Positioned.fill(
             child: GestureDetector(
@@ -196,7 +237,7 @@ class _SpeedDialFabState extends State<_SpeedDialFab>
             ),
           ),
 
-        // ── Action buttons (fan up above the FAB) ──────────────────────────
+        // Action buttons (fan up above the FAB)
         Positioned(
           bottom: fabBottom + 85,
           left: 0,
@@ -241,7 +282,14 @@ class _SpeedDialFabState extends State<_SpeedDialFab>
                     icon: Icons.receipt_long,
                     label: 'Scan Receipt',
                     color: AppColors.primary,
-                    onTap: () => _navigate(const ReceiptScannerScreen()),
+                    onTap: () async {
+                      if (!widget.isPremium) {
+                        _close();
+                        await widget.onPremiumFeatureTapped();
+                        return;
+                      }
+                      _navigate(const ReceiptScannerScreen());
+                    },
                   ),
                 ),
               ),
@@ -275,13 +323,21 @@ class _SpeedDialFabState extends State<_SpeedDialFab>
               width: 70,
               height: 70,
               decoration: BoxDecoration(
-                color: _isOpen ? Colors.white : AppColors.primary,
+                gradient: _isOpen
+                    ? null
+                    : const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1A6BA8), AppColors.primary],
+                      ),
+                color: _isOpen ? Colors.white : null,
                 shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
                 boxShadow: [
                   BoxShadow(
                     color: (_isOpen ? Colors.black : AppColors.primary)
-                        .withValues(alpha: 0.3),
-                    blurRadius: 15,
+                        .withValues(alpha: 0.26),
+                    blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
                 ],
@@ -402,17 +458,17 @@ class _NavBarItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isSelected ? AppColors.primary : AppColors.textLight.withValues(alpha: 0.5),
+            color: isSelected ? AppColors.primary : AppColors.textLight.withValues(alpha: 0.7),
             size: 24,
           ),
           const SizedBox(height: 6),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? AppColors.primary : AppColors.textLight.withValues(alpha: 0.5),
-              fontSize: 8,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.8,
+              color: isSelected ? AppColors.primary : AppColors.textLight.withValues(alpha: 0.7),
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
           ),
         ],
