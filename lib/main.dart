@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/features/auth/view/login_screen.dart';
@@ -17,26 +19,55 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/providers/security_provider.dart';
 import 'package:spendly/core/services/subscription_service.dart';
 import 'package:spendly/features/settings/view/premium_paywall_screen.dart';
+import 'package:spendly/core/services/firebase_observability_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  
+
   // Initialize RevenueCat SDK immediately in anonymous mode asynchronously at app startup
   final subService = SubscriptionService();
   await subService.init(); // Wait for initialization to complete before app starts
-  
+
   final sharedPrefs = await SharedPreferences.getInstance();
-  
+
+  // Create observability service and set up global error handlers.
+  // Errors before Crashlytics is ready are queued and flushed later.
+  final observabilityService = FirebaseObservabilityService();
+
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    observabilityService.recordError(
+      details.exception,
+      details.stack ?? StackTrace.current,
+      reason: details.context?.toString(),
+    );
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    observabilityService.recordError(error, stack,
+        reason: 'PlatformDispatcher error');
+    return true;
+  };
+
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPrefs),
         subscriptionServiceProvider.overrideWithValue(subService),
+        firebaseObservabilityServiceProvider
+            .overrideWithValue(observabilityService),
       ],
       child: const SpendlyApp(),
     ),
   );
+
+  // Deferred initialization after first frame — avoids blocking startup.
+  Future.microtask(() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    await observabilityService.initCrashlytics();
+    await observabilityService.initPerformance();
+  });
 }
 
 class SpendlyApp extends ConsumerWidget {
@@ -44,19 +75,24 @@ class SpendlyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Keep RevenueCat user identity dynamically synced with Firebase Auth state safely via ref.listen
+    // Keep RevenueCat user identity dynamically synced with Firebase Auth state
     ref.listen(authStateProvider, (previous, next) {
       final user = next.value;
       ref.read(subscriptionServiceProvider).syncUserIdentity(user?.uid);
+      ref
+          .read(firebaseObservabilityServiceProvider)
+          .setUserId(user?.uid);
     });
-    
+
     final locale = ref.watch(localeProvider);
+    final observers = ref.watch(navigatorObserversProvider);
 
     return MaterialApp(
-      title: 'Receet Pro',
+      title: 'Spendly',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       locale: locale,
+      navigatorObservers: observers,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -101,6 +137,7 @@ class AuthGate extends ConsumerWidget {
     );
   }
 }
+
 class SecurityGate extends ConsumerStatefulWidget {
   const SecurityGate({super.key});
 

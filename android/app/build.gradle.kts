@@ -8,6 +8,8 @@ plugins {
 }
 
 apply(plugin = "com.google.gms.google-services")
+apply(plugin = "com.google.firebase.crashlytics")
+apply(plugin = "com.google.firebase.firebase-perf")
 
 // Load signing properties
 val keyPropertiesFile = rootProject.file("key.properties")
@@ -62,5 +64,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-perf")
 }
 

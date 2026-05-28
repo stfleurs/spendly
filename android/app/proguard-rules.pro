@@ -10,6 +10,9 @@
 -keep class com.google.firebase.** { *; }
 -keep class com.google.android.gms.** { *; }
 
+# Crashlytics (preserve readable stack traces)
+-keepattributes SourceFile,LineNumberTable
+
 # Freezed / JSON serializable models
 -keep class receet.pro.** { *; }
 -keepattributes Signature
