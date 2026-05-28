@@ -26,7 +26,10 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: null, // Removed close button to enforce Pay-to-Play
+        leading: IconButton(
+          icon: const Icon(LucideIcons.x, color: AppColors.textLight),
+          onPressed: () => Navigator.pop(context),
+        ),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
