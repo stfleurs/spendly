@@ -114,6 +114,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapToAdd => 'Tap the + button to add one.';
 
   @override
+  String get transactionsSearchHint => 'Search merchant, category...';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterExpense => 'Expense';
+
+  @override
+  String get filterIncome => 'Income';
+
+  @override
+  String get filterWithReceipt => 'With Receipt';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get tryAdjustingFilters => 'Try adjusting your filters';
+
+  @override
   String get assigned => 'Assigned';
 
   @override

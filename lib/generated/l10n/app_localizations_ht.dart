@@ -115,6 +115,27 @@ class AppLocalizationsHt extends AppLocalizations {
   String get tapToAdd => 'Peze bouton + pou ajoute youn.';
 
   @override
+  String get transactionsSearchHint => 'Chache machann, kategori...';
+
+  @override
+  String get filterAll => 'Tout';
+
+  @override
+  String get filterExpense => 'Depans';
+
+  @override
+  String get filterIncome => 'Antre';
+
+  @override
+  String get filterWithReceipt => 'Avèk resi';
+
+  @override
+  String get noResultsFound => 'Pa gen rezilta';
+
+  @override
+  String get tryAdjustingFilters => 'Eseye ajiste filtè yo';
+
+  @override
   String get assigned => 'Asiyen';
 
   @override

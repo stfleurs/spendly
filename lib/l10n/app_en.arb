@@ -1,97 +1,407 @@
 {
   "@@locale": "en",
   "appName": "Spendly",
+  "@appName": {
+    "description": "The name of the app"
+  },
   "netWorth": "NET WORTH",
+  "@netWorth": {
+    "description": "Label for net worth section"
+  },
   "accounts": "ACCOUNTS",
+  "@accounts": {
+    "description": "Label for accounts section"
+  },
   "reports": "REPORTS",
+  "@reports": {
+    "description": "Label for reports section"
+  },
   "activity": "ACTIVITY",
+  "@activity": {
+    "description": "Label for activity section"
+  },
   "myBudget": "MY BUDGET",
+  "@myBudget": {
+    "description": "Label for budget section"
+  },
   "newTransaction": "NEW TRANSACTION",
+  "@newTransaction": {
+    "description": "Button label to create a new transaction"
+  },
   "saveTransaction": "SAVE TRANSACTION",
+  "@saveTransaction": {
+    "description": "Button label to save a transaction"
+  },
   "logIn": "LOG IN",
+  "@logIn": {
+    "description": "Button label to log in"
+  },
   "logOut": "LOG OUT",
+  "@logOut": {
+    "description": "Button label to log out"
+  },
   "signUp": "SIGN UP",
+  "@signUp": {
+    "description": "Button label to sign up"
+  },
   "createAccount": "CREATE ACCOUNT",
+  "@createAccount": {
+    "description": "Button label to create an account"
+  },
   "email": "Email",
+  "@email": {
+    "description": "Label for email input field"
+  },
   "password": "Password",
+  "@password": {
+    "description": "Label for password input field"
+  },
   "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Label for confirm password input field"
+  },
   "accountName": "ACCOUNT NAME",
+  "@accountName": {
+    "description": "Label for account name input"
+  },
   "accountType": "ACCOUNT TYPE",
+  "@accountType": {
+    "description": "Label for account type selector"
+  },
   "accountColor": "ACCOUNT COLOR",
+  "@accountColor": {
+    "description": "Label for account color picker"
+  },
   "currency": "CURRENCY",
+  "@currency": {
+    "description": "Label for currency selector"
+  },
   "initialBalance": "INITIAL BALANCE",
+  "@initialBalance": {
+    "description": "Label for initial balance input"
+  },
   "updateAccount": "UPDATE ACCOUNT",
+  "@updateAccount": {
+    "description": "Button label to update an account"
+  },
   "deleteAccount": "DELETE ACCOUNT",
+  "@deleteAccount": {
+    "description": "Button label to delete an account"
+  },
   "checking": "CHECKING",
+  "@checking": {
+    "description": "Account type: checking"
+  },
   "savings": "SAVINGS",
+  "@savings": {
+    "description": "Account type: savings"
+  },
   "cash": "CASH",
+  "@cash": {
+    "description": "Account type: cash"
+  },
   "creditCard": "CREDIT CARD",
+  "@creditCard": {
+    "description": "Account type: credit card"
+  },
   "thisMonth": "THIS MONTH",
+  "@thisMonth": {
+    "description": "Label for current month view"
+  },
   "selectMonth": "SELECT MONTH",
+  "@selectMonth": {
+    "description": "Label for month selector"
+  },
   "income": "INCOME",
+  "@income": {
+    "description": "Label for income total"
+  },
   "expense": "EXPENSE",
+  "@expense": {
+    "description": "Label for expense total"
+  },
   "net": "NET",
+  "@net": {
+    "description": "Label for net total"
+  },
   "spendingByCategory": "SPENDING BY CATEGORY",
+  "@spendingByCategory": {
+    "description": "Heading for spending by category chart"
+  },
   "noTransactionsMonth": "No transactions found for this month.",
+  "@noTransactionsMonth": {
+    "description": "Message shown when no transactions exist for a selected month"
+  },
   "noTransactions": "No transactions this month.",
+  "@noTransactions": {
+    "description": "Message shown when there are no transactions in the current month"
+  },
   "tapToAdd": "Tap the + button to add one.",
+  "@tapToAdd": {
+    "description": "Hint text suggesting user tap the add button"
+  },
+  "transactionsSearchHint": "Search merchant, category...",
+  "@transactionsSearchHint": {
+    "description": "Placeholder hint for the transaction search bar"
+  },
+  "filterAll": "All",
+  "@filterAll": {
+    "description": "Filter option to show all transactions"
+  },
+  "filterExpense": "Expense",
+  "@filterExpense": {
+    "description": "Filter option to show only expenses"
+  },
+  "filterIncome": "Income",
+  "@filterIncome": {
+    "description": "Filter option to show only income"
+  },
+  "filterWithReceipt": "With Receipt",
+  "@filterWithReceipt": {
+    "description": "Filter option to show only transactions with receipts"
+  },
+  "noResultsFound": "No results found",
+  "@noResultsFound": {
+    "description": "Message shown when no search results match"
+  },
+  "tryAdjustingFilters": "Try adjusting your filters",
+  "@tryAdjustingFilters": {
+    "description": "Suggestion text when no results found"
+  },
   "assigned": "Assigned",
+  "@assigned": {
+    "description": "Budget label for assigned amount"
+  },
   "spent": "Spent",
+  "@spent": {
+    "description": "Budget label for spent amount"
+  },
   "overspent": "OVERSPENT",
+  "@overspent": {
+    "description": "Budget label for overspent amount"
+  },
   "leftToSpend": "Left to spend",
+  "@leftToSpend": {
+    "description": "Budget label for remaining amount to spend"
+  },
   "category": "CATEGORY",
+  "@category": {
+    "description": "Label for category selector"
+  },
   "group": "GROUP",
+  "@group": {
+    "description": "Label for budget group"
+  },
   "targetAmount": "TARGET AMOUNT",
+  "@targetAmount": {
+    "description": "Label for budget target amount input"
+  },
   "recurrence": "RECURRENCE",
+  "@recurrence": {
+    "description": "Label for budget recurrence selector"
+  },
   "weekly": "Weekly",
+  "@weekly": {
+    "description": "Recurrence option: weekly"
+  },
   "monthly": "Monthly",
+  "@monthly": {
+    "description": "Recurrence option: monthly"
+  },
   "yearly": "Yearly",
+  "@yearly": {
+    "description": "Recurrence option: yearly"
+  },
   "selectAccount": "Select Account",
+  "@selectAccount": {
+    "description": "Placeholder for account dropdown selector"
+  },
   "selectCategory": "Select Category",
+  "@selectCategory": {
+    "description": "Placeholder for category dropdown selector"
+  },
   "amount": "AMOUNT",
+  "@amount": {
+    "description": "Label for amount input field"
+  },
   "payeeNote": "PAYEE / NOTE",
+  "@payeeNote": {
+    "description": "Label for payee or note input"
+  },
   "payeeHint": "Who or what for?",
+  "@payeeHint": {
+    "description": "Placeholder hint for payee input"
+  },
   "editTransaction": "Edit Transaction",
+  "@editTransaction": {
+    "description": "Title for editing a transaction"
+  },
   "updateTransaction": "UPDATE TRANSACTION",
+  "@updateTransaction": {
+    "description": "Button label to update a transaction"
+  },
   "deleteTransaction": "DELETE TRANSACTION",
+  "@deleteTransaction": {
+    "description": "Button label to delete a transaction"
+  },
   "deleteConfirmTitle": "Delete Transaction",
+  "@deleteConfirmTitle": {
+    "description": "Title for delete confirmation dialog"
+  },
   "deleteConfirmMessage": "Are you sure you want to delete this transaction?",
+  "@deleteConfirmMessage": {
+    "description": "Message for delete confirmation dialog"
+  },
   "cancel": "CANCEL",
+  "@cancel": {
+    "description": "Button label to cancel"
+  },
   "delete": "DELETE",
+  "@delete": {
+    "description": "Button label to confirm deletion"
+  },
   "usd": "USD",
+  "@usd": {
+    "description": "Currency code for US Dollar"
+  },
   "htg": "HTG",
+  "@htg": {
+    "description": "Currency code for Haitian Gourde"
+  },
   "eur": "EUR",
+  "@eur": {
+    "description": "Currency code for Euro"
+  },
   "cad": "CAD",
+  "@cad": {
+    "description": "Currency code for Canadian Dollar"
+  },
   "jan": "Jan",
+  "@jan": {
+    "description": "Abbreviation for January"
+  },
   "feb": "Feb",
+  "@feb": {
+    "description": "Abbreviation for February"
+  },
   "mar": "Mar",
+  "@mar": {
+    "description": "Abbreviation for March"
+  },
   "apr": "Apr",
+  "@apr": {
+    "description": "Abbreviation for April"
+  },
   "may": "May",
+  "@may": {
+    "description": "Abbreviation for May"
+  },
   "jun": "Jun",
+  "@jun": {
+    "description": "Abbreviation for June"
+  },
   "jul": "Jul",
+  "@jul": {
+    "description": "Abbreviation for July"
+  },
   "aug": "Aug",
+  "@aug": {
+    "description": "Abbreviation for August"
+  },
   "sep": "Sep",
+  "@sep": {
+    "description": "Abbreviation for September"
+  },
   "oct": "Oct",
+  "@oct": {
+    "description": "Abbreviation for October"
+  },
   "nov": "Nov",
+  "@nov": {
+    "description": "Abbreviation for November"
+  },
   "dec": "Dec",
+  "@dec": {
+    "description": "Abbreviation for December"
+  },
   "settings": "Settings",
+  "@settings": {
+    "description": "Label for settings section"
+  },
   "language": "Language",
+  "@language": {
+    "description": "Label for language selector"
+  },
   "preferredCurrency": "Preferred Currency",
+  "@preferredCurrency": {
+    "description": "Label for preferred currency selector"
+  },
   "english": "English",
+  "@english": {
+    "description": "Language option: English"
+  },
   "french": "French",
+  "@french": {
+    "description": "Language option: French"
+  },
   "haitianCreole": "Haitian Creole",
+  "@haitianCreole": {
+    "description": "Language option: Haitian Creole"
+  },
   "welcomeSpendly": "Welcome to Spendly",
+  "@welcomeSpendly": {
+    "description": "Welcome title shown on onboarding screen"
+  },
   "onboardingSubtitle": "Let's set up your financial workspace in just a few steps.",
+  "@onboardingSubtitle": {
+    "description": "Subtitle text for the onboarding screen"
+  },
   "getStarted": "GET STARTED",
+  "@getStarted": {
+    "description": "Button label to begin onboarding"
+  },
   "chooseCurrency": "CHOOSE YOUR CURRENCY",
+  "@chooseCurrency": {
+    "description": "Heading for currency selection step"
+  },
   "next": "NEXT",
+  "@next": {
+    "description": "Button label to proceed to next step"
+  },
   "yourFirstAccount": "YOUR FIRST ACCOUNT",
+  "@yourFirstAccount": {
+    "description": "Heading for first account creation step"
+  },
   "accountNameHint": "e.g. My Wallet, Bank",
+  "@accountNameHint": {
+    "description": "Placeholder hint for account name input"
+  },
   "completeSetup": "COMPLETE SETUP",
+  "@completeSetup": {
+    "description": "Button label to finish setup"
+  },
   "addAnotherAccount": "ADD ANOTHER ACCOUNT",
+  "@addAnotherAccount": {
+    "description": "Button label to add another account during setup"
+  },
   "atLeastOneAccount": "Please add at least one account",
+  "@atLeastOneAccount": {
+    "description": "Validation message when no accounts have been created"
+  },
   "deleteUserAccount": "Delete My User Account",
+  "@deleteUserAccount": {
+    "description": "Button label to delete the user's entire account"
+  },
   "deleteUserAccountWarning": "This action is permanent and will delete all your data, including accounts, transactions, and budget settings. This cannot be undone.",
+  "@deleteUserAccountWarning": {
+    "description": "Warning message shown before account deletion"
+  },
   "confirmDeleteUserAccount": "I understand, delete my account",
-  "reauthenticateRequired": "For security, you must re-authenticate before deleting your account."
+  "@confirmDeleteUserAccount": {
+    "description": "Confirmation button text for account deletion"
+  },
+  "reauthenticateRequired": "For security, you must re-authenticate before deleting your account.",
+  "@reauthenticateRequired": {
+    "description": "Message prompting re-authentication before account deletion"
+  }
 }

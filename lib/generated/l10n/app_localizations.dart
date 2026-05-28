@@ -100,565 +100,607 @@ abstract class AppLocalizations {
     Locale('ht'),
   ];
 
-  /// No description provided for @appName.
+  /// The name of the app
   ///
   /// In en, this message translates to:
   /// **'Spendly'**
   String get appName;
 
-  /// No description provided for @netWorth.
+  /// Label for net worth section
   ///
   /// In en, this message translates to:
   /// **'NET WORTH'**
   String get netWorth;
 
-  /// No description provided for @accounts.
+  /// Label for accounts section
   ///
   /// In en, this message translates to:
   /// **'ACCOUNTS'**
   String get accounts;
 
-  /// No description provided for @reports.
+  /// Label for reports section
   ///
   /// In en, this message translates to:
   /// **'REPORTS'**
   String get reports;
 
-  /// No description provided for @activity.
+  /// Label for activity section
   ///
   /// In en, this message translates to:
   /// **'ACTIVITY'**
   String get activity;
 
-  /// No description provided for @myBudget.
+  /// Label for budget section
   ///
   /// In en, this message translates to:
   /// **'MY BUDGET'**
   String get myBudget;
 
-  /// No description provided for @newTransaction.
+  /// Button label to create a new transaction
   ///
   /// In en, this message translates to:
   /// **'NEW TRANSACTION'**
   String get newTransaction;
 
-  /// No description provided for @saveTransaction.
+  /// Button label to save a transaction
   ///
   /// In en, this message translates to:
   /// **'SAVE TRANSACTION'**
   String get saveTransaction;
 
-  /// No description provided for @logIn.
+  /// Button label to log in
   ///
   /// In en, this message translates to:
   /// **'LOG IN'**
   String get logIn;
 
-  /// No description provided for @logOut.
+  /// Button label to log out
   ///
   /// In en, this message translates to:
   /// **'LOG OUT'**
   String get logOut;
 
-  /// No description provided for @signUp.
+  /// Button label to sign up
   ///
   /// In en, this message translates to:
   /// **'SIGN UP'**
   String get signUp;
 
-  /// No description provided for @createAccount.
+  /// Button label to create an account
   ///
   /// In en, this message translates to:
   /// **'CREATE ACCOUNT'**
   String get createAccount;
 
-  /// No description provided for @email.
+  /// Label for email input field
   ///
   /// In en, this message translates to:
   /// **'Email'**
   String get email;
 
-  /// No description provided for @password.
+  /// Label for password input field
   ///
   /// In en, this message translates to:
   /// **'Password'**
   String get password;
 
-  /// No description provided for @confirmPassword.
+  /// Label for confirm password input field
   ///
   /// In en, this message translates to:
   /// **'Confirm Password'**
   String get confirmPassword;
 
-  /// No description provided for @accountName.
+  /// Label for account name input
   ///
   /// In en, this message translates to:
   /// **'ACCOUNT NAME'**
   String get accountName;
 
-  /// No description provided for @accountType.
+  /// Label for account type selector
   ///
   /// In en, this message translates to:
   /// **'ACCOUNT TYPE'**
   String get accountType;
 
-  /// No description provided for @accountColor.
+  /// Label for account color picker
   ///
   /// In en, this message translates to:
   /// **'ACCOUNT COLOR'**
   String get accountColor;
 
-  /// No description provided for @currency.
+  /// Label for currency selector
   ///
   /// In en, this message translates to:
   /// **'CURRENCY'**
   String get currency;
 
-  /// No description provided for @initialBalance.
+  /// Label for initial balance input
   ///
   /// In en, this message translates to:
   /// **'INITIAL BALANCE'**
   String get initialBalance;
 
-  /// No description provided for @updateAccount.
+  /// Button label to update an account
   ///
   /// In en, this message translates to:
   /// **'UPDATE ACCOUNT'**
   String get updateAccount;
 
-  /// No description provided for @deleteAccount.
+  /// Button label to delete an account
   ///
   /// In en, this message translates to:
   /// **'DELETE ACCOUNT'**
   String get deleteAccount;
 
-  /// No description provided for @checking.
+  /// Account type: checking
   ///
   /// In en, this message translates to:
   /// **'CHECKING'**
   String get checking;
 
-  /// No description provided for @savings.
+  /// Account type: savings
   ///
   /// In en, this message translates to:
   /// **'SAVINGS'**
   String get savings;
 
-  /// No description provided for @cash.
+  /// Account type: cash
   ///
   /// In en, this message translates to:
   /// **'CASH'**
   String get cash;
 
-  /// No description provided for @creditCard.
+  /// Account type: credit card
   ///
   /// In en, this message translates to:
   /// **'CREDIT CARD'**
   String get creditCard;
 
-  /// No description provided for @thisMonth.
+  /// Label for current month view
   ///
   /// In en, this message translates to:
   /// **'THIS MONTH'**
   String get thisMonth;
 
-  /// No description provided for @selectMonth.
+  /// Label for month selector
   ///
   /// In en, this message translates to:
   /// **'SELECT MONTH'**
   String get selectMonth;
 
-  /// No description provided for @income.
+  /// Label for income total
   ///
   /// In en, this message translates to:
   /// **'INCOME'**
   String get income;
 
-  /// No description provided for @expense.
+  /// Label for expense total
   ///
   /// In en, this message translates to:
   /// **'EXPENSE'**
   String get expense;
 
-  /// No description provided for @net.
+  /// Label for net total
   ///
   /// In en, this message translates to:
   /// **'NET'**
   String get net;
 
-  /// No description provided for @spendingByCategory.
+  /// Heading for spending by category chart
   ///
   /// In en, this message translates to:
   /// **'SPENDING BY CATEGORY'**
   String get spendingByCategory;
 
-  /// No description provided for @noTransactionsMonth.
+  /// Message shown when no transactions exist for a selected month
   ///
   /// In en, this message translates to:
   /// **'No transactions found for this month.'**
   String get noTransactionsMonth;
 
-  /// No description provided for @noTransactions.
+  /// Message shown when there are no transactions in the current month
   ///
   /// In en, this message translates to:
   /// **'No transactions this month.'**
   String get noTransactions;
 
-  /// No description provided for @tapToAdd.
+  /// Hint text suggesting user tap the add button
   ///
   /// In en, this message translates to:
   /// **'Tap the + button to add one.'**
   String get tapToAdd;
 
-  /// No description provided for @assigned.
+  /// Placeholder hint for the transaction search bar
+  ///
+  /// In en, this message translates to:
+  /// **'Search merchant, category...'**
+  String get transactionsSearchHint;
+
+  /// Filter option to show all transactions
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// Filter option to show only expenses
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get filterExpense;
+
+  /// Filter option to show only income
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get filterIncome;
+
+  /// Filter option to show only transactions with receipts
+  ///
+  /// In en, this message translates to:
+  /// **'With Receipt'**
+  String get filterWithReceipt;
+
+  /// Message shown when no search results match
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// Suggestion text when no results found
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your filters'**
+  String get tryAdjustingFilters;
+
+  /// Budget label for assigned amount
   ///
   /// In en, this message translates to:
   /// **'Assigned'**
   String get assigned;
 
-  /// No description provided for @spent.
+  /// Budget label for spent amount
   ///
   /// In en, this message translates to:
   /// **'Spent'**
   String get spent;
 
-  /// No description provided for @overspent.
+  /// Budget label for overspent amount
   ///
   /// In en, this message translates to:
   /// **'OVERSPENT'**
   String get overspent;
 
-  /// No description provided for @leftToSpend.
+  /// Budget label for remaining amount to spend
   ///
   /// In en, this message translates to:
   /// **'Left to spend'**
   String get leftToSpend;
 
-  /// No description provided for @category.
+  /// Label for category selector
   ///
   /// In en, this message translates to:
   /// **'CATEGORY'**
   String get category;
 
-  /// No description provided for @group.
+  /// Label for budget group
   ///
   /// In en, this message translates to:
   /// **'GROUP'**
   String get group;
 
-  /// No description provided for @targetAmount.
+  /// Label for budget target amount input
   ///
   /// In en, this message translates to:
   /// **'TARGET AMOUNT'**
   String get targetAmount;
 
-  /// No description provided for @recurrence.
+  /// Label for budget recurrence selector
   ///
   /// In en, this message translates to:
   /// **'RECURRENCE'**
   String get recurrence;
 
-  /// No description provided for @weekly.
+  /// Recurrence option: weekly
   ///
   /// In en, this message translates to:
   /// **'Weekly'**
   String get weekly;
 
-  /// No description provided for @monthly.
+  /// Recurrence option: monthly
   ///
   /// In en, this message translates to:
   /// **'Monthly'**
   String get monthly;
 
-  /// No description provided for @yearly.
+  /// Recurrence option: yearly
   ///
   /// In en, this message translates to:
   /// **'Yearly'**
   String get yearly;
 
-  /// No description provided for @selectAccount.
+  /// Placeholder for account dropdown selector
   ///
   /// In en, this message translates to:
   /// **'Select Account'**
   String get selectAccount;
 
-  /// No description provided for @selectCategory.
+  /// Placeholder for category dropdown selector
   ///
   /// In en, this message translates to:
   /// **'Select Category'**
   String get selectCategory;
 
-  /// No description provided for @amount.
+  /// Label for amount input field
   ///
   /// In en, this message translates to:
   /// **'AMOUNT'**
   String get amount;
 
-  /// No description provided for @payeeNote.
+  /// Label for payee or note input
   ///
   /// In en, this message translates to:
   /// **'PAYEE / NOTE'**
   String get payeeNote;
 
-  /// No description provided for @payeeHint.
+  /// Placeholder hint for payee input
   ///
   /// In en, this message translates to:
   /// **'Who or what for?'**
   String get payeeHint;
 
-  /// No description provided for @editTransaction.
+  /// Title for editing a transaction
   ///
   /// In en, this message translates to:
   /// **'Edit Transaction'**
   String get editTransaction;
 
-  /// No description provided for @updateTransaction.
+  /// Button label to update a transaction
   ///
   /// In en, this message translates to:
   /// **'UPDATE TRANSACTION'**
   String get updateTransaction;
 
-  /// No description provided for @deleteTransaction.
+  /// Button label to delete a transaction
   ///
   /// In en, this message translates to:
   /// **'DELETE TRANSACTION'**
   String get deleteTransaction;
 
-  /// No description provided for @deleteConfirmTitle.
+  /// Title for delete confirmation dialog
   ///
   /// In en, this message translates to:
   /// **'Delete Transaction'**
   String get deleteConfirmTitle;
 
-  /// No description provided for @deleteConfirmMessage.
+  /// Message for delete confirmation dialog
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to delete this transaction?'**
   String get deleteConfirmMessage;
 
-  /// No description provided for @cancel.
+  /// Button label to cancel
   ///
   /// In en, this message translates to:
   /// **'CANCEL'**
   String get cancel;
 
-  /// No description provided for @delete.
+  /// Button label to confirm deletion
   ///
   /// In en, this message translates to:
   /// **'DELETE'**
   String get delete;
 
-  /// No description provided for @usd.
+  /// Currency code for US Dollar
   ///
   /// In en, this message translates to:
   /// **'USD'**
   String get usd;
 
-  /// No description provided for @htg.
+  /// Currency code for Haitian Gourde
   ///
   /// In en, this message translates to:
   /// **'HTG'**
   String get htg;
 
-  /// No description provided for @eur.
+  /// Currency code for Euro
   ///
   /// In en, this message translates to:
   /// **'EUR'**
   String get eur;
 
-  /// No description provided for @cad.
+  /// Currency code for Canadian Dollar
   ///
   /// In en, this message translates to:
   /// **'CAD'**
   String get cad;
 
-  /// No description provided for @jan.
+  /// Abbreviation for January
   ///
   /// In en, this message translates to:
   /// **'Jan'**
   String get jan;
 
-  /// No description provided for @feb.
+  /// Abbreviation for February
   ///
   /// In en, this message translates to:
   /// **'Feb'**
   String get feb;
 
-  /// No description provided for @mar.
+  /// Abbreviation for March
   ///
   /// In en, this message translates to:
   /// **'Mar'**
   String get mar;
 
-  /// No description provided for @apr.
+  /// Abbreviation for April
   ///
   /// In en, this message translates to:
   /// **'Apr'**
   String get apr;
 
-  /// No description provided for @may.
+  /// Abbreviation for May
   ///
   /// In en, this message translates to:
   /// **'May'**
   String get may;
 
-  /// No description provided for @jun.
+  /// Abbreviation for June
   ///
   /// In en, this message translates to:
   /// **'Jun'**
   String get jun;
 
-  /// No description provided for @jul.
+  /// Abbreviation for July
   ///
   /// In en, this message translates to:
   /// **'Jul'**
   String get jul;
 
-  /// No description provided for @aug.
+  /// Abbreviation for August
   ///
   /// In en, this message translates to:
   /// **'Aug'**
   String get aug;
 
-  /// No description provided for @sep.
+  /// Abbreviation for September
   ///
   /// In en, this message translates to:
   /// **'Sep'**
   String get sep;
 
-  /// No description provided for @oct.
+  /// Abbreviation for October
   ///
   /// In en, this message translates to:
   /// **'Oct'**
   String get oct;
 
-  /// No description provided for @nov.
+  /// Abbreviation for November
   ///
   /// In en, this message translates to:
   /// **'Nov'**
   String get nov;
 
-  /// No description provided for @dec.
+  /// Abbreviation for December
   ///
   /// In en, this message translates to:
   /// **'Dec'**
   String get dec;
 
-  /// No description provided for @settings.
+  /// Label for settings section
   ///
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
 
-  /// No description provided for @language.
+  /// Label for language selector
   ///
   /// In en, this message translates to:
   /// **'Language'**
   String get language;
 
-  /// No description provided for @preferredCurrency.
+  /// Label for preferred currency selector
   ///
   /// In en, this message translates to:
   /// **'Preferred Currency'**
   String get preferredCurrency;
 
-  /// No description provided for @english.
+  /// Language option: English
   ///
   /// In en, this message translates to:
   /// **'English'**
   String get english;
 
-  /// No description provided for @french.
+  /// Language option: French
   ///
   /// In en, this message translates to:
   /// **'French'**
   String get french;
 
-  /// No description provided for @haitianCreole.
+  /// Language option: Haitian Creole
   ///
   /// In en, this message translates to:
   /// **'Haitian Creole'**
   String get haitianCreole;
 
-  /// No description provided for @welcomeSpendly.
+  /// Welcome title shown on onboarding screen
   ///
   /// In en, this message translates to:
   /// **'Welcome to Spendly'**
   String get welcomeSpendly;
 
-  /// No description provided for @onboardingSubtitle.
+  /// Subtitle text for the onboarding screen
   ///
   /// In en, this message translates to:
   /// **'Let\'s set up your financial workspace in just a few steps.'**
   String get onboardingSubtitle;
 
-  /// No description provided for @getStarted.
+  /// Button label to begin onboarding
   ///
   /// In en, this message translates to:
   /// **'GET STARTED'**
   String get getStarted;
 
-  /// No description provided for @chooseCurrency.
+  /// Heading for currency selection step
   ///
   /// In en, this message translates to:
   /// **'CHOOSE YOUR CURRENCY'**
   String get chooseCurrency;
 
-  /// No description provided for @next.
+  /// Button label to proceed to next step
   ///
   /// In en, this message translates to:
   /// **'NEXT'**
   String get next;
 
-  /// No description provided for @yourFirstAccount.
+  /// Heading for first account creation step
   ///
   /// In en, this message translates to:
   /// **'YOUR FIRST ACCOUNT'**
   String get yourFirstAccount;
 
-  /// No description provided for @accountNameHint.
+  /// Placeholder hint for account name input
   ///
   /// In en, this message translates to:
   /// **'e.g. My Wallet, Bank'**
   String get accountNameHint;
 
-  /// No description provided for @completeSetup.
+  /// Button label to finish setup
   ///
   /// In en, this message translates to:
   /// **'COMPLETE SETUP'**
   String get completeSetup;
 
-  /// No description provided for @addAnotherAccount.
+  /// Button label to add another account during setup
   ///
   /// In en, this message translates to:
   /// **'ADD ANOTHER ACCOUNT'**
   String get addAnotherAccount;
 
-  /// No description provided for @atLeastOneAccount.
+  /// Validation message when no accounts have been created
   ///
   /// In en, this message translates to:
   /// **'Please add at least one account'**
   String get atLeastOneAccount;
 
-  /// No description provided for @deleteUserAccount.
+  /// Button label to delete the user's entire account
   ///
   /// In en, this message translates to:
   /// **'Delete My User Account'**
   String get deleteUserAccount;
 
-  /// No description provided for @deleteUserAccountWarning.
+  /// Warning message shown before account deletion
   ///
   /// In en, this message translates to:
   /// **'This action is permanent and will delete all your data, including accounts, transactions, and budget settings. This cannot be undone.'**
   String get deleteUserAccountWarning;
 
-  /// No description provided for @confirmDeleteUserAccount.
+  /// Confirmation button text for account deletion
   ///
   /// In en, this message translates to:
   /// **'I understand, delete my account'**
   String get confirmDeleteUserAccount;
 
-  /// No description provided for @reauthenticateRequired.
+  /// Message prompting re-authentication before account deletion
   ///
   /// In en, this message translates to:
   /// **'For security, you must re-authenticate before deleting your account.'**

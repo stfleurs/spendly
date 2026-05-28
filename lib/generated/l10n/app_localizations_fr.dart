@@ -114,6 +114,27 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tapToAdd => 'Appuyez sur le bouton + pour en ajouter une.';
 
   @override
+  String get transactionsSearchHint => 'Rechercher commercant, categorie...';
+
+  @override
+  String get filterAll => 'Tout';
+
+  @override
+  String get filterExpense => 'Depense';
+
+  @override
+  String get filterIncome => 'Revenu';
+
+  @override
+  String get filterWithReceipt => 'Avec recu';
+
+  @override
+  String get noResultsFound => 'Aucun resultat';
+
+  @override
+  String get tryAdjustingFilters => 'Essayez d\'ajuster les filtres';
+
+  @override
   String get assigned => 'Assigné';
 
   @override
