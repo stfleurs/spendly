@@ -224,7 +224,7 @@ class SettingsScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSectionHeader('ACCOUNT'), // Add to l10n if needed, but for now hardcoded
+                        _buildSectionHeader('ACCOUNT'),
                         const SizedBox(height: 16),
                         _buildSettingTile(
                           context,
@@ -333,9 +333,9 @@ class SettingsScreen extends ConsumerWidget {
                             onTap: () async {
                               final userId = ref.read(authStateProvider).value?.uid;
                               if (userId == null) return;
-                              
+
                               final scaffoldMessenger = ScaffoldMessenger.of(context);
-                              
+
                               try {
                                 final accounts = await ref.read(accountRepositoryProvider).watchAccounts(userId).first;
                                 for (var account in accounts) {
@@ -352,6 +352,18 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
                   ],
+
+                  // App Version Footer
+                  Center(
+                    child: Text(
+                      'Spendly v1.0.1',
+                      style: TextStyle(
+                        color: AppColors.textLight.withValues(alpha: 0.5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 40),
                 ],
@@ -490,7 +502,7 @@ class SettingsScreen extends ConsumerWidget {
       final accounts = await ref.read(accountRepositoryProvider).watchAccounts(userId).first;
       final transactions = await ref.read(transactionRepositoryProvider).watchTransactions(userId).first;
       final categories = await ref.read(categoryRepositoryProvider).watchCategories(userId).first;
-      
+
       final catMap = {for (final c in categories) c.id: c};
 
       if (format == 'csv') {
@@ -589,8 +601,8 @@ class SettingsScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
-              Color(0xFF322E73), // Calm deep indigo
-              Color(0xFF5E46E6), // Professional primary violet
+              Color(0xFF1A6BA8),
+              AppColors.primary,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -598,7 +610,7 @@ class SettingsScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF322E73).withValues(alpha: 0.15),
+              color: AppColors.navShadow,
               blurRadius: 16,
               offset: const Offset(0, 8),
             )
