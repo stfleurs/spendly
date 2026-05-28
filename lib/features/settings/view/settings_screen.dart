@@ -356,7 +356,7 @@ class SettingsScreen extends ConsumerWidget {
                   // App Version Footer
                   Center(
                     child: Text(
-                      'Spendly v1.0.1',
+                      'Receet Pro v1.0.1',
                       style: TextStyle(
                         color: AppColors.textLight.withValues(alpha: 0.5),
                         fontSize: 11,

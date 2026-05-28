@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appName": "Spendly",
+  "appName": "Receet Pro",
   "@appName": {
     "description": "The name of the app"
   },
@@ -348,7 +348,7 @@
   "@haitianCreole": {
     "description": "Language option: Haitian Creole"
   },
-  "welcomeSpendly": "Welcome to Spendly",
+  "welcomeSpendly": "Welcome to Receet Pro",
   "@welcomeSpendly": {
     "description": "Welcome title shown on onboarding screen"
   },

@@ -1,6 +1,6 @@
 {
   "@@locale": "fr",
-  "appName": "Spendly",
+  "appName": "Receet Pro",
   "netWorth": "VALEUR NETTE",
   "accounts": "COMPTES",
   "reports": "RAPPORTS",
@@ -87,7 +87,7 @@
   "english": "Anglais",
   "french": "Français",
   "haitianCreole": "Créole Haïtien",
-  "welcomeSpendly": "Bienvenue sur Spendly",
+  "welcomeSpendly": "Bienvenue sur Receet Pro",
   "onboardingSubtitle": "Configurons votre espace financier en quelques étapes.",
   "getStarted": "COMMENCER",
   "chooseCurrency": "CHOISISSEZ VOTRE DEVISE",

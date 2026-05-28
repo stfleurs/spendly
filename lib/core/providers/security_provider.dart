@@ -73,7 +73,7 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
       try {
         // Using flat parameters for compatibility with local_auth 3.0.1
         return await _auth.authenticate(
-          localizedReason: 'Please authenticate to access Spendly',
+          localizedReason: 'Please authenticate to access Receet Pro',
           persistAcrossBackgrounding: true,
           biometricOnly: true,
         );

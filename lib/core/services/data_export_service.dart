@@ -44,13 +44,13 @@ class DataExportService {
 
     final csvString = const ListToCsvConverter().convert(rows);
     final directory = await getTemporaryDirectory();
-    final file = File('${directory.path}/spendly_export_${DateTime.now().millisecondsSinceEpoch}.csv');
-    
+    final file = File('${directory.path}/receetpro_export_${DateTime.now().millisecondsSinceEpoch}.csv');
+
     await file.writeAsString(csvString);
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        subject: 'Spendly Data Export (CSV)',
+        subject: 'Receet Pro Data Export (CSV)',
       ),
     );
   }
@@ -67,13 +67,13 @@ class DataExportService {
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(data);
     final directory = await getTemporaryDirectory();
-    final file = File('${directory.path}/spendly_backup_${DateTime.now().millisecondsSinceEpoch}.json');
-    
+    final file = File('${directory.path}/receetpro_backup_${DateTime.now().millisecondsSinceEpoch}.json');
+
     await file.writeAsString(jsonString);
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        subject: 'Spendly Data Backup (JSON)',
+        subject: 'Receet Pro Data Backup (JSON)',
       ),
     );
   }

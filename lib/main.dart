@@ -107,7 +107,7 @@ class SpendlyApp extends ConsumerWidget {
     final observers = ref.watch(navigatorObserversProvider);
 
     return MaterialApp(
-      title: 'Spendly',
+      title: 'Receet Pro',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       locale: locale,

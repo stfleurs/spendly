@@ -46,8 +46,8 @@ class ReceiptViewerScreen extends ConsumerWidget {
             onPressed: () {
               SharePlus.instance.share(
                 ShareParams(
-                  text: 'Check out this receipt from ${merchantName ?? 'Spendly'}: $imageUrl',
-                  subject: 'Spendly Receipt',
+                  text: 'Check out this receipt from ${merchantName ?? 'Receet Pro'}: $imageUrl',
+                  subject: 'Receet Pro Receipt',
                 ),
               );
             },

@@ -9,7 +9,7 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appName => 'Spendly';
+  String get appName => 'Receet Pro';
 
   @override
   String get netWorth => 'VALEUR NETTE';
@@ -271,7 +271,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get haitianCreole => 'Créole Haïtien';
 
   @override
-  String get welcomeSpendly => 'Bienvenue sur Spendly';
+  String get welcomeSpendly => 'Bienvenue sur Receet Pro';
 
   @override
   String get onboardingSubtitle =>

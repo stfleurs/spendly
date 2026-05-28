@@ -1,6 +1,6 @@
 {
   "@@locale": "ht",
-  "appName": "Spendly",
+  "appName": "Receet Pro",
   "netWorth": "VALÈ NÈT",
   "accounts": "KONT",
   "reports": "RAPÒ",
@@ -87,7 +87,7 @@
   "english": "Angle",
   "french": "Franse",
   "haitianCreole": "Kreyòl Ayisyen",
-  "welcomeSpendly": "Byenvini sou Spendly",
+  "welcomeSpendly": "Byenvini sou Receet Pro",
   "onboardingSubtitle": "Ann prepare espas finansye ou an nan kèk etap.",
   "getStarted": "KÒMANSE",
   "chooseCurrency": "CHWAZI DEVIZ OU",
