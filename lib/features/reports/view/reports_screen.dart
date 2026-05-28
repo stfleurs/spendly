@@ -10,6 +10,7 @@ import 'package:spendly/features/transactions/repository/transaction_repository.
 import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/category.dart' as model;
 import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
@@ -22,6 +23,7 @@ class ReportsScreen extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
 
     final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
 
     return CustomScrollView(
       slivers: [
@@ -64,12 +66,12 @@ class ReportsScreen extends ConsumerWidget {
                   MainCard(
                     child: Column(
                       children: [
-                        _buildSummaryItem(l10n.income, totalIncome, AppColors.income, Icons.trending_up),
+                        _buildSummaryItem(l10n.income, totalIncome, AppColors.income, Icons.trending_up, locale),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
                           child: Divider(color: AppColors.primaryLight, height: 1),
                         ),
-                        _buildSummaryItem(l10n.expense, totalExpense, AppColors.expense, Icons.trending_down),
+                        _buildSummaryItem(l10n.expense, totalExpense, AppColors.expense, Icons.trending_down, locale),
                         const SizedBox(height: 32),
 
                         // Net Amount Box
@@ -93,7 +95,7 @@ class ReportsScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '${net < 0 ? '-' : ''}\$${(net.abs() / 100).toStringAsFixed(2)}',
+                                formatCents(net, 'USD', showSign: true, locale: locale),
                                 style: TextStyle(
                                   color: net >= 0 ? AppColors.income : AppColors.expense,
                                   fontSize: 36,
@@ -170,7 +172,7 @@ class ReportsScreen extends ConsumerWidget {
                                 final cat = catMap[entry.key];
                                 final name = cat?.name ?? 'Unknown';
                                 final progress = maxSpend > 0 ? entry.value / maxSpend : 0.0;
-                                final amountStr = '\$${(entry.value / 100).toStringAsFixed(2)}';
+                                final amountStr = formatCents(entry.value, 'USD', locale: locale);
                                 return _buildCategoryItem(name, amountStr, progress);
                               }),
                             ],
@@ -217,7 +219,7 @@ class ReportsScreen extends ConsumerWidget {
       data: (categories) {
         final Map<String, model.Category> catMap = {for (final c in categories) c.id: c};
         final sortedEntries = spentByCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-        
+
         final List<Color> sectionColors = [
           AppColors.primary,
           const Color(0xFFF6C022),
@@ -236,7 +238,7 @@ class ReportsScreen extends ConsumerWidget {
               final categoryId = entry.value.key;
               final amount = entry.value.value;
               final cat = catMap[categoryId];
-              
+
               return PieChartSectionData(
                 color: sectionColors[index % sectionColors.length],
                 value: amount.toDouble(),
@@ -257,7 +259,7 @@ class ReportsScreen extends ConsumerWidget {
       data: (categories) {
         final Map<String, model.Category> catMap = {for (final c in categories) c.id: c};
         final sortedEntries = spentByCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-        
+
         final List<Color> sectionColors = [
           AppColors.primary,
           const Color(0xFFF6C022),
@@ -274,7 +276,7 @@ class ReportsScreen extends ConsumerWidget {
             final index = entry.key;
             final cat = catMap[entry.value.key];
             final color = sectionColors[index % sectionColors.length];
-            
+
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -322,8 +324,8 @@ class ReportsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryItem(String label, int amountCents, Color color, IconData icon) {
-    final formatted = '\$${(amountCents / 100).toStringAsFixed(2)}';
+  Widget _buildSummaryItem(String label, int amountCents, Color color, IconData icon, String locale) {
+    final formatted = formatCents(amountCents, 'USD', locale: locale);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

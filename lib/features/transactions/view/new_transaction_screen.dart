@@ -18,9 +18,9 @@ import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 import 'package:spendly/core/providers/exchange_rate_provider.dart';
 import 'package:spendly/core/providers/device_provider.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class NewTransactionScreen extends ConsumerStatefulWidget {
-  /// Pass an existing transaction to enter edit mode.
   final AppTransaction? transaction;
 
   const NewTransactionScreen({super.key, this.transaction});
@@ -59,7 +59,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     _rateController = TextEditingController(
       text: t != null && t.exchangeRate != 1.0 ? t.exchangeRate.toStringAsFixed(4) : '',
     );
-    // Account and category are resolved after streams load in build()
   }
 
   @override
@@ -92,7 +91,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     final userId = ref.read(authRepositoryProvider).currentUser?.uid ?? '';
     int available = ref.read(availableFundsProvider((userId: userId, accountId: _selectedAccount!.id)));
 
-    // If editing, add back the current transaction amount to available funds for validation
     if (_isEditing && widget.transaction!.accountId == _selectedAccount!.id) {
       if (widget.transaction!.type.toLowerCase() == 'expense') {
         available += widget.transaction!.amount;
@@ -104,7 +102,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     if (_selectedType.toUpperCase() == 'EXPENSE' && amountCents > available) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Insufficient funds. Available: ${_selectedAccount!.currency} ${(available / 100).toStringAsFixed(2)}'),
+          content: Text('Insufficient funds. Available: ${formatCents(available, _selectedAccount!.currency, locale: AppLocalizations.of(context)!.localeName)}'),
           backgroundColor: AppColors.expense,
         ),
       );
@@ -117,7 +115,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     final baseCurrency = ref.read(currencyProvider);
     final isCrossCurrency = _selectedAccount != null && _selectedCurrency != _selectedAccount!.currency;
 
-    // Use user-entered exchange rate for cross-currency, otherwise use provider lookup
     final double rate;
     if (isCrossCurrency) {
       rate = double.tryParse(_rateController.text.replaceAll(',', '')) ?? 0.0;
@@ -162,10 +159,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
       accountId: _selectedAccount!.id,
       categoryId: isExpense ? _selectedCategory!.id : '',
       note: _payeeController.text.trim(),
-      // Add search tokens for manual indexing
       searchTokens: AppTransaction.createSearchTokens(
           _payeeController.text.trim(), isExpense ? _selectedCategory!.name : null),
-      // Add audit fields for manual entries too
       originalAmount: centsValue,
       originalCurrency: _selectedCurrency,
     );
@@ -303,12 +298,12 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
       setState(() {
         final current = double.tryParse(_amountController.text) ?? 0.0;
         _amountController.text = (current * result).toStringAsFixed(2);
-        
+
         if (_selectedAccount != null) {
           _selectedCurrency = _selectedAccount!.currency;
         }
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Applied exchange rate: $result')),
@@ -320,6 +315,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final accountsAsync = ref.watch(accountsStreamProvider(userId));
     final categoriesAsync = ref.watch(categoriesStreamProvider(userId));
@@ -327,7 +323,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
         ? ref.watch(availableFundsProvider((userId: userId, accountId: _selectedAccount!.id)))
         : 0;
 
-    // Pre-select account/category when stream data arrives (edit mode)
     if (_isEditing && _selectedAccount == null && accountsAsync.value != null) {
       final match = accountsAsync.value!.where((a) => a.id == widget.transaction!.accountId);
       if (match.isNotEmpty) {
@@ -360,7 +355,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
               children: [
                 const SizedBox(height: 24),
 
-                // Scan Receipt — hide in edit mode
                 if (!_isEditing)
                   MainCard(
                     padding: const EdgeInsets.all(16),
@@ -406,7 +400,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
 
                 if (!_isEditing) const SizedBox(height: 16),
 
-                // Transaction Type Toggle
                 MainCard(
                   padding: const EdgeInsets.all(8),
                   borderRadius: 40,
@@ -421,7 +414,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
 
                 const SizedBox(height: 16),
 
-                // Transaction Details
                 MainCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +440,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                                     Text(acc.name,
                                         style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold)),
                                     Text(
-                                      '${acc.currency == 'USD' ? r'$ ' : '${acc.currency} '}${(balance / 100).toStringAsFixed(2)}',
+                                      formatCents(balance, acc.currency, locale: locale),
                                       style: TextStyle(
                                         color: isNegative ? AppColors.expense : AppColors.textLight,
                                         fontSize: 12,
@@ -473,7 +465,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
-                            'Available: ${_selectedAccount!.currency == 'USD' ? r'$ ' : '${_selectedAccount!.currency} '}${(availableFunds / 100).toStringAsFixed(2)}',
+                            'Available: ${formatCents(availableFunds, _selectedAccount!.currency, locale: locale)}',
                             style: TextStyle(
                               color: availableFunds < 0 ? AppColors.expense : AppColors.textLight,
                               fontWeight: FontWeight.bold,
@@ -517,7 +509,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                                       backgroundColor: Colors.transparent,
                                       builder: (context) => const CategoryFormBottomSheet(category: null),
                                     ).then((_) {
-                                      // Refresh categories after potentially adding one
                                       ref.invalidate(categoriesStreamProvider(userId));
                                     });
                                   },
@@ -576,7 +567,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                           ),
                         ],
                       ),
-                      // Exchange rate field — shown when transaction currency != account currency
                       if (_selectedAccount != null && _selectedCurrency != _selectedAccount!.currency) ...[
                         const SizedBox(height: 16),
                         const Divider(color: AppColors.primaryLight),
@@ -673,14 +663,12 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
-                // Save Button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: SizedBox(
@@ -705,7 +693,6 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
                   ),
                 ),
 
-                // Delete Button (edit mode only)
                 if (_isEditing) ...[
                   const SizedBox(height: 12),
                   Center(

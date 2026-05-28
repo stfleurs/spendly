@@ -8,6 +8,8 @@ import 'package:spendly/features/budget/view/category_form_bottom_sheet.dart';
 import 'package:spendly/features/budget/view/allocation_bottom_sheet.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/shared/widgets/adaptive_text.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class MyBudgetScreen extends ConsumerWidget {
   const MyBudgetScreen({super.key});
@@ -18,6 +20,7 @@ class MyBudgetScreen extends ConsumerWidget {
     final budgetAsync = ref.watch(budgetProvider(userId));
 
     final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
 
     return CustomScrollView(
       slivers: [
@@ -26,7 +29,7 @@ class MyBudgetScreen extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 24),
-              
+
               budgetAsync.when(
                 data: (state) {
                   return Column(
@@ -60,12 +63,17 @@ class MyBudgetScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                _formatCurrency(state.readyToAssign, state.baseCurrency),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 36,
+                              SizedBox(
+                                width: double.infinity,
+                                child: AdaptiveAmountText(
+                                  formatCents(state.readyToAssign, state.baseCurrency, locale: locale),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 36,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  minScale: 0.9,
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -142,7 +150,10 @@ class MyBudgetScreen extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                            ...state.items.map((item) => _CategoryBudgetItemWidget(item: item, baseCurrency: state.baseCurrency)),
+                            ...state.items.map((item) => _CategoryBudgetItemWidget(
+                              item: item,
+                              baseCurrency: state.baseCurrency,
+                            )),
                           ],
                         ),
                       ),
@@ -170,27 +181,13 @@ class MyBudgetScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),
         ),
       ],
     );
-  }
-
-  String _formatCurrency(int amountInCents, String currencyCode) {
-    String symbol = '\$';
-    if (currencyCode == 'HTG') symbol = 'G';
-    if (currencyCode == 'EUR') symbol = '€';
-    
-    final isNegative = amountInCents < 0;
-    final absAmount = amountInCents.abs() / 100;
-    final formatted = absAmount.toStringAsFixed(2);
-    
-    if (currencyCode == 'HTG') return '${isNegative ? '-' : ''}$formatted $symbol';
-    if (isNegative) return '-$symbol$formatted';
-    return '$symbol$formatted';
   }
 
   Widget _buildAddCategoryButton(BuildContext context) {
@@ -236,28 +233,16 @@ class _CategoryBudgetItemWidget extends StatelessWidget {
     required this.baseCurrency,
   });
 
-  String _formatCurrency(int amountInCents) {
-    String symbol = '\$';
-    if (baseCurrency == 'HTG') symbol = 'G';
-    if (baseCurrency == 'EUR') symbol = '€';
-    
-    final isNegative = amountInCents < 0;
-    final absAmount = amountInCents.abs() / 100;
-    final formatted = absAmount.toStringAsFixed(2);
-    
-    if (baseCurrency == 'HTG') return '${isNegative ? '-' : ''}$formatted $symbol';
-    if (isNegative) return '-$symbol$formatted';
-    return '$symbol$formatted';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
     final category = item.category;
     final available = item.availableBalance;
     final isNegative = available < 0;
-    
+
     final amountColor = isNegative ? Colors.red.shade400 : AppColors.textDark;
-    final amountStr = _formatCurrency(available);
+    final amountStr = formatCents(available, baseCurrency, locale: locale);
 
     return InkWell(
       onTap: () => showModalBottomSheet(
@@ -302,7 +287,7 @@ class _CategoryBudgetItemWidget extends StatelessWidget {
                   if (category.monthlyTarget != null && category.monthlyTarget! > 0) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Goal: ${_formatCurrency(category.monthlyTarget!)}',
+                      'Goal: ${formatCents(category.monthlyTarget!, baseCurrency, locale: locale)}',
                       style: const TextStyle(
                         color: AppColors.textLight,
                         fontSize: 12,
@@ -317,12 +302,16 @@ class _CategoryBudgetItemWidget extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  amountStr,
-                  style: TextStyle(
-                    color: amountColor,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
+                SizedBox(
+                  width: 130,
+                  child: AdaptiveAmountText(
+                    amountStr,
+                    style: TextStyle(
+                      color: amountColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                    minScale: 0.86,
                   ),
                 ),
                 Text(

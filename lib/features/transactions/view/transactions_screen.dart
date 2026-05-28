@@ -14,6 +14,8 @@ import 'package:spendly/features/ocr/view/receipt_viewer_screen.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/core/models/account.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/shared/widgets/adaptive_text.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   final String? initialAccountId;
@@ -55,10 +57,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
     final userId = ref.read(authStateProvider).value?.uid ?? '';
     final liveTransactions = ref.read(transactionsStreamProvider(userId)).value ?? [];
-    
+
     // Use the date of the last transaction we have (either from history or live)
-    final lastTx = _historicalTransactions.isNotEmpty 
-        ? _historicalTransactions.last 
+    final lastTx = _historicalTransactions.isNotEmpty
+        ? _historicalTransactions.last
         : (liveTransactions.isNotEmpty ? liveTransactions.last : null);
 
     if (lastTx == null) return;
@@ -130,7 +132,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               final accounts = accountsAsync.value ?? [];
               final Map<String, Category> catMap = {for (final c in categories) c.id: c};
               final Map<String, Account> accMap = {for (final a in accounts) a.id: a};
-              
+
               // Merge live transactions with historical ones
               final allTransactions = [
                 ...liveTransactions,
@@ -183,11 +185,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         controller: _searchController,
                         onChanged: (val) => setState(() {}),
                         decoration: InputDecoration(
-                          hintText: 'Search merchant, category...',
+                          hintText: l10n.transactionsSearchHint,
                           hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
                           prefixIcon: const Icon(Icons.search, color: AppColors.primary),
-                          suffixIcon: _searchController.text.isNotEmpty 
-                            ? IconButton(icon: const Icon(Icons.clear, size: 18), onPressed: () => setState(() => _searchController.clear())) 
+                          suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(icon: const Icon(Icons.clear, size: 18), onPressed: () => setState(() => _searchController.clear()))
                             : null,
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -203,16 +205,16 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       children: [
-                        _buildFilterChip(_selectedType, 'All', (val) => setState(() => _selectedType = val)),
+                        _buildFilterChip(_selectedType, 'All', (val) => setState(() => _selectedType = val), labelOverride: l10n.filterAll),
                         const SizedBox(width: 8),
-                        _buildFilterChip(_selectedType, 'Expense', (val) => setState(() => _selectedType = val)),
+                        _buildFilterChip(_selectedType, 'Expense', (val) => setState(() => _selectedType = val), labelOverride: l10n.filterExpense),
                         const SizedBox(width: 8),
-                        _buildFilterChip(_selectedType, 'Income', (val) => setState(() => _selectedType = val)),
+                        _buildFilterChip(_selectedType, 'Income', (val) => setState(() => _selectedType = val), labelOverride: l10n.filterIncome),
                         const SizedBox(width: 16),
                         Container(width: 1, height: 24, color: AppColors.primaryLight, margin: const EdgeInsets.symmetric(vertical: 12)),
                         const SizedBox(width: 16),
                         FilterChip(
-                          label: const Text('WITH RECEIPT'),
+                          label: Text(l10n.filterWithReceipt),
                           labelStyle: TextStyle(
                             color: _showOnlyReceipts ? Colors.white : AppColors.primary,
                             fontSize: 10,
@@ -243,7 +245,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             const SizedBox(height: 16),
                             Text(
                               _searchController.text.isNotEmpty || _showOnlyReceipts || _selectedType != 'All' || _selectedAccountId != 'All'
-                                ? 'No results found'
+                                ? l10n.noResultsFound
                                 : l10n.noTransactions,
                               style: const TextStyle(
                                 color: AppColors.textLight,
@@ -254,7 +256,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             const SizedBox(height: 8),
                             Text(
                               _searchController.text.isNotEmpty || _showOnlyReceipts || _selectedType != 'All' || _selectedAccountId != 'All'
-                                ? 'Try adjusting your filters'
+                                ? l10n.tryAdjustingFilters
                                 : l10n.tapToAdd,
                               style: const TextStyle(color: AppColors.textLight),
                             ),
@@ -305,14 +307,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }
 
   Widget _buildFilterChip(
-    String currentValue, 
-    String value, 
-    ValueChanged<String> onSelected, 
+    String currentValue,
+    String value,
+    ValueChanged<String> onSelected,
     {String? labelOverride, Color? colorOverride}
   ) {
     final isSelected = currentValue == value;
     final themeColor = colorOverride ?? AppColors.primary;
-    
+
     return ChoiceChip(
       label: Text(labelOverride ?? value.toUpperCase()),
       labelStyle: TextStyle(
@@ -336,11 +338,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   Widget _buildAccountPicker(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final accounts = ref.watch(accountsStreamProvider(userId)).value ?? [];
-    
+
     final selectedAccount = accounts.where((a) => a.id == _selectedAccountId).firstOrNull;
     final label = _selectedAccountId == 'All' ? 'ALL ACCOUNTS' : selectedAccount?.name.toUpperCase() ?? 'SELECT ACCOUNT';
-    final accountColor = selectedAccount?.color != null 
-        ? Color(int.parse('FF${selectedAccount!.color!.substring(1)}', radix: 16)) 
+    final accountColor = selectedAccount?.color != null
+        ? Color(int.parse('FF${selectedAccount!.color!.substring(1)}', radix: 16))
         : Colors.white;
 
     return GestureDetector(
@@ -412,9 +414,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             Text(
               label,
               style: const TextStyle(
-                color: Colors.white, 
-                fontWeight: FontWeight.bold, 
-                fontSize: 12, 
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
                 letterSpacing: 1.1
               ),
             ),
@@ -460,16 +462,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final isExpense = transaction.type.toLowerCase() == 'expense';
     final isIncome = transaction.type.toLowerCase() == 'income';
     final categoryName = catMap[transaction.categoryId]?.name ?? transaction.type.toUpperCase();
-    final sign = isExpense ? '-' : isIncome ? '+' : '';
-    final absAmount = (transaction.amount / 100).toStringAsFixed(2);
-    String amountStr;
-    if (transaction.currency == 'HTG') {
-      amountStr = '$sign$absAmount G';
-    } else if (transaction.currency == 'EUR') {
-      amountStr = '$sign€$absAmount';
-    } else {
-      amountStr = '$sign\$$absAmount';
-    }
+    final amountStr = formatCents(transaction.amount, transaction.currency, showSign: true, locale: AppLocalizations.of(context)!.localeName);
 
     final l10n = AppLocalizations.of(context)!;
     final day = transaction.date.day.toString().padLeft(2, '0');
@@ -486,134 +479,138 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     return InkWell(
       onTap: () => _openEditScreen(context, transaction),
       child: Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.primaryLight, width: 1)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: iconBg,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isExpense ? Icons.arrow_upward : isIncome ? Icons.arrow_downward : Icons.swap_horiz,
-              color: iconColor,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.note?.isNotEmpty == true ? transaction.note! : categoryName,
-                  style: const TextStyle(
-                    color: AppColors.textDark,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  dateStr,
-                  style: const TextStyle(
-                    color: AppColors.textLight,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 10,
-                    letterSpacing: 1.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(color: accountColor, shape: BoxShape.circle),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '${accountName.toUpperCase()} • ${categoryName.toUpperCase()}',
-                        style: TextStyle(
-                          color: accountColor.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 8,
-                          letterSpacing: 0.8,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                amountStr,
-                style: TextStyle(
-                  color: amountColor,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                ),
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.primaryLight, width: 1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconBg,
+                shape: BoxShape.circle,
               ),
-              if (transaction.receiptUrl != null) ...[
-                const SizedBox(height: 4),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ReceiptViewerScreen(
-                          imageUrl: transaction.receiptUrl!,
-                          merchantName: transaction.note ?? categoryName,
-                          receiptId: transaction.receiptId,
+              child: Icon(
+                isExpense ? Icons.arrow_upward : isIncome ? Icons.arrow_downward : Icons.swap_horiz,
+                color: iconColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transaction.note?.isNotEmpty == true ? transaction.note! : categoryName,
+                    style: const TextStyle(
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    dateStr,
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 10,
+                      letterSpacing: 1.0,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(color: accountColor, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${accountName.toUpperCase()} • ${categoryName.toUpperCase()}',
+                          style: TextStyle(
+                            color: accountColor.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 8,
+                            letterSpacing: 0.8,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: 92,
+                  child: AdaptiveAmountText(
+                    amountStr,
+                    style: TextStyle(
+                      color: amountColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.receipt_long, size: 10, color: AppColors.primary),
-                        SizedBox(width: 2),
-                        Text(
-                          'RECEIPT',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 8,
-                            fontWeight: FontWeight.w900,
+                  ),
+                ),
+                if (transaction.receiptUrl != null) ...[
+                  const SizedBox(height: 4),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ReceiptViewerScreen(
+                            imageUrl: transaction.receiptUrl!,
+                            merchantName: transaction.note ?? categoryName,
+                            receiptId: transaction.receiptId,
                           ),
                         ),
-                      ],
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.receipt_long, size: 10, color: AppColors.primary),
+                          SizedBox(width: 2),
+                          Text(
+                            'RECEIPT',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
-          ),
-          const SizedBox(width: 8),
-          const Icon(Icons.chevron_right, color: AppColors.textLight, size: 20),
-        ],
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right, color: AppColors.textLight, size: 20),
+          ],
+        ),
       ),
-    ));
+    );
   }
 }

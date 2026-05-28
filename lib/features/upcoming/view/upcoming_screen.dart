@@ -10,6 +10,8 @@ import 'package:spendly/features/upcoming/providers/upcoming_provider.dart';
 import 'package:spendly/features/upcoming/view/add_upcoming_screen.dart';
 import 'package:spendly/features/upcoming/view/bill_plan_detail_screen.dart';
 import 'package:spendly/features/upcoming/view/mark_paid_sheet.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 // ─────────────────────────────────────────────────────────────
 // Helpers: colour + label resolved from a single BillStatus
@@ -103,7 +105,6 @@ class UpcomingScreen extends ConsumerWidget {
     String userId,
     List<Bill> bills,
   ) {
-    // We always call _buildWithPlans which handles both cases (empty/non-empty)
     return _buildWithPlans(context, ref, userId, bills);
   }
 
@@ -117,7 +118,6 @@ class UpcomingScreen extends ConsumerWidget {
 
     return plansAsync.when(
       data: (plans) {
-        // Standalone bills have no templateId
         final standaloneBills =
             bills.where((b) => b.templateId == null).toList();
 
@@ -125,7 +125,6 @@ class UpcomingScreen extends ConsumerWidget {
           return _buildEmptyState(context);
         }
 
-        // Group standalone bills by computedStatus
         final Map<BillStatus, List<Bill>> grouped = {};
         for (final bill in standaloneBills) {
           grouped.putIfAbsent(bill.computedStatus, () => []).add(bill);
@@ -136,7 +135,6 @@ class UpcomingScreen extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Plans section ───────────────────────────────────────
             if (plans.isNotEmpty) ...[
               _buildSectionHeader(null,
                   label: 'PAYMENT PLANS',
@@ -147,8 +145,6 @@ class UpcomingScreen extends ConsumerWidget {
                   _PlanCard(plan: p, bills: bills, userId: userId)),
               const SizedBox(height: 28),
             ],
-
-            // ── Standalone bills ─────────────────────────────────────
             for (final status in orderedStatuses) ...[
               _buildSectionHeader(status),
               const SizedBox(height: 12),
@@ -271,7 +267,9 @@ class _BillCard extends ConsumerWidget {
     final status = bill.computedStatus;
     final statusColor = status.color;
 
-    final daysLabel = _daysLabel(bill, status);
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
+    final daysLabel = _daysLabel(bill, status, locale);
     final canPay = status != BillStatus.paid && status != BillStatus.cancelled;
 
     return Padding(
@@ -285,7 +283,6 @@ class _BillCard extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                // Status bar
                 Container(
                   width: 4,
                   height: 56,
@@ -295,13 +292,10 @@ class _BillCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-
-                // Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title + amount
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -320,7 +314,7 @@ class _BillCard extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '\$${(bill.amount / 100).toStringAsFixed(2)}',
+                                formatCents(bill.amount, bill.currency, locale: locale),
                                 style: TextStyle(
                                   color: status == BillStatus.paid
                                       ? AppColors.income
@@ -329,10 +323,9 @@ class _BillCard extends ConsumerWidget {
                                   fontSize: 16,
                                 ),
                               ),
-                              // Expected vs actual delta when partially paid
                               if (status == BillStatus.partiallyPaid)
                                 Text(
-                                  'paid \$${(bill.paidAmount / 100).toStringAsFixed(2)}',
+                                  'paid ${formatCents(bill.paidAmount, bill.currency, locale: locale)}',
                                   style: const TextStyle(
                                     color: AppColors.textLight,
                                     fontSize: 10,
@@ -344,8 +337,6 @@ class _BillCard extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 6),
-
-                      // Status label + linked badge
                       Row(
                         children: [
                           Text(
@@ -377,8 +368,6 @@ class _BillCard extends ConsumerWidget {
                           ],
                         ],
                       ),
-
-                      // Partial payment progress bar
                       if (status == BillStatus.partiallyPaid) ...[
                         const SizedBox(height: 8),
                         ClipRRect(
@@ -394,8 +383,6 @@ class _BillCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-
-                // Pay button
                 if (canPay) ...[
                   const SizedBox(width: 12),
                   _PayButton(bill: bill, userId: userId),
@@ -408,7 +395,7 @@ class _BillCard extends ConsumerWidget {
     );
   }
 
-  String _daysLabel(Bill bill, BillStatus status) {
+  String _daysLabel(Bill bill, BillStatus status, String locale) {
     final today = DateTime.now();
     final todayOnly = DateTime(today.year, today.month, today.day);
     final daysRemaining = bill.dueDate.difference(todayOnly).inDays;
@@ -421,7 +408,7 @@ class _BillCard extends ConsumerWidget {
       BillStatus.dueSoon =>
         daysRemaining == 0 ? 'DUE TODAY' : 'DUE IN $daysRemaining DAY${daysRemaining == 1 ? '' : 'S'}',
       BillStatus.partiallyPaid =>
-        'REMAINING \$${(bill.remainingAmount / 100).toStringAsFixed(2)}',
+        'REMAINING ${formatCents(bill.remainingAmount, bill.currency, locale: locale)}',
       BillStatus.upcoming =>
         'DUE ${bill.dueDate.day}/${bill.dueDate.month}/${bill.dueDate.year}',
     };
@@ -492,6 +479,9 @@ class _BillDetailSheet extends ConsumerWidget {
     final repo = ref.read(upcomingRepositoryProvider);
     final status = bill.computedStatus;
 
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       decoration: BoxDecoration(
@@ -515,8 +505,6 @@ class _BillDetailSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Status chip
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
@@ -541,7 +529,6 @@ class _BillDetailSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-
             Text(
               bill.title,
               style: const TextStyle(
@@ -551,13 +538,11 @@ class _BillDetailSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 6),
-
-            // Expected vs actual amounts
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${(bill.amount / 100).toStringAsFixed(2)}',
+                  formatCents(bill.amount, bill.currency, locale: locale),
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w900,
@@ -569,7 +554,7 @@ class _BillDetailSheet extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Text(
-                      '(\$${(bill.paidAmount / 100).toStringAsFixed(2)} paid)',
+                      '(${formatCents(bill.paidAmount, bill.currency, locale: locale)} paid)',
                       style: const TextStyle(
                         color: AppColors.textLight,
                         fontSize: 13,
@@ -580,13 +565,12 @@ class _BillDetailSheet extends ConsumerWidget {
                 ],
               ],
             ),
-
             const SizedBox(height: 20),
             _detailRow(Icons.calendar_today_outlined, 'Due Date',
                 '${bill.dueDate.day}/${bill.dueDate.month}/${bill.dueDate.year}'),
             if (bill.remainingAmount > 0 && !bill.isPaid)
               _detailRow(Icons.payments_outlined, 'Remaining',
-                  '\$${(bill.remainingAmount / 100).toStringAsFixed(2)}'),
+                  formatCents(bill.remainingAmount, bill.currency, locale: locale)),
             if (bill.notes != null)
               _detailRow(Icons.notes_outlined, 'Notes', bill.notes!),
             if (bill.linkedTransactionId != null)
@@ -595,10 +579,7 @@ class _BillDetailSheet extends ConsumerWidget {
             if (bill.receiptId != null)
               _detailRow(
                   Icons.receipt_outlined, 'Receipt', bill.receiptId!),
-
             const SizedBox(height: 24),
-
-            // Action row
             Row(
               children: [
                 Expanded(
@@ -636,8 +617,6 @@ class _BillDetailSheet extends ConsumerWidget {
                 ),
               ],
             ),
-
-            // Cancel button (only for non-cancelled bills)
             if (status != BillStatus.cancelled && status != BillStatus.paid) ...[
               const SizedBox(height: 12),
               SizedBox(
@@ -737,6 +716,9 @@ class _PlanCard extends StatelessWidget {
     final hasTotal = totalObligation != null && totalObligation > 0;
     final progress = hasTotal ? (totalPaid / totalObligation).clamp(0.0, 1.0) : 0.0;
 
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: MainCard(
@@ -779,13 +761,11 @@ class _PlanCard extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 16),
-                
-                // Progress
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '\$${(totalPaid / 100).toStringAsFixed(0)} paid',
+                      '${formatCents(totalPaid, plan.currency, decimalDigits: 0, locale: locale)} paid',
                       style: const TextStyle(
                         color: AppColors.income,
                         fontWeight: FontWeight.w900,
@@ -794,7 +774,7 @@ class _PlanCard extends StatelessWidget {
                     ),
                     if (hasTotal)
                       Text(
-                        'of \$${(totalObligation / 100).toStringAsFixed(0)}',
+                        'of ${formatCents(totalObligation, plan.currency, decimalDigits: 0, locale: locale)}',
                         style: const TextStyle(
                           color: AppColors.textLight,
                           fontWeight: FontWeight.bold,
@@ -823,4 +803,3 @@ class _PlanCard extends StatelessWidget {
     );
   }
 }
-

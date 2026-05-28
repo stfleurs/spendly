@@ -13,6 +13,9 @@ import 'package:spendly/core/providers/date_provider.dart';
 import 'package:spendly/core/providers/app_user_provider.dart';
 import 'package:spendly/features/budget/view/allocation_bottom_sheet.dart';
 import 'package:intl/intl.dart';
+import 'package:spendly/shared/widgets/adaptive_text.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -30,6 +33,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final transactionsAsync = ref.watch(transactionsStreamProvider(userId));
     final appUserAsync = ref.watch(appUserStreamProvider(userId));
 
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
+
     return CustomScrollView(
       slivers: [
         const SliverAppHeader(title: 'Household Overview'),
@@ -44,7 +50,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   data: (user) {
                     final amount = user?.readyToAssign ?? 0;
                     if (amount == 0) return const SizedBox.shrink();
-                    
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
                       child: Container(
@@ -82,14 +88,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       letterSpacing: 1.2,
                                     ),
                                   ),
-                                  Text(
-                                    user?.baseCurrency == 'HTG' 
-                                        ? '${(amount / 100).toStringAsFixed(2)} G' 
-                                        : '\$${(amount / 100).toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 24,
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: AdaptiveAmountText(
+                                      formatCents(amount, user?.baseCurrency ?? 'USD', locale: locale),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 24,
+                                      ),
+                                      textAlign: TextAlign.start,
+                                      minScale: 0.9,
                                     ),
                                   ),
                                 ],
@@ -126,7 +135,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   data: (summary) {
                     final spent = (summary?.expenses ?? 0).abs();
                     final income = summary?.income ?? 0;
-                    
+
                     return MainCard(
                       padding: const EdgeInsets.all(24),
                       child: Column(
@@ -145,12 +154,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(
-                                _formatCurrency(spent, appUserAsync.value?.baseCurrency ?? 'USD', decimal: 0),
-                                style: const TextStyle(
-                                  color: AppColors.textDark,
-                                  fontSize: 42,
-                                  fontWeight: FontWeight.w900,
+                              Expanded(
+                                child: AdaptiveAmountText(
+                                  formatCents(spent, appUserAsync.value?.baseCurrency ?? 'USD', decimalDigits: 0, locale: locale),
+                                  style: const TextStyle(
+                                    color: AppColors.textDark,
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                  minScale: 0.92,
                                 ),
                               ),
                               const Padding(
@@ -169,8 +182,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildMiniStat('INCOME', _formatCurrency(income, appUserAsync.value?.baseCurrency ?? 'USD', decimal: 0), AppColors.income),
-                              _buildMiniStat('SAVINGS EST.', _formatCurrency(income - spent, appUserAsync.value?.baseCurrency ?? 'USD', decimal: 0), AppColors.primary),
+                              _buildMiniStat('INCOME', formatCents(income, appUserAsync.value?.baseCurrency ?? 'USD', decimalDigits: 0, locale: locale), AppColors.income),
+                              _buildMiniStat('SAVINGS EST.', formatCents(income - spent, appUserAsync.value?.baseCurrency ?? 'USD', decimalDigits: 0, locale: locale), AppColors.primary),
                             ],
                           ),
                         ],
@@ -197,7 +210,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Spending Breakdown Chart
                 MainCard(
                   padding: const EdgeInsets.all(24),
@@ -298,12 +311,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               dateStr,
                               style: const TextStyle(color: AppColors.textLight, fontSize: 12),
                             ),
-                            trailing: Text(
-                              _formatCurrency(tx.amount, tx.currency, showSign: true),
-                              style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                            trailing: SizedBox(
+                              width: 120,
+                              child: AdaptiveAmountText(
+                                formatCents(tx.amount, tx.currency, showSign: true, locale: locale),
+                                style: TextStyle(
+                                  color: color,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
                           );
@@ -340,9 +356,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text('Total Assets & Balances', style: TextStyle(color: AppColors.textDark)),
-                                Text(
-                                  _formatCurrency(totalNetWorth, appUserAsync.value?.baseCurrency ?? 'USD'),
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                                SizedBox(
+                                  width: 140,
+                                  child: AdaptiveAmountText(
+                                    formatCents(totalNetWorth, appUserAsync.value?.baseCurrency ?? 'USD', locale: locale),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                                    minScale: 0.9,
+                                  ),
                                 ),
                               ],
                             );
@@ -352,7 +372,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 80), // Padding for FAB
               ],
             ),
@@ -394,6 +414,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final overdueCount = stats['overdueCount'] as int;
     final dueSoonCount = stats['dueSoonCount'] as int;
     final baseCurrency = ref.watch(appUserStreamProvider(userId)).value?.baseCurrency ?? 'USD';
+    final locale = AppLocalizations.of(context)!.localeName;
 
     final hasOverdue = overdueCount > 0;
     final Color headerColor = hasOverdue ? AppColors.expense : AppColors.primary;
@@ -442,7 +463,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 children: [
                   _upcomingStat(
                     label: 'TOTAL',
-                    value: _formatCurrency(upcomingTotal, baseCurrency, decimal: 0),
+                    value: formatCents(upcomingTotal, baseCurrency, decimalDigits: 0, locale: locale),
                     color: AppColors.primary,
                   ),
                   const SizedBox(width: 1),
@@ -466,14 +487,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Expanded(
       child: Column(
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w900,
-              fontSize: 15,
+          SizedBox(
+            width: double.infinity,
+            child: AdaptiveAmountText(
+              value,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+              ),
+              textAlign: TextAlign.center,
+              minScale: 0.9,
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
@@ -566,20 +591,5 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         sections: sections,
       ),
     );
-  }
-
-  String _formatCurrency(int amountInCents, String currencyCode, {bool showSign = false, int decimal = 2}) {
-    String symbol = '\$';
-    if (currencyCode == 'HTG') symbol = 'G';
-    if (currencyCode == 'EUR') symbol = '€';
-    
-    final isNegative = amountInCents < 0;
-    final absAmount = amountInCents.abs() / 100;
-    final formatted = absAmount.toStringAsFixed(decimal);
-    
-    final sign = isNegative ? '-' : (showSign ? '+' : '');
-    
-    if (currencyCode == 'HTG') return '$sign$formatted $symbol';
-    return '$sign$symbol$formatted';
   }
 }

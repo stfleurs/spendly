@@ -12,6 +12,8 @@ import 'package:spendly/core/providers/app_user_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/exchange_rate_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class AllocationBottomSheet extends ConsumerStatefulWidget {
   final Category? initialTarget;
@@ -194,7 +196,7 @@ class _AllocationBottomSheetState extends ConsumerState<AllocationBottomSheet> {
                       ),
                       const Spacer(),
                       Text(
-                        user?.baseCurrency == 'HTG' ? '${(rta / 100).toStringAsFixed(2)} G' : '\$${(rta / 100).toStringAsFixed(2)}',
+                        formatCents(rta, user?.baseCurrency ?? 'USD', locale: AppLocalizations.of(context)!.localeName),
                         style: const TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w900,

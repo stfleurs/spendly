@@ -15,6 +15,8 @@ import 'package:spendly/features/transactions/repository/transaction_repository.
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:uuid/uuid.dart';
+import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class BillPlanDetailScreen extends ConsumerWidget {
   final BillTemplate plan;
@@ -57,6 +59,9 @@ class BillPlanDetailScreen extends ConsumerWidget {
     List<Bill> linked,
     List<AppTransaction> transactions,
   ) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
+
     final totalPaid = linked.fold(0, (sum, b) => sum + b.paidAmount);
     final totalObligation = plan.totalAmount;
     final hasTotal = totalObligation != null && totalObligation > 0;
@@ -68,19 +73,12 @@ class BillPlanDetailScreen extends ConsumerWidget {
         .where((b) => !b.isPaid && b.computedStatus != BillStatus.cancelled)
         .toList();
 
-    String currencySymbol = '\$';
-    if (plan.currency == 'HTG') currencySymbol = 'G';
-    if (plan.currency == 'EUR') currencySymbol = '€';
-
-    // ── Forecast Logic ──────────────────────────────────────────────────────
     String? forecastText;
     if (hasTotal && remaining! > 0) {
       final installment = plan.defaultAmount > 0 ? plan.defaultAmount : 1;
       final remainingPayments = (remaining / installment).ceil();
-      
-      // Guess frequency (default to monthly if not sure)
-      final monthsToAdd = plan.frequency.toLowerCase() == 'yearly' 
-          ? remainingPayments * 12 
+      final monthsToAdd = plan.frequency.toLowerCase() == 'yearly'
+          ? remainingPayments * 12
           : plan.frequency.toLowerCase() == 'weekly'
               ? (remainingPayments / 4).ceil()
               : remainingPayments;
@@ -148,14 +146,12 @@ class BillPlanDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Progress Card ──────────────────────────────────────────
                 MainCard(
                   padding: const EdgeInsets.all(24),
                   child: Column(
@@ -166,7 +162,7 @@ class BillPlanDetailScreen extends ConsumerWidget {
                             Expanded(
                               child: _statCol(
                                 label: 'TOTAL PAID',
-                                value: '$currencySymbol ${(totalPaid / 100).toStringAsFixed(2)}',
+                                value: formatCents(totalPaid, plan.currency, locale: locale),
                                 color: AppColors.income,
                                 align: CrossAxisAlignment.start,
                               ),
@@ -175,7 +171,7 @@ class BillPlanDetailScreen extends ConsumerWidget {
                             Expanded(
                               child: _statCol(
                                 label: 'OBLIGATION',
-                                value: '$currencySymbol ${(totalObligation / 100).toStringAsFixed(2)}',
+                                value: formatCents(totalObligation, plan.currency, locale: locale),
                                 color: AppColors.textDark,
                                 align: CrossAxisAlignment.end,
                               ),
@@ -188,7 +184,7 @@ class BillPlanDetailScreen extends ConsumerWidget {
                             Expanded(
                               child: _statCol(
                                 label: 'REMAINING',
-                                value: '$currencySymbol ${(remaining! / 100).toStringAsFixed(2)}',
+                                value: formatCents(remaining!, plan.currency, locale: locale),
                                 color: remaining > 0 ? AppColors.expense : AppColors.income,
                                 align: CrossAxisAlignment.start,
                               ),
@@ -200,7 +196,7 @@ class BillPlanDetailScreen extends ConsumerWidget {
                       ] else ...[
                         _statCol(
                           label: 'TOTAL PAID',
-                          value: '$currencySymbol ${(totalPaid / 100).toStringAsFixed(2)}',
+                          value: formatCents(totalPaid, plan.currency, locale: locale),
                           color: AppColors.income,
                           align: CrossAxisAlignment.center,
                         ),
@@ -246,10 +242,7 @@ class BillPlanDetailScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 32),
-
-                // ── Action Buttons ─────────────────────────────────────────
                 Row(
                   children: [
                     Expanded(
@@ -277,24 +270,18 @@ class BillPlanDetailScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 40),
-
-                // ── Upcoming ───────────────────────────────────────────────
                 if (upcoming.isNotEmpty) ...[
                   _sectionHeader('UPCOMING', AppColors.primary, Icons.upcoming_outlined),
                   const SizedBox(height: 12),
                   ...upcoming.map((b) => _InstallmentRow(bill: b, userId: userId)),
                   const SizedBox(height: 32),
                 ],
-
-                // ── History ────────────────────────────────────────────────
                 if (history.isNotEmpty) ...[
                   _sectionHeader('PAYMENT HISTORY', AppColors.income, Icons.history_outlined),
                   const SizedBox(height: 12),
                   ...history.map((tx) => _TransactionRow(transaction: tx)),
                 ],
-
                 if (linked.isEmpty) _buildEmpty(),
               ],
             ),
@@ -305,8 +292,8 @@ class BillPlanDetailScreen extends ConsumerWidget {
   }
 
   Widget _statCol({
-    required String label, 
-    required String value, 
+    required String label,
+    required String value,
     required Color color,
     CrossAxisAlignment align = CrossAxisAlignment.center,
   }) {
@@ -402,10 +389,8 @@ class _InstallmentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = bill.computedStatus;
     final statusColor = status.color;
-
-    String currencySymbol = '\$';
-    if (bill.currency == 'HTG') currencySymbol = 'G';
-    if (bill.currency == 'EUR') currencySymbol = '€';
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -422,7 +407,6 @@ class _InstallmentRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
-                // Date column
                 SizedBox(
                   width: 45,
                   child: Column(
@@ -439,8 +423,6 @@ class _InstallmentRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                
-                // Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -465,15 +447,12 @@ class _InstallmentRow extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 12),
-
-                // Amount
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '$currencySymbol ${(bill.amount / 100).toStringAsFixed(2)}',
+                      formatCents(bill.amount, bill.currency, locale: locale),
                       style: TextStyle(
                         color: bill.isPaid ? AppColors.income : AppColors.textDark,
                         fontWeight: FontWeight.w900,
@@ -483,7 +462,6 @@ class _InstallmentRow extends StatelessWidget {
                     if (!bill.isPaid && status != BillStatus.cancelled)
                       GestureDetector(
                         onTap: () {
-                          // Prevent triggering the row tap
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
@@ -522,9 +500,8 @@ class _TransactionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String currencySymbol = '\$';
-    if (transaction.currency == 'HTG') currencySymbol = 'G';
-    if (transaction.currency == 'EUR') currencySymbol = '€';
+    final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -542,84 +519,78 @@ class _TransactionRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
-            // Date column
-            SizedBox(
-              width: 45,
-              child: Column(
-                children: [
-                  Text(
-                    '${transaction.date.day}',
-                    style: const TextStyle(color: AppColors.income, fontWeight: FontWeight.w900, fontSize: 18),
-                  ),
-                  Text(
-                    _monthAbbr(transaction.date.month),
-                    style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    transaction.note ?? 'Payment',
-                    style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
+                SizedBox(
+                  width: 45,
+                  child: Column(
                     children: [
-                      const Icon(Icons.account_balance_wallet_outlined, size: 10, color: AppColors.textLight),
-                      const SizedBox(width: 4),
-                      const Flexible(
-                        child: Text(
-                          'Account Payment',
-                          style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 10),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Text(
+                        '${transaction.date.day}',
+                        style: const TextStyle(color: AppColors.income, fontWeight: FontWeight.w900, fontSize: 18),
                       ),
-                      if (transaction.receiptUrl != null) ...[
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => _showProof(context, transaction.receiptUrl!),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.image_outlined, size: 12, color: AppColors.primary),
-                              const SizedBox(width: 4),
-                              const Text('PROOF', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900, fontSize: 8)),
-                            ],
-                          ),
-                        ),
-                      ],
+                      Text(
+                        _monthAbbr(transaction.date.month),
+                        style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.note ?? 'Payment',
+                        style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.account_balance_wallet_outlined, size: 10, color: AppColors.textLight),
+                          const SizedBox(width: 4),
+                          const Flexible(
+                            child: Text(
+                              'Account Payment',
+                              style: TextStyle(color: AppColors.textLight, fontWeight: FontWeight.bold, fontSize: 10),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (transaction.receiptUrl != null) ...[
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _showProof(context, transaction.receiptUrl!),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.image_outlined, size: 12, color: AppColors.primary),
+                                  const SizedBox(width: 4),
+                                  const Text('PROOF', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900, fontSize: 8)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  formatCents(transaction.amount, transaction.currency, locale: locale),
+                  style: const TextStyle(
+                    color: AppColors.income,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(width: 12),
-
-            // Amount
-            Text(
-              '$currencySymbol ${(transaction.amount / 100).toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: AppColors.income,
-                fontWeight: FontWeight.w900,
-                fontSize: 15,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  ),
-);
-}
+    );
+  }
 
   void _showProof(BuildContext context, String url) {
     showDialog(

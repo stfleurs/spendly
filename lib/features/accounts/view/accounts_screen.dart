@@ -11,6 +11,8 @@ import 'package:spendly/core/providers/balance_provider.dart';
 import 'package:spendly/features/transactions/view/transactions_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 import 'package:spendly/features/import/view/import_screen.dart';
+import 'package:spendly/shared/widgets/adaptive_text.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
@@ -18,6 +20,7 @@ class AccountsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = l10n.localeName;
     final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final accountsAsync = ref.watch(accountsStreamProvider(userId));
 
@@ -28,7 +31,7 @@ class AccountsScreen extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 24),
-              
+
               // Net Worth Card
               accountsAsync.when(
                 data: (accounts) {
@@ -49,12 +52,17 @@ class AccountsScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          '\$${(totalCents / 100).toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w900,
+                        SizedBox(
+                          width: double.infinity,
+                          child: AdaptiveAmountText(
+                            formatCents(totalCents, 'USD', locale: locale),
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 40,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            textAlign: TextAlign.center,
+                            minScale: 0.9,
                           ),
                         ),
                       ],
@@ -64,9 +72,9 @@ class AccountsScreen extends ConsumerWidget {
                 loading: () => const MainCard(child: Center(child: CircularProgressIndicator())),
                 error: (e, s) => MainCard(child: Center(child: Text('Error: $e'))),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Accounts List Card
               accountsAsync.when(
                 data: (accounts) {
@@ -80,7 +88,7 @@ class AccountsScreen extends ConsumerWidget {
                             child: Text('No accounts yet. Tap the button below to add one!'),
                           ),
                         ...accounts.map((acc) => _buildAccountItem(context, ref, userId, acc)),
-                        
+
                         // Create Account Button
                         InkWell(
                           onTap: () => Navigator.of(context).push(
@@ -105,9 +113,9 @@ class AccountsScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        
+
                         const Divider(height: 1),
-                        
+
                         // Import Transactions Button
                         InkWell(
                           onTap: () => Navigator.of(context).push(
@@ -139,7 +147,7 @@ class AccountsScreen extends ConsumerWidget {
                 loading: () => const MainCard(child: Center(child: CircularProgressIndicator())),
                 error: (e, s) => MainCard(child: Center(child: Text('Error: $e'))),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),
@@ -151,7 +159,8 @@ class AccountsScreen extends ConsumerWidget {
   Widget _buildAccountItem(BuildContext context, WidgetRef ref, String userId, Account account) {
     final currentBalance = ref.watch(accountBalanceProvider((userId: userId, accountId: account.id)));
     final l10n = AppLocalizations.of(context)!;
-    
+    final locale = l10n.localeName;
+
     // Parse color from hex string
     Color accountColor = AppColors.primary;
     if (account.color != null && account.color!.startsWith('#')) {
@@ -184,7 +193,7 @@ class AccountsScreen extends ConsumerWidget {
     }
 
     final isNegative = currentBalance < 0;
-    final balanceStr = '${account.currency == 'USD' ? r'$ ' : '${account.currency} '}${(currentBalance / 100).toStringAsFixed(2)}';
+    final balanceStr = formatCents(currentBalance, account.currency, locale: locale);
 
     return InkWell(
       onTap: () => Navigator.of(context).push(
@@ -216,7 +225,7 @@ class AccountsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Name and Type
             Expanded(
               flex: 2,
@@ -247,35 +256,36 @@ class AccountsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // Balance and Credit Info
             Expanded(
               flex: 3,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    balanceStr,
-                    style: TextStyle(
-                      color: isNegative ? AppColors.expense : AppColors.textDark,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
+                  SizedBox(
+                    width: double.infinity,
+                    child: AdaptiveAmountText(
+                      balanceStr,
+                      style: TextStyle(
+                        color: isNegative ? AppColors.expense : AppColors.textDark,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
+                      minScale: 0.88,
                     ),
-                    textAlign: TextAlign.right,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   if (account.type == 'CREDIT CARD') ...[
                     const SizedBox(height: 4),
                     Text(
-                      'LIMIT: ${(account.creditLimit / 100).toStringAsFixed(0)}',
+                      'LIMIT: ${formatCents(account.creditLimit, account.currency, decimalDigits: 0, locale: locale)}',
                       style: const TextStyle(color: AppColors.textLight, fontSize: 9, fontWeight: FontWeight.bold),
                     ),
                     Builder(
                       builder: (context) {
-                        final available = account.creditLimit + currentBalance; 
+                        final available = account.creditLimit + currentBalance;
                         return Text(
-                          'AVAIL: ${(available / 100).toStringAsFixed(0)}',
+                          'AVAIL: ${formatCents(available, account.currency, decimalDigits: 0, locale: locale)}',
                           style: TextStyle(
                             color: available < 0 ? AppColors.expense : AppColors.income,
                             fontSize: 9,
@@ -289,7 +299,7 @@ class AccountsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            
+
             // Edit Button
             IconButton(
               padding: EdgeInsets.zero,

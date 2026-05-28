@@ -13,6 +13,8 @@ import 'package:spendly/core/providers/device_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
+import 'package:spendly/generated/l10n/app_localizations.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class MarkPaidSheet extends ConsumerStatefulWidget {
   final Bill bill;
@@ -57,6 +59,7 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
   Widget build(BuildContext context) {
     final accountsAsync = ref.watch(accountsStreamProvider(widget.userId));
     final remaining = widget.bill.amount - widget.bill.paidAmount;
+    final locale = AppLocalizations.of(context)!.localeName;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -147,7 +150,7 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
               if (widget.bill.paidAmount > 0) ...[
                 const SizedBox(height: 6),
                 Text(
-                  'Remaining: ${widget.bill.currency} ${(remaining / 100).toStringAsFixed(2)} of ${widget.bill.currency} ${(widget.bill.amount / 100).toStringAsFixed(2)}',
+                  'Remaining: ${formatCents(remaining, widget.bill.currency, locale: locale)} of ${formatCents(widget.bill.amount, widget.bill.currency, locale: locale)}',
                   style: const TextStyle(color: AppColors.textLight, fontSize: 11),
                 ),
               ],
@@ -526,7 +529,6 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
       final billAmountCents = amountCents;
 
       // Account amount: what actually leaves the account
-      // If same currency: identical. If cross-currency: bill amount × user-entered rate
       late final int accountAmountCents;
       late final double rate;
       if (isCrossCurrency) {
@@ -580,11 +582,11 @@ class _MarkPaidSheetState extends ConsumerState<MarkPaidSheet> {
         searchTokens: deepSearchTokens,
       );
 
-      // Atomic write: bill progress tracked in bill's currency, account debited in account's currency
+      // Atomic write
       await txRepo.payBill(
         transaction: tx,
         bill: widget.bill,
-        amountCents: billAmountCents, // bill progress in bill's own currency
+        amountCents: billAmountCents,
       );
 
       if (mounted) Navigator.pop(context);
