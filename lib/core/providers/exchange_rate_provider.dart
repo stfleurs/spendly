@@ -9,7 +9,9 @@ final ProviderFamily<double, ({String userId, String from, String to})> exchange
   final userRates = user?.exchangeRates ?? {};
 
   final key = '${arg.from}_${arg.to}';
+  final inverseKey = '${arg.to}_${arg.from}';
   if (userRates.containsKey(key)) return userRates[key]!;
+  if (userRates.containsKey(inverseKey)) return 1 / userRates[inverseKey]!;
 
   // Fallback to hardcoded/mock rates if user hasn't defined a custom one
   final mockRates = {
@@ -22,15 +24,28 @@ final ProviderFamily<double, ({String userId, String from, String to})> exchange
   };
 
   if (mockRates.containsKey(key)) return mockRates[key]!;
+  if (mockRates.containsKey(inverseKey)) return 1 / mockRates[inverseKey]!;
 
   // Fallback: If we don't have a direct pair, try going through USD as a base
-  if (arg.to == 'USD') {
-     // No direct rate to USD found in mock or user rates
-  } else if (arg.from != 'USD') {
-     final rateToUsd = ref.read(exchangeRateProvider((userId: arg.userId, from: arg.from, to: 'USD')));
-     final usdToTarget = ref.read(exchangeRateProvider((userId: arg.userId, from: 'USD', to: arg.to)));
-     return rateToUsd * usdToTarget;
+  if (arg.from != 'USD' && arg.to != 'USD') {
+    final toUsd = '${arg.from}_USD';
+    final fromUsd = 'USD_${arg.from}';
+    final usdToTargetKey = 'USD_${arg.to}';
+    final targetToUsdKey = '${arg.to}_USD';
+    final rateToUsd =
+        userRates[toUsd] ??
+        (userRates[fromUsd] != null ? 1 / userRates[fromUsd]! : null) ??
+        mockRates[toUsd] ??
+        (mockRates[fromUsd] != null ? 1 / mockRates[fromUsd]! : null);
+    final usdToTarget =
+        userRates[usdToTargetKey] ??
+        (userRates[targetToUsdKey] != null ? 1 / userRates[targetToUsdKey]! : null) ??
+        mockRates[usdToTargetKey] ??
+        (mockRates[targetToUsdKey] != null ? 1 / mockRates[targetToUsdKey]! : null);
+    if (rateToUsd != null && usdToTarget != null) {
+      return rateToUsd * usdToTarget;
+    }
   }
 
-  return 1.0; // Default fallback
+  throw StateError('Missing exchange rate for ${arg.from} -> ${arg.to}');
 });
