@@ -26,13 +26,15 @@ class SubscriptionService {
       }
 
       // 2. Configure SDK with the correct platform-specific API key
+      const androidApiKeyFromEnv = String.fromEnvironment('REVENUECAT_ANDROID_API_KEY');
+      const iosApiKeyFromEnv = String.fromEnvironment('REVENUECAT_IOS_API_KEY');
       final String apiKey = Platform.isAndroid
-          ? 'goog_pcGRKvDSqzHaXaJxCZToLKAAPrt' // Google Play key
-          : 'appl_REPLACE_WITH_YOUR_IOS_KEY';   // App Store key (TODO)
+          ? (androidApiKeyFromEnv.isNotEmpty ? androidApiKeyFromEnv : 'goog_pcGRKvDSqzHaXaJxCZToLKAAPrt')
+          : iosApiKeyFromEnv;
 
-      if (apiKey.contains('REPLACE_WITH_YOUR')) {
-        debugPrint('WARNING: RevenueCat API Key is not configured for this platform.');
-        if (!Platform.isAndroid) return; // Prevent crash/errors on iOS if key is missing
+      if (apiKey.isEmpty) {
+        debugPrint('WARNING: RevenueCat API key is not configured for this platform.');
+        return;
       }
 
       final configuration = PurchasesConfiguration(apiKey);
