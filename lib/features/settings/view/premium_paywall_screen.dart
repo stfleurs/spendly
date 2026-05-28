@@ -5,6 +5,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/services/subscription_service.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
+import 'package:spendly/shared/widgets/adaptive_text.dart';
 
 class PremiumPaywallScreen extends ConsumerStatefulWidget {
   const PremiumPaywallScreen({super.key});
@@ -223,12 +224,23 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                         )
                       : const Text(
-                          'Unlock Premium Access',
+                          'Try Receet Pro free for 7 days',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  'Then ${_selectedPackage?.storeProduct.priceString ?? '\$4.99'}/month',
+                  style: TextStyle(
+                    color: AppColors.textLight.withValues(alpha: 0.85),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
 
@@ -383,13 +395,14 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
                     Row(
                       children: [
                         Flexible(
-                          child: Text(
+                          child: AdaptiveText(
                             storeProduct.title.split('(').first.trim(),
                             style: const TextStyle(
                               color: AppColors.textDark,
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
+                            minScale: 0.78,
                           ),
                         ),
                         if (badgeText.isNotEmpty) ...[
@@ -413,22 +426,25 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    AdaptiveText(
                       storeProduct.description,
                       style: const TextStyle(
                         color: AppColors.textLight,
                         fontSize: 12,
                       ),
+                      maxLines: 2,
+                      minScale: 0.88,
                     ),
                     if (hasIntroductoryPrice) ...[
                       const SizedBox(height: 4),
-                      Text(
+                      AdaptiveText(
                         'Includes 7-day free trial',
                         style: const TextStyle(
                           color: AppColors.income,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
+                        minScale: 0.88,
                       ),
                     ],
                   ],
@@ -439,21 +455,23 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    storeProduct.priceString,
-                    style: const TextStyle(
-                      color: AppColors.textDark,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
+                    AdaptiveAmountText(
+                      storeProduct.priceString,
+                      style: const TextStyle(
+                        color: AppColors.textDark,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.end,
                     ),
-                  ),
-                  Text(
+                  AdaptiveText(
                     billingCycle,
                     style: const TextStyle(
                       color: AppColors.textLight,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
+                    minScale: 0.9,
                   ),
                 ],
               ),
@@ -474,6 +492,27 @@ class _PremiumPaywallScreenState extends ConsumerState<PremiumPaywallScreen> {
       
       if (result.isSuccess) {
         if (result.hasPremium) {
+          final entitlement = result.customerInfo?.entitlements.all[SubscriptionService.entitlementId];
+          final periodType = entitlement?.periodType.name ?? 'unknown';
+          final isTrialOrIntro = periodType == 'trial' || periodType == 'intro';
+          if (isTrialOrIntro) {
+            ref.read(firebaseObservabilityServiceProvider).logEvent(
+              'trial_started',
+              parameters: {
+                'package_id': package.identifier,
+                'period_type': periodType,
+              },
+            );
+          }
+          ref.read(firebaseObservabilityServiceProvider).logEvent(
+            'subscription_started',
+            parameters: {
+              'package_id': package.identifier,
+              'period_type': periodType,
+              'price': package.storeProduct.price,
+              'currency_code': package.storeProduct.currencyCode,
+            },
+          );
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Welcome to Receet Pro Premium! Thank you for your support.'),
