@@ -6,6 +6,9 @@ import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/features/accounts/repository/account_repository.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
 import 'package:spendly/core/models/account.dart';
+import 'package:spendly/core/services/monetization_limits.dart';
+import 'package:spendly/core/services/subscription_service.dart';
+import 'package:spendly/features/settings/view/premium_paywall_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class NewAccountScreen extends ConsumerStatefulWidget {
@@ -93,6 +96,32 @@ class _NewAccountScreenState extends ConsumerState<NewAccountScreen> {
 
     try {
       if (widget.account == null) {
+        final isPremium = ref.read(isPremiumProvider);
+        if (!isPremium) {
+          final currentAccounts = await ref.read(accountRepositoryProvider).watchAccounts(userId).first;
+          if (currentAccounts.length >= MonetizationLimits.freeMaxAccounts) {
+            ref.read(firebaseObservabilityServiceProvider).logEvent(
+              'free_limit_account_hit',
+              parameters: {'user_id': userId, 'max_accounts': MonetizationLimits.freeMaxAccounts},
+            );
+            if (mounted) {
+              await showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => FractionallySizedBox(
+                  heightFactor: 0.94,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    child: const PremiumPaywallScreen(),
+                  ),
+                ),
+              );
+            }
+            return;
+          }
+        }
         await ref.read(accountRepositoryProvider).addAccount(account);
       } else {
         await ref.read(accountRepositoryProvider).updateAccount(account);

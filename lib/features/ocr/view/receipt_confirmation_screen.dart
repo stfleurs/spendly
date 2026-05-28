@@ -20,6 +20,9 @@ import 'package:spendly/core/providers/exchange_rate_provider.dart';
 import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/core/models/category.dart' as model;
 import 'package:spendly/core/providers/device_provider.dart';
+import 'package:spendly/core/services/monetization_limits.dart';
+import 'package:spendly/core/services/subscription_service.dart';
+import 'package:spendly/features/settings/view/premium_paywall_screen.dart';
 import 'package:uuid/uuid.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
@@ -1303,6 +1306,33 @@ class _ReceiptConfirmationScreenState
 
     if (result == true && nameController.text.isNotEmpty) {
       try {
+        final isPremium = ref.read(isPremiumProvider);
+        if (!isPremium) {
+          final currentCategories =
+              await ref.read(categoryRepositoryProvider).watchCategories(userId).first;
+          if (currentCategories.length >= MonetizationLimits.freeMaxEnvelopes) {
+            ref.read(firebaseObservabilityServiceProvider).logEvent(
+              'free_limit_envelope_hit',
+              parameters: {'user_id': userId, 'max_envelopes': MonetizationLimits.freeMaxEnvelopes},
+            );
+            if (mounted) {
+              await showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => FractionallySizedBox(
+                  heightFactor: 0.94,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    child: const PremiumPaywallScreen(),
+                  ),
+                ),
+              );
+            }
+            return;
+          }
+        }
         final target = (double.tryParse(targetController.text) ?? 0.0) * 100;
         final newCategory = model.Category(
           id: '', // Will be set by Firestore

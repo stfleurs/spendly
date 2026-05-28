@@ -9,6 +9,7 @@ import 'package:spendly/core/models/category.dart';
 import 'package:spendly/core/providers/currency_provider.dart';
 import 'package:spendly/core/providers/locale_provider.dart';
 import 'package:spendly/core/providers/security_provider.dart';
+import 'package:spendly/core/services/monetization_limits.dart';
 import 'package:spendly/features/home/view/main_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -112,8 +113,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
       // Save Selected Envelopes
       final categoryRepo = ref.read(categoryRepositoryProvider);
+      var createdEnvelopeCount = 0;
       for (var env in _suggestedEnvelopes) {
-        if (env['selected']) {
+        if (env['selected'] && createdEnvelopeCount < MonetizationLimits.freeMaxEnvelopes) {
           await categoryRepo.addCategory(Category(
             id: '',
             userId: userId,
@@ -123,12 +125,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             currency: ref.read(currencyProvider),
             recurrence: 'Monthly',
           ));
+          createdEnvelopeCount++;
         }
       }
 
       // Invalidate providers so Dashboard loads fresh
       ref.invalidate(accountsStreamProvider(userId));
       ref.invalidate(categoriesStreamProvider(userId));
+      ref.read(firebaseObservabilityServiceProvider).logEvent(
+        'onboarding_completed',
+        parameters: {
+          'user_id': userId,
+          'selected_currency': ref.read(currencyProvider),
+          'selected_envelopes_count': createdEnvelopeCount,
+        },
+      );
 
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
@@ -287,7 +298,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildChoiceChip(
-                  label: "FRANÇAIS",
+                  label: "FRANCAIS",
                   isSelected: currentLocale.languageCode == 'fr',
                   onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('fr')),
                 ),
@@ -295,7 +306,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildChoiceChip(
-                  label: "KREYÒL",
+                  label: "KREYOL",
                   isSelected: currentLocale.languageCode == 'ht',
                   onTap: () => ref.read(localeProvider.notifier).setLocale(const Locale('ht')),
                 ),

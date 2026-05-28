@@ -5,6 +5,9 @@ import 'package:spendly/features/budget/repository/category_repository.dart';
 import 'package:spendly/features/home/providers/insights_provider.dart';
 import 'package:spendly/shared/themes/app_theme.dart';
 import 'package:spendly/core/providers/firebase_providers.dart';
+import 'package:spendly/core/services/monetization_limits.dart';
+import 'package:spendly/core/services/subscription_service.dart';
+import 'package:spendly/features/settings/view/premium_paywall_screen.dart';
 import 'package:spendly/generated/l10n/app_localizations.dart';
 
 class CategoryFormBottomSheet extends ConsumerStatefulWidget {
@@ -90,6 +93,32 @@ class _CategoryFormBottomSheetState extends ConsumerState<CategoryFormBottomShee
 
     try {
       if (widget.category == null) {
+        final isPremium = ref.read(isPremiumProvider);
+        if (!isPremium) {
+          final currentCategories = await ref.read(categoryRepositoryProvider).watchCategories(userId).first;
+          if (currentCategories.length >= MonetizationLimits.freeMaxEnvelopes) {
+            ref.read(firebaseObservabilityServiceProvider).logEvent(
+              'free_limit_envelope_hit',
+              parameters: {'user_id': userId, 'max_envelopes': MonetizationLimits.freeMaxEnvelopes},
+            );
+            if (mounted) {
+              await showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => FractionallySizedBox(
+                  heightFactor: 0.94,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    child: const PremiumPaywallScreen(),
+                  ),
+                ),
+              );
+            }
+            return;
+          }
+        }
         await ref.read(categoryRepositoryProvider).addCategory(newCategory);
       } else {
         await ref.read(categoryRepositoryProvider).updateCategory(newCategory);
