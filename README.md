@@ -127,10 +127,10 @@ flutter run
 
 ## Website
 
-The marketing website and free budgeting tools are in the `website/` directory:
+The marketing website and free budgeting tools are in the `docs/` directory (served via GitHub Pages at [stfleurs.github.io/spendly](https://stfleurs.github.io/spendly)):
 
 ```
-website/
+docs/
 ├── index.html                    # Landing page with Spending Capacity Calculator
 ├── budget-calculator.html        # Full budget planner
 ├── paycheck-calculator.html      # Paycheck-based budgeting
