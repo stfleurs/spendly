@@ -7,63 +7,165 @@
   <meta name="description" content="Contact Receet Pro support. We're here to help.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .content-block {
+      max-width: 720px;
+      margin: 0 auto 32px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 40px;
+    }
+    .content-block h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 16px;
+      color: var(--gray-800);
+    }
+    .content-block p {
+      color: var(--gray-600);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .faq-grid {
+      max-width: 720px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .faq-item {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .faq-item h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--gray-800);
+    }
+    .faq-item p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .page-header {
+      text-align: center;
+      margin: 0 0 40px;
+    }
+    .page-header h1 {
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      color: var(--gray-500);
+    }
+    .section-label {
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: center;
+      margin: 48px 0 24px;
+      letter-spacing: -0.02em;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <a href="index.html" class="logo">Receet Pro</a>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="support.html">Support</a></li>
-      </ul>
-    </nav>
+    <div class="header-inner">
+      <div class="logo"><a href="index.html">Receet Pro</a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="budget-calculator.html">Calculators</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="support.html">Support</a></li>
+          <li><a href="#" class="btn-primary">Download</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <div class="page-header">
-      <h1>Support & Contact</h1>
-      <p>We're here to help you get the most out of Receet Pro.</p>
-    </div>
+    <div class="calc-page">
+      <div class="container">
+        <div class="page-header">
+          <h1>Support & Contact</h1>
+          <p>We're here to help you get the most out of Receet Pro.</p>
+        </div>
 
-    <div class="content-block">
-      <h2>Contact Us</h2>
-      <p>If you have any questions, issues, or feedback, please reach out to our team.</p>
-      <p><strong>Email:</strong> support@receetpro.com</p>
-      <p><strong>Hours:</strong> Monday - Friday, 9am - 5pm EST</p>
-    </div>
+        <div class="content-block">
+          <h2>Contact Us</h2>
+          <p>If you have any questions, issues, or feedback, please reach out to our team.</p>
+          <p><strong>Email:</strong> support@receetpro.com</p>
+          <p><strong>Hours:</strong> Monday - Friday, 9am - 5pm EST</p>
+        </div>
 
-    <div class="page-header" style="margin-top: 4rem; margin-bottom: 2rem;">
-      <h2>Frequently Asked Questions</h2>
+        <div class="section-label">Frequently Asked Questions</div>
+        
+        <div class="faq-grid">
+          <div class="faq-item">
+            <h3>How do I reset my password?</h3>
+            <p>You can reset your password by clicking the "Forgot Password" link on the login page of the application.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Can I export my data?</h3>
+            <p>Yes, Receet Pro allows you to export your expense data in CSV and PDF formats directly from your dashboard.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Do you support multiple currencies?</h3>
+            <p>Receet Pro automatically handles currency conversion based on real-time exchange rates for your convenience.</p>
+          </div>
+          <div class="faq-item">
+            <h3>How secure is my financial data?</h3>
+            <p>We use bank-level 256-bit encryption to ensure your data is secure both in transit and at rest.</p>
+          </div>
+        </div>
+      </div>
     </div>
-    
-    <section class="faq-grid">
-      <div class="faq-item">
-        <h3>How do I reset my password?</h3>
-        <p>You can reset your password by clicking the "Forgot Password" link on the login page of the application.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Can I export my data?</h3>
-        <p>Yes, Receet Pro allows you to export your expense data in CSV and PDF formats directly from your dashboard.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Do you support multiple currencies?</h3>
-        <p>Receet Pro automatically handles currency conversion based on real-time exchange rates for your convenience.</p>
-      </div>
-      <div class="faq-item">
-        <h3>How secure is my financial data?</h3>
-        <p>We use bank-level 256-bit encryption to ensure your data is secure both in transit and at rest.</p>
-      </div>
-    </section>
   </main>
 
   <footer>
-    <div class="footer-links">
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-      <a href="delete-account.html">Delete Account</a>
-      <a href="support.html">Contact Support</a>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Receet Pro</h4>
+        <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <ul>
+          <li><a href="budget-calculator.html">Budget Planner</a></li>
+          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
+          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <ul>
+          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="support.html">Contact Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="delete-account.html">Delete Account</a></li>
+        </ul>
+      </div>
     </div>
-    <p>&copy; 2026 Receet Pro. All rights reserved.</p>
+    <div class="footer-bottom">
+      &copy; 2026 Receet Pro. All rights reserved.
+    </div>
   </footer>
 </body>
 </html>

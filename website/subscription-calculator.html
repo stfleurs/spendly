@@ -3,45 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Policy - Receet Pro</title>
-  <meta name="description" content="Privacy Policy for Receet Pro. Learn how we handle and protect your data.">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Free Subscription Cost Calculator - Receet Pro</title>
+  <meta name="description" content="Use our free subscription cost calculator to see how much your subscriptions really cost per month and per year.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    .content-block {
-      max-width: 720px;
-      margin: 0 auto 32px;
-      background: white;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      padding: 40px;
-    }
-    .content-block h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin: 32px 0 12px;
-      color: var(--gray-800);
-    }
-    .content-block h2:first-child { margin-top: 0; }
-    .content-block p {
-      color: var(--gray-600);
-      line-height: 1.7;
-      margin-bottom: 12px;
-    }
-    .page-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .page-header h1 {
-      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 8px;
-    }
-    .page-header p {
-      color: var(--gray-500);
-    }
-  </style>
 </head>
 <body>
   <header>
@@ -62,23 +27,32 @@
   <main>
     <div class="calc-page">
       <div class="container">
-        <div class="page-header">
-          <h1>Privacy Policy</h1>
-          <p>Last updated: May 22, 2026</p>
+        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Subscription Cost Calculator</span></div>
+        <div class="calc-header">
+          <h1>Subscription Cost Calculator</h1>
+          <p>Most people underestimate what they spend on subscriptions. Add yours below and see the real total — monthly, yearly, and beyond.</p>
         </div>
 
-        <div class="content-block">
-          <h2>1. Information We Collect</h2>
-          <p>We collect information you provide directly to us, such as when you create an account, subscribe to our waitlist, or communicate with us. This may include your email address, name, and usage data.</p>
-          
-          <h2>2. How We Use Your Information</h2>
-          <p>We use the information we collect to operate, maintain, and improve our services. We may also use your information to send you updates about Receet Pro, respond to your comments and questions, and provide customer service.</p>
-          
-          <h2>3. Data Security</h2>
-          <p>We take reasonable measures to help protect information about you from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction.</p>
+        <div class="calc-layout">
+          <div class="calc-card">
+            <h2>Your Subscriptions</h2>
+            <div id="sub-entries"></div>
+            <button class="btn-add" onclick="addSub()">+ Add Another Subscription</button>
+            <button class="btn-calc" onclick="calcSubs()" style="margin-top:16px">Calculate Total</button>
+          </div>
 
-          <h2>4. Changes to this Policy</h2>
-          <p>We may change this Privacy Policy from time to time. If we make changes, we will notify you by revising the date at the top of the policy.</p>
+          <div>
+            <div class="results-card" id="sub-results">
+              <h2>Your Subscription Cost</h2>
+              <div class="chart-container">
+                <canvas id="sub-chart"></canvas>
+              </div>
+              <p class="result-label" style="text-align:center;color:var(--gray-400)">Add your subscriptions and click "Calculate Total"</p>
+            </div>
+            <div id="sub-cta" class="hidden" style="margin-top:16px">
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Subscriptions Automatically in Receet Pro →</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -124,5 +98,7 @@
       &copy; 2026 Receet Pro. All rights reserved.
     </div>
   </footer>
+
+  <script src="js/main.js"></script>
 </body>
 </html>

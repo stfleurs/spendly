@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free 50/30/20 Budget Calculator - Receet Pro</title>
+  <meta name="description" content="Use our free 50/30/20 budget calculator to apply the popular budgeting rule. See your ideal needs, wants, and savings split.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo"><a href="index.html">Receet Pro</a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="budget-calculator.html">Calculators</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="support.html">Support</a></li>
+          <li><a href="#" class="btn-primary">Download</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="calc-page">
+      <div class="container">
+        <div class="breadcrumb"><a href="index.html">Home</a> / <span>50/30/20 Calculator</span></div>
+        <div class="calc-header">
+          <h1>50/30/20 Budget Calculator</h1>
+          <p>The 50/30/20 rule is a simple budgeting framework: 50% for needs, 30% for wants, 20% for savings. See how your numbers compare.</p>
+        </div>
+
+        <div class="calc-layout">
+          <div class="calc-card">
+            <h2>Your Income</h2>
+            <div class="form-group">
+              <label for="fr-income">Monthly After-Tax Income</label>
+              <input type="number" id="fr-income" min="0" step="100" value="5200" placeholder="e.g. 5200">
+            </div>
+            <h2 style="margin-top:24px">Your Actual Spending (optional)</h2>
+            <div class="form-group">
+              <label for="fr-needs">Needs (rent, utilities, groceries, insurance, minimum debt)</label>
+              <input type="number" id="fr-needs" min="0" step="50" value="0" placeholder="Leave blank to see targets only">
+            </div>
+            <div class="form-group">
+              <label for="fr-wants">Wants (dining, entertainment, shopping, travel)</label>
+              <input type="number" id="fr-wants" min="0" step="50" value="0">
+            </div>
+            <div class="form-group">
+              <label for="fr-savings">Savings & Debt (extra payments, investments, savings)</label>
+              <input type="number" id="fr-savings" min="0" step="50" value="0">
+            </div>
+            <button class="btn-calc" onclick="calc503020()">Calculate</button>
+          </div>
+
+          <div>
+            <div class="results-card" id="fr-results">
+              <h2>Your 50/30/20 Breakdown</h2>
+              <div class="chart-container">
+                <canvas id="fr-chart"></canvas>
+              </div>
+              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your income and click "Calculate"</p>
+            </div>
+            <div id="fr-cta" class="hidden" style="margin-top:16px">
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Budget in Receet Pro →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Receet Pro</h4>
+        <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <ul>
+          <li><a href="budget-calculator.html">Budget Planner</a></li>
+          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
+          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <ul>
+          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="support.html">Contact Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="delete-account.html">Delete Account</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Receet Pro. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

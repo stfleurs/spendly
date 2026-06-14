@@ -3,62 +3,333 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Receet Pro - The Future of Expense Management</title>
-  <meta name="description" content="Join the waitlist for Receet Pro. Smarter, faster, and more beautiful expense tracking.">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Receet Pro — Envelope Budgeting App That Tells You What You Can Afford</title>
+  <meta name="description" content="Receet Pro is a cross-platform envelope budgeting app with receipt scanning, multi-currency support, insights, and free budgeting calculators. Know exactly how much is available for groceries, gas, fun, and savings.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header>
-    <div class="logo">Receet Pro</div>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="support.html">Support</a></li>
-      </ul>
-    </nav>
+    <div class="header-inner">
+      <div class="logo"><a href="index.html">Receet Pro</a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="budget-calculator.html">Calculators</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="support.html">Support</a></li>
+          <li><a href="#" class="btn-primary">Download</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
   <main>
+    <!-- HERO -->
     <section class="hero">
-      <h1>Track Expenses.<br>Beautifully.</h1>
-      <p>Receet Pro is the next generation of expense management. Powerful features wrapped in a stunning, intuitive interface. Join the waitlist to get early access.</p>
-      
-      <form class="waitlist-form" id="waitlistForm">
-        <input type="email" id="emailInput" placeholder="Enter your email address" required aria-label="Email address">
-        <button type="submit" class="btn" id="submitBtn">Join Waitlist</button>
-      </form>
-      <div id="successMessage" class="success-message">Thanks for joining! We'll be in touch soon.</div>
+      <h1>Stop wondering if you can afford it.<br>Know exactly what's available.</h1>
+      <p>Receet Pro is the envelope-based budgeting app that tells you exactly how much is left for groceries, gas, fun, and savings — in real time. No spreadsheets. No stress. Just clarity.</p>
+      <div class="cta-group">
+        <a href="#" class="btn btn-primary">Start Free Trial</a>
+        <a href="budget-calculator.html" class="btn btn-secondary">Try Free Budget Tools</a>
+      </div>
     </section>
 
-    <section class="faq-grid" id="faq">
-      <div class="faq-item">
-        <h3>What is Receet Pro?</h3>
-        <p>Receet Pro is an advanced version of Spendly, offering premium features for power users, seamless syncing, and advanced analytics.</p>
+    <!-- WHAT IS REceet Pro -->
+    <section class="section" id="about">
+      <div class="container" style="max-width:800px">
+        <h2 class="section-title">What is Receet Pro?</h2>
+        <p class="section-subtitle" style="max-width:680px">
+          Most budgeting apps show you where your money went after you've already spent it. Receet Pro works differently — it helps you decide what to spend <em>before</em> you spend, using the proven envelope method.
+        </p>
+        <div style="background:white;border:1px solid var(--gray-200);border-radius:var(--radius);padding:32px">
+          <p style="color:var(--gray-600);line-height:1.8;margin-bottom:16px">
+            Think of it like cash in physical envelopes. When you get paid, you divide your money into labeled envelopes: <strong>Groceries</strong>, <strong>Gas</strong>, <strong>Dining Out</strong>, <strong>Fun Money</strong>, <strong>Savings</strong>, and so on. Each envelope holds what you've allocated for that category.
+          </p>
+          <p style="color:var(--gray-600);line-height:1.8;margin-bottom:16px">
+            When you spend, the money comes out of the right envelope automatically. When an envelope is empty, <strong>you stop spending in that category</strong>. No guilt, no second-guessing, no end-of-month surprises — because you decided upfront what mattered.
+          </p>
+          <p style="color:var(--gray-600);line-height:1.8">
+            Receet Pro digitizes this system and supercharges it with receipt scanning (OCR), real-time insights, multi-currency support, automatic categorization, and beautiful charts. Built with Flutter and Firebase, it's available on iOS, Android, macOS, Windows, and Linux.
+          </p>
+        </div>
       </div>
-      <div class="faq-item">
-        <h3>When will it be available?</h3>
-        <p>We are currently in beta testing. Join the waitlist to be among the first to experience Receet Pro when we launch.</p>
+    </section>
+
+    <!-- SPENDING CAPACITY CALCULATOR -->
+    <section class="section section-alt" id="calculator">
+      <div class="container">
+        <h2 class="section-title">How much can you safely spend this month?</h2>
+        <p class="section-subtitle">Enter your numbers below to find out what's really available after bills and savings. This is the same logic the app uses — try it right now, no signup needed.</p>
+        <div class="calc-layout">
+          <div class="calc-card">
+            <h2>Your Income & Obligations</h2>
+            <div class="form-group">
+              <label for="sc-income">Monthly After-Tax Income</label>
+              <input type="number" id="sc-income" min="0" step="100" value="5200" placeholder="e.g. 5200">
+            </div>
+            <div class="form-group">
+              <label for="sc-bills">Total Fixed Bills (rent, utilities, debt, etc.)</label>
+              <input type="number" id="sc-bills" min="0" step="50" value="2400" placeholder="e.g. 2400">
+            </div>
+            <div class="form-group">
+              <label for="sc-savings">Monthly Savings Goal</label>
+              <input type="number" id="sc-savings" min="0" step="50" value="500" placeholder="e.g. 500">
+            </div>
+          </div>
+          <div>
+            <div class="results-card" style="margin-bottom:16px">
+              <h2>Your Spending Capacity</h2>
+              <div id="sc-result"></div>
+              <div class="chart-container">
+                <canvas id="sc-chart"></canvas>
+              </div>
+              <div id="sc-breakdown"></div>
+            </div>
+            <a href="budget-calculator.html" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Try Full Budget Planner →</a>
+          </div>
+        </div>
       </div>
-      <div class="faq-item">
-        <h3>Will my existing data migrate?</h3>
-        <p>Yes, Receet Pro offers 1-click migration for all your existing receipts and expense data.</p>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <h2 class="section-title">How Receet Pro Works</h2>
+        <p class="section-subtitle">Stop guessing. Start knowing. Four simple steps to financial clarity.</p>
+        <div class="steps">
+          <div class="step">
+            <h3>Add Your Income</h3>
+            <p>Enter your salary, freelance earnings, side hustles — any source of income. Receet Pro works with multiple income streams and supports bi-weekly, semi-monthly, and monthly pay schedules.</p>
+          </div>
+          <div class="step">
+            <h3>Create Envelopes</h3>
+            <p>Set up spending categories that match your life. Groceries, gas, dining, entertainment, shopping, savings — name them what you want and assign a monthly budget to each one.</p>
+          </div>
+          <div class="step">
+            <h3>Spend & Track</h3>
+            <p>Snap a receipt and the OCR engine reads the total and categorizes it automatically. Or enter transactions manually. Each purchase deducts from the right envelope in real time.</p>
+          </div>
+          <div class="step">
+            <h3>Always Know Your Balance</h3>
+            <p>Check any envelope balance in one tap. Green means you're on track. Yellow means you're getting low. Red means the envelope is empty. No more anxiety about whether you can afford something.</p>
+          </div>
+        </div>
       </div>
-      <div class="faq-item">
-        <h3>Is there a free version?</h3>
-        <p>Our core application will always remain free. Receet Pro introduces optional premium capabilities for professionals.</p>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section section-alt" id="features">
+      <div class="container">
+        <h2 class="section-title">Everything you need to stay on top of your money</h2>
+        <p class="section-subtitle">Built for people who want real answers, not complicated spreadsheets. Here's what Receet Pro does out of the box.</p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="icon">📨</div>
+            <h3>Envelope Budgeting</h3>
+            <p>Money is divided into digital envelopes that you define. When an envelope runs out, the spending in that category stops — by your own rule. Envelopes roll over or reset each month, your choice. This is the core mechanic that makes the system work: finite resources force intentional decisions.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">📷</div>
+            <h3>Receipt Scanning</h3>
+            <p>Snap a photo of any receipt and Google ML Kit reads the merchant, date, and total. The transaction is categorized into the correct envelope automatically. No manual data entry, no remembering what you spent three days ago. The receipt image is stored for future reference.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">📊</div>
+            <h3>Insights & Reports</h3>
+            <p>Interactive charts show spending trends across categories, months, and accounts. Compare this month to last month. Track net worth over time. See which categories consistently go over budget. Export everything to CSV or PDF for tax preparation or financial planning.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">💳</div>
+            <h3>Multi-Account Support</h3>
+            <p>Link checking accounts, savings accounts, credit cards, and cash. See all balances in one dashboard. Track net worth with daily snapshots. Handle transfers between accounts seamlessly. Supports USD, EUR, HTG, and CAD with real-time exchange rates.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">🔄</div>
+            <h3>Recurring Bills</h3>
+            <p>Set up bills and subscriptions that repeat weekly, monthly, or yearly. Get push notifications before payments are due. Track how much of your monthly income is already committed to recurring expenses. Never miss a payment or get hit with an overdraft fee again.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">📁</div>
+            <h3>Import & Export</h3>
+            <p>Import transactions from CSV files or PDF bank statements. The parser handles multiple formats and maps them to your envelopes. Export your complete transaction history anytime — CSV for spreadsheets, PDF for records. Your data is yours to keep and transfer.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">🔒</div>
+            <h3>Security & Privacy</h3>
+            <p>Optional PIN or biometric lock (Face ID / fingerprint) protects the app from unauthorized access. All data is encrypted in transit and at rest using Firebase's infrastructure. Google Sign-In for convenient authentication. No third-party tracking or data selling.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">🌐</div>
+            <h3>Localization</h3>
+            <p>Available in English, French, and Haitian Creole. Currency formatting adapts to your locale automatically. Support for multiple currencies with real-time conversion. Built for a global audience, not just one market.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FREE CALCULATORS -->
+    <section class="section" id="tools">
+      <div class="container">
+        <h2 class="section-title">Free Budgeting Tools</h2>
+        <p class="section-subtitle">Use our free calculators to plan your budget right now — no signup, no download, no strings attached. These are the same calculations the app uses internally.</p>
+        <div class="tools-grid">
+          <a href="budget-calculator.html" class="tool-link">
+            <div class="icon">📋</div>
+            <h3>Budget Planner</h3>
+            <p>Plan your monthly budget across 8 spending categories. See a donut chart breakdown, bar chart comparison, and exactly how much remains after expenses and savings. Adjust numbers in real time.</p>
+          </a>
+          <a href="paycheck-calculator.html" class="tool-link">
+            <div class="icon">💰</div>
+            <h3>Paycheck Budget Calculator</h3>
+            <p>Budget by paycheck instead of by month. Select your pay frequency (weekly, bi-weekly, semi-monthly, monthly), enter your per-paycheck income and monthly bills. Get suggested envelope allocations for each period.</p>
+          </a>
+          <a href="emergency-fund-calculator.html" class="tool-link">
+            <div class="icon">🛡️</div>
+            <h3>Emergency Fund Calculator</h3>
+            <p>Calculate how much you need saved for 3, 6, 9, or 12 months of expenses. Track your current progress with a visual bar and see exactly how long it will take to reach your goal at your current savings rate.</p>
+          </a>
+          <a href="debt-payoff-calculator.html" class="tool-link">
+            <div class="icon">⚡</div>
+            <h3>Debt Payoff Calculator</h3>
+            <p>Add multiple debts with balances and APRs. Compare the snowball method (pay smallest debts first) vs. the avalanche method (pay highest interest first). See months to freedom and total interest paid for each strategy.</p>
+          </a>
+          <a href="subscription-calculator.html" class="tool-link">
+            <div class="icon">📱</div>
+            <h3>Subscription Cost Calculator</h3>
+            <p>List your streaming services, apps, and memberships with their monthly or yearly costs. See the monthly total, yearly total, 5-year cost, and a visual breakdown. Most people underestimate by 30-50%.</p>
+          </a>
+          <a href="50-30-20-calculator.html" class="tool-link">
+            <div class="icon">🎯</div>
+            <h3>50/30/20 Calculator</h3>
+            <p>Apply Elizabeth Warren's popular budgeting framework: 50% of after-tax income for needs, 30% for wants, 20% for savings. Compare your actual spending against the targets with a donut chart visualization.</p>
+          </a>
+          <a href="envelope-budgeting-guide.html" class="tool-link">
+            <div class="icon">📖</div>
+            <h3>Envelope Budgeting Guide</h3>
+            <p>A comprehensive guide to the envelope budgeting method — what it is, why it works, how to set it up with cash or digitally, common mistakes, and how much to put in each envelope. Updated regularly.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREENSHOTS -->
+    <section class="section section-alt" id="screenshots">
+      <div class="container">
+        <h2 class="section-title">Beautiful, intuitive, powerful</h2>
+        <p class="section-subtitle">Receet Pro is designed to be used daily. Clean interfaces, thoughtful information hierarchy, and delightful interactions make budgeting something you actually want to do.</p>
+        <div class="screenshots">
+          <div class="screenshot"><div class="screenshot-placeholder"><div class="icon">📋</div>Envelope View</div></div>
+          <div class="screenshot"><div class="screenshot-placeholder"><div class="icon">💳</div>Transactions</div></div>
+          <div class="screenshot"><div class="screenshot-placeholder"><div class="icon">📊</div>Insights</div></div>
+          <div class="screenshot"><div class="screenshot-placeholder"><div class="icon">🏠</div>Dashboard</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section" id="pricing">
+      <div class="container">
+        <h2 class="section-title">Simple, transparent pricing</h2>
+        <p class="section-subtitle">Start free. No credit card required. Upgrade when you need more envelopes, transactions, or advanced features.</p>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <div class="plan">Free</div>
+            <div class="price">$0</div>
+            <div class="period">forever</div>
+            <ul>
+              <li>Up to 50 transactions/month</li>
+              <li>Up to 3 envelopes</li>
+              <li>Basic spending insights</li>
+              <li>Receipt scanning (5/month)</li>
+              <li>Single account</li>
+            </ul>
+            <a href="#" class="btn btn-secondary">Get Started Free</a>
+          </div>
+          <div class="pricing-card featured">
+            <div class="plan">Pro Monthly</div>
+            <div class="price">$4.99</div>
+            <div class="period">per month</div>
+            <ul>
+              <li>Unlimited transactions</li>
+              <li>Unlimited envelopes</li>
+              <li>Advanced insights & reports</li>
+              <li>Unlimited receipt scanning</li>
+              <li>CSV & PDF import/export</li>
+              <li>Multi-device sync</li>
+              <li>Multi-currency support</li>
+              <li>Priority email support</li>
+            </ul>
+            <a href="#" class="btn btn-primary">Start Free Trial</a>
+          </div>
+          <div class="pricing-card">
+            <div class="plan">Pro Yearly</div>
+            <div class="price">$39.99</div>
+            <div class="period">per year (save 33%)</div>
+            <ul>
+              <li>Everything in Pro Monthly</li>
+              <li>2 months free vs monthly</li>
+              <li>Priority support</li>
+              <li>Early access to new features</li>
+              <li>Beta program access</li>
+            </ul>
+            <a href="#" class="btn btn-secondary">Start Free Trial</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="padding-bottom:0">
+      <div class="cta-banner">
+        <h2>Ready to stop wondering what you can afford?</h2>
+        <p>Join thousands of people who use Receet Pro to know exactly how much money is available for every part of their life. Start your free trial today — no credit card required.</p>
+        <a href="#" class="btn">Start Free Trial</a>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="footer-links">
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-      <a href="delete-account.html">Delete Account</a>
-      <a href="support.html">Contact Support</a>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Receet Pro</h4>
+        <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life. Available on iOS, Android, macOS, Windows, and Linux. Built with Flutter.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <ul>
+          <li><a href="budget-calculator.html">Budget Planner</a></li>
+          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
+          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <ul>
+          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
+          <li><a href="index.html#about">What is Receet Pro?</a></li>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="support.html">Contact Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="delete-account.html">Delete Account</a></li>
+        </ul>
+      </div>
     </div>
-    <p>&copy; 2026 Receet Pro. All rights reserved.</p>
+    <div class="footer-bottom">
+      &copy; 2026 Receet Pro. All rights reserved.
+    </div>
   </footer>
 
   <script src="js/main.js"></script>

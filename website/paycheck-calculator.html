@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Paycheck Budget Calculator - Receet Pro</title>
+  <meta name="description" content="Use our free paycheck budget calculator to budget by paycheck. Know how much you can spend each period with suggested envelope allocations.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo"><a href="index.html">Receet Pro</a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="budget-calculator.html">Calculators</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="support.html">Support</a></li>
+          <li><a href="#" class="btn-primary">Download</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="calc-page">
+      <div class="container">
+        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Paycheck Budget Calculator</span></div>
+        <div class="calc-header">
+          <h1>Paycheck Budget Calculator</h1>
+          <p>Budget by paycheck instead of by month. Perfect for envelope budgeting. See exactly how much you can allocate to each category per pay period.</p>
+        </div>
+
+        <div class="calc-layout">
+          <div class="calc-card">
+            <h2>Your Paycheck Details</h2>
+            <div class="form-group">
+              <label for="pc-frequency">Pay Frequency</label>
+              <select id="pc-frequency">
+                <option value="weekly">Weekly (52 paychecks/year)</option>
+                <option value="biweekly" selected>Bi-Weekly (26 paychecks/year)</option>
+                <option value="semi-monthly">Semi-Monthly (24 paychecks/year)</option>
+                <option value="monthly">Monthly (12 paychecks/year)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pc-income">Income Per Paycheck (after tax)</label>
+              <input type="number" id="pc-income" min="0" step="50" value="2000" placeholder="e.g. 2000">
+            </div>
+            <div class="form-group">
+              <label for="pc-bills">Total Monthly Bills</label>
+              <div class="hint">Rent, utilities, debt payments, insurance, etc.</div>
+              <input type="number" id="pc-bills" min="0" step="50" value="1800" placeholder="e.g. 1800">
+            </div>
+            <button class="btn-calc" onclick="calcPaycheck()">Calculate Budget</button>
+          </div>
+
+          <div>
+            <div class="results-card" id="pc-results">
+              <h2>Your Paycheck Budget</h2>
+              <div class="chart-container">
+                <canvas id="pc-chart"></canvas>
+              </div>
+              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your paycheck details and click "Calculate Budget"</p>
+            </div>
+            <div id="pc-cta" class="hidden" style="margin-top:16px">
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Automate This in Receet Pro →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Receet Pro</h4>
+        <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <ul>
+          <li><a href="budget-calculator.html">Budget Planner</a></li>
+          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
+          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <ul>
+          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="support.html">Contact Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="delete-account.html">Delete Account</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Receet Pro. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

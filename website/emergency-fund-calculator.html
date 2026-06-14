@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Emergency Fund Calculator - Receet Pro</title>
+  <meta name="description" content="Use our free emergency fund calculator to find out how much you need saved for emergencies and how long it will take to reach your goal.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo"><a href="index.html">Receet Pro</a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="budget-calculator.html">Calculators</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="support.html">Support</a></li>
+          <li><a href="#" class="btn-primary">Download</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="calc-page">
+      <div class="container">
+        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Emergency Fund Calculator</span></div>
+        <div class="calc-header">
+          <h1>Emergency Fund Calculator</h1>
+          <p>Find out how much you need to save for emergencies and create a plan to get there. Most experts recommend 3-6 months of expenses.</p>
+        </div>
+
+        <div class="calc-layout">
+          <div class="calc-card">
+            <h2>Your Situation</h2>
+            <div class="form-group">
+              <label for="ef-monthly">Total Monthly Expenses</label>
+              <div class="hint">Include rent, food, utilities, debt payments, insurance, etc.</div>
+              <input type="number" id="ef-monthly" min="0" step="100" value="3500" placeholder="e.g. 3500">
+            </div>
+            <div class="form-group">
+              <label for="ef-months">Desired Emergency Fund Coverage</label>
+              <select id="ef-months">
+                <option value="3">3 months (minimum)</option>
+                <option value="6" selected>6 months (recommended)</option>
+                <option value="9">9 months (cautious)</option>
+                <option value="12">12 months (fully secure)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="ef-current">Current Savings</label>
+              <input type="number" id="ef-current" min="0" step="100" value="2000" placeholder="e.g. 2000">
+            </div>
+            <div class="form-group">
+              <label for="ef-save">Monthly Savings Capacity</label>
+              <div class="hint">How much can you save each month toward this goal?</div>
+              <input type="number" id="ef-save" min="0" step="50" value="300" placeholder="e.g. 300">
+            </div>
+            <button class="btn-calc" onclick="calcEmergency()">Calculate</button>
+          </div>
+
+          <div>
+            <div class="results-card" id="ef-results">
+              <h2>Your Emergency Fund Plan</h2>
+              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your details and click "Calculate"</p>
+            </div>
+            <div id="ef-cta" class="hidden" style="margin-top:16px">
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Progress in Receet Pro →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Receet Pro</h4>
+        <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <ul>
+          <li><a href="budget-calculator.html">Budget Planner</a></li>
+          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
+          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <ul>
+          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="support.html">Contact Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="delete-account.html">Delete Account</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Receet Pro. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

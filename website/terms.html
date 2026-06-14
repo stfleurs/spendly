@@ -7,47 +7,122 @@
   <meta name="description" content="Terms of Service for Receet Pro.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .content-block {
+      max-width: 720px;
+      margin: 0 auto 32px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 40px;
+    }
+    .content-block h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 32px 0 12px;
+      color: var(--gray-800);
+    }
+    .content-block h2:first-child { margin-top: 0; }
+    .content-block p {
+      color: var(--gray-600);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .page-header h1 {
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      color: var(--gray-500);
+    }
+  </style>
 </head>
 <body>
   <header>
-    <a href="index.html" class="logo">Receet Pro</a>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="support.html">Support</a></li>
-      </ul>
-    </nav>
+    <div class="header-inner">
+      <div class="logo"><a href="index.html">Receet Pro</a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="budget-calculator.html">Calculators</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="support.html">Support</a></li>
+          <li><a href="#" class="btn-primary">Download</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <div class="page-header">
-      <h1>Terms of Service</h1>
-      <p>Last updated: May 22, 2026</p>
-    </div>
+    <div class="calc-page">
+      <div class="container">
+        <div class="page-header">
+          <h1>Terms of Service</h1>
+          <p>Last updated: May 22, 2026</p>
+        </div>
 
-    <div class="content-block">
-      <h2>1. Acceptance of Terms</h2>
-      <p>By accessing or using Receet Pro, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the service.</p>
-      
-      <h2>2. Description of Service</h2>
-      <p>Receet Pro is an advanced expense management tool. We reserve the right to modify or discontinue, temporarily or permanently, the service with or without notice.</p>
-      
-      <h2>3. User Accounts</h2>
-      <p>You are responsible for safeguarding the password that you use to access the service and for any activities or actions under your password. You agree not to disclose your password to any third party.</p>
+        <div class="content-block">
+          <h2>1. Acceptance of Terms</h2>
+          <p>By accessing or using Receet Pro, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the service.</p>
+          
+          <h2>2. Description of Service</h2>
+          <p>Receet Pro is an advanced expense management tool. We reserve the right to modify or discontinue, temporarily or permanently, the service with or without notice.</p>
+          
+          <h2>3. User Accounts</h2>
+          <p>You are responsible for safeguarding the password that you use to access the service and for any activities or actions under your password. You agree not to disclose your password to any third party.</p>
 
-      <h2>4. Limitation of Liability</h2>
-      <p>In no event shall Receet Pro, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages.</p>
+          <h2>4. Limitation of Liability</h2>
+          <p>In no event shall Receet Pro, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages.</p>
+        </div>
+      </div>
     </div>
   </main>
 
   <footer>
-    <div class="footer-links">
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-      <a href="delete-account.html">Delete Account</a>
-      <a href="support.html">Contact Support</a>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Receet Pro</h4>
+        <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <ul>
+          <li><a href="budget-calculator.html">Budget Planner</a></li>
+          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
+          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <ul>
+          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="support.html">Contact Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="delete-account.html">Delete Account</a></li>
+        </ul>
+      </div>
     </div>
-    <p>&copy; 2026 Receet Pro. All rights reserved.</p>
+    <div class="footer-bottom">
+      &copy; 2026 Receet Pro. All rights reserved.
+    </div>
   </footer>
 </body>
 </html>

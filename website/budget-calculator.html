@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Budget Planner Calculator - Receet Pro</title>
+  <meta name="description" content="Use our free budget planner calculator to plan your monthly budget, track expenses, and see how much you can save.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo"><a href="index.html">Receet Pro</a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="budget-calculator.html">Calculators</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="support.html">Support</a></li>
+          <li><a href="#" class="btn-primary">Download</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="calc-page">
+      <div class="container">
+        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Budget Planner</span></div>
+        <div class="calc-header">
+          <h1>Free Budget Planner</h1>
+          <p>Enter your income and expenses below. See exactly where your money is going and how much you have left.</p>
+        </div>
+
+        <div class="calc-layout">
+          <div class="calc-card">
+            <h2>Income & Expenses</h2>
+            <div class="form-group">
+              <label for="bp-income">Monthly After-Tax Income</label>
+              <input type="number" id="bp-income" min="0" step="100" value="5200" placeholder="e.g. 5200">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bp-housing">Housing (rent/mortgage)</label>
+                <input type="number" id="bp-housing" min="0" step="50" value="1400">
+              </div>
+              <div class="form-group">
+                <label for="bp-utilities">Utilities</label>
+                <input type="number" id="bp-utilities" min="0" step="10" value="200">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bp-food">Food & Groceries</label>
+                <input type="number" id="bp-food" min="0" step="50" value="500">
+              </div>
+              <div class="form-group">
+                <label for="bp-transport">Transportation</label>
+                <input type="number" id="bp-transport" min="0" step="50" value="300">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bp-insurance">Insurance</label>
+                <input type="number" id="bp-insurance" min="0" step="25" value="150">
+              </div>
+              <div class="form-group">
+                <label for="bp-debt">Debt Payments (min)</label>
+                <input type="number" id="bp-debt" min="0" step="25" value="200">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bp-savings-goal">Savings Goal</label>
+                <input type="number" id="bp-savings-goal" min="0" step="50" value="500">
+              </div>
+              <div class="form-group">
+                <label for="bp-entertainment">Entertainment</label>
+                <input type="number" id="bp-entertainment" min="0" step="25" value="150">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="bp-other">Other Expenses</label>
+              <input type="number" id="bp-other" min="0" step="25" value="100">
+            </div>
+            <button class="btn-calc" onclick="calcBudget()">Calculate Budget</button>
+          </div>
+
+          <div>
+            <div class="results-card" id="bp-results">
+              <h2>Your Budget Breakdown</h2>
+              <div class="chart-container">
+                <canvas id="bp-donut"></canvas>
+              </div>
+              <div class="chart-container">
+                <canvas id="bp-chart"></canvas>
+              </div>
+              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your income and click "Calculate Budget"</p>
+            </div>
+            <div id="bp-cta" class="hidden" style="margin-top:16px">
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track This Budget in Receet Pro →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Receet Pro</h4>
+        <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <ul>
+          <li><a href="budget-calculator.html">Budget Planner</a></li>
+          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
+          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <ul>
+          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="support.html">Contact Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="delete-account.html">Delete Account</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Receet Pro. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
