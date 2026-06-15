@@ -17,12 +17,12 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 }
 
 const $ = id => document.getElementById(id);
-const val = id => parseFloat($(id).value) || 0;
+const val = id => { const el = $(id); return el ? parseFloat(el.value) || 0 : 0; };
 const fmtDec = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = n => n.toFixed(1) + '%';
 
-const ctxText = text => `<div class="info-note" style="margin-top:16px;font-size:0.85rem"><strong style="color:var(--text)">How Receet Pro helps:</strong> ${text}</div>`;
-const cmpText = `<div class="info-note" style="margin-top:12px;font-size:0.85rem"><strong style="color:var(--text)">Without Receet Pro:</strong> Recalculate manually. Spreadsheets. Stress.<br><br><strong style="color:var(--text)">With Receet Pro:</strong> Updates automatically from your transactions. Envelope balances refresh instantly. No math required.</div>`;
+const ctxText = text => `<div class="info-note" style="margin-top:16px;font-size:0.85rem"><strong style="color:var(--text)">How Spendly helps:</strong> ${text}</div>`;
+const cmpText = `<div class="info-note" style="margin-top:12px;font-size:0.85rem"><strong style="color:var(--text)">Without Spendly:</strong> Recalculate manually. Spreadsheets. Stress.<br><br><strong style="color:var(--text)">With Spendly:</strong> Updates automatically from your transactions. Envelope balances refresh instantly. No math required.</div>`;
 
 const CHART_COLORS = ['#0d9488','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16'];
 
@@ -116,6 +116,7 @@ function calcSpendingCapacity() {
   const capacity = income - bills - savings;
   const result = $('sc-result');
   const breakdown = $('sc-breakdown');
+  if (!result || !breakdown) return;
   if (!income) { result.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Enter your income above</p>'; breakdown.innerHTML = ''; return; }
   result.innerHTML = `
     <div class="result-number large">${fmtDec(Math.max(0, capacity))}</div>
@@ -134,7 +135,7 @@ function calcSpendingCapacity() {
     { value: Math.max(0, bills) }, { value: Math.max(0, savings) }, { value: Math.max(0, capacity) }
   ], 220);
   const scCtx = $('sc-ctx');
-  if (scCtx) scCtx.innerHTML = ctxText('Receet Pro automatically tracks your income, bills, and savings goals — so you always know your safe spending amount in one tap. No manual calculations needed.') + cmpText;
+  if (scCtx) scCtx.innerHTML = ctxText('Spendly automatically tracks your income, bills, and savings goals — so you always know your safe spending amount in one tap. No manual calculations needed.') + cmpText;
 }
 
 function calcBudget() {
@@ -173,7 +174,7 @@ function calcBudget() {
       <span class="value ${remaining >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${remaining >= 0 ? fmtDec(remaining) : '- ' + fmtDec(Math.abs(remaining))}</span>
     </div>
   `;
-  results.innerHTML += ctxText('Receet Pro automatically sorts every transaction into categories and shows your real-time budget breakdown. No manual data entry or spreadsheets.') + cmpText;
+  results.innerHTML += ctxText('Spendly automatically sorts every transaction into categories and shows your real-time budget breakdown. No manual data entry or spreadsheets.') + cmpText;
   const cta = $('bp-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -211,7 +212,7 @@ function calcPaycheck() {
       `).join('')}
     </div>
   `;
-  results.innerHTML += ctxText('Receet Pro creates envelopes for each spending category and automatically distributes your paycheck. No manual splitting or spreadsheets.') + cmpText;
+  results.innerHTML += ctxText('Spendly creates envelopes for each spending category and automatically distributes your paycheck. No manual splitting or spreadsheets.') + cmpText;
   const cta = $('pc-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -246,7 +247,7 @@ function calcEmergency() {
       ${isComplete ? '✅ You\'ve fully funded your emergency fund!' : monthlySave > 0 ? `At <strong>${fmtDec(monthlySave)}/month</strong>, you'll reach your <strong>${months}-month</strong> emergency fund in <strong>${Math.ceil(timeMonths)} months</strong>.` : 'Set a monthly savings amount above to see how long it will take.'}
     </div>
   `;
-  results.innerHTML += ctxText('Receet Pro creates a dedicated Emergency Fund envelope and automatically tracks every contribution toward your goal. Progress updates in real time.') + cmpText;
+  results.innerHTML += ctxText('Spendly creates a dedicated Emergency Fund envelope and automatically tracks every contribution toward your goal. Progress updates in real time.') + cmpText;
   const cta = $('ef-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -345,7 +346,7 @@ function calcDebt() {
     ${renderTable(sb, 'Snowball')}
     ${renderTable(av, 'Avalanche')}
   `;
-  results.innerHTML += ctxText('Receet Pro tracks every debt payment in real time and shows your progress toward being debt free. No spreadsheets required.') + cmpText;
+  results.innerHTML += ctxText('Spendly tracks every debt payment in real time and shows your progress toward being debt free. No spreadsheets required.') + cmpText;
   const cta = $('debt-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -424,7 +425,7 @@ function calcSubs() {
       💡 Cancel <strong>${biggest.name}</strong> and you'd save <strong>${fmtDec(fiveYearSave)}</strong> over 5 years.
     </div>
   `;
-  results.innerHTML += ctxText('Receet Pro automatically detects recurring charges and tracks every subscription in one place. Know exactly what you\'re spending — and cancel what you don\'t need.') + cmpText;
+  results.innerHTML += ctxText('Spendly automatically detects recurring charges and tracks every subscription in one place. Know exactly what you\'re spending — and cancel what you don\'t need.') + cmpText;
   const cta = $('sub-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -453,7 +454,7 @@ function calc503020() {
       ${needs + wants + savings > income ? '<br>⚠️ Your total spending exceeds your income.' : ''}
     </div>` : ''}
   `;
-  results.innerHTML += ctxText('Receet Pro automatically categorizes every transaction so you can see your exact needs/wants/savings split — without manual work or spreadsheets.') + cmpText;
+  results.innerHTML += ctxText('Spendly automatically categorizes every transaction so you can see your exact needs/wants/savings split — without manual work or spreadsheets.') + cmpText;
   const cta = $('fr-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -465,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = $(id);
     if (el) el.addEventListener('input', calcSpendingCapacity);
   });
-  calcSpendingCapacity();
+  if ($('sc-income')) calcSpendingCapacity();
 
   ['bp-income','bp-housing','bp-utilities','bp-food','bp-transport','bp-insurance','bp-debt','bp-savings-goal','bp-entertainment','bp-other'].forEach(id => {
     const el = $(id);
