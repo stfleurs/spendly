@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Emergency Fund Calculator - Spendly</title>
+  <title>Free Emergency Fund Calculator - Receet Pro</title>
   <meta name="description" content="Use our free emergency fund calculator to find out how much you need saved for emergencies and how long it will take to reach your goal.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -11,15 +11,13 @@
 <body>
   <header>
     <div class="header-inner">
-      <div class="logo"><a href="index.html">Spendly</a></div>
+      <div class="logo"><a href="/">Receet Pro</a></div>
       <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="budget-calculator.html">Calculators</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
-          <li><a href="support.html">Support</a></li>
-          <li><a href="#" class="btn-primary">Download</a></li>
-        </ul>
+        <a href="/">Home</a>
+        <a href="budget-calculator">Calculators</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="support">Support</a>
+        <a href="#" class="btn-primary">Download</a>
       </nav>
     </div>
   </header>
@@ -27,7 +25,7 @@
   <main>
     <div class="calc-page">
       <div class="container">
-        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Emergency Fund Calculator</span></div>
+        <div class="breadcrumb"><a href="/">Home</a> / <span>Emergency Fund Calculator</span></div>
         <div class="calc-header">
           <h1>Emergency Fund Calculator</h1>
           <p>Find out how much you need to save for emergencies and create a plan to get there. Most experts recommend 3-6 months of expenses.</p>
@@ -59,61 +57,104 @@
               <div class="hint">How much can you save each month toward this goal?</div>
               <input type="number" id="ef-save" min="0" step="50" value="300" placeholder="e.g. 300">
             </div>
-            <button class="btn-calc" onclick="calcEmergency()">Calculate</button>
+            
           </div>
 
           <div>
             <div class="results-card" id="ef-results">
               <h2>Your Emergency Fund Plan</h2>
-              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your details and click "Calculate"</p>
+              <div style="text-align:center;padding:20px 0">
+                <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px">Recommended targets based on your monthly expenses:</p>
+                <div class="results-grid">
+                  <div class="result-stat"><div class="value">3 Months</div><div class="label">Starter Safety Net</div></div>
+                  <div class="result-stat"><div class="value">6 Months</div><div class="label">Recommended</div></div>
+                  <div class="result-stat"><div class="value">9 Months</div><div class="label">Cautious</div></div>
+                  <div class="result-stat"><div class="value">12 Months</div><div class="label">Fully Secure</div></div>
+                </div>
+                <p style="color:var(--text-muted);font-size:0.85rem;margin-top:16px">Enter your numbers above to get a personalized plan.</p>
+              </div>
             </div>
             <div id="ef-cta" class="hidden" style="margin-top:16px">
-              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Progress in Spendly →</a>
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Progress in Receet Pro →</a>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="section" style="padding-top:16px">
+      <div class="container">
+        <div class="guide-content">
+          <h2>What Is an Emergency Fund?</h2>
+          <p>An emergency fund is money set aside specifically for unexpected expenses — medical bills, car repairs, job loss, or urgent home repairs. It's not for planned purchases or vacations. It's your financial safety net.</p>
+          <p>Financial experts recommend saving 3 to 6 months of essential expenses. The right number depends on your situation: single-income households and freelancers should aim for 6 months or more, while dual-income households with stable jobs may be comfortable with 3 months.</p>
+
+          <h3>Where to Keep Your Emergency Fund</h3>
+          <ul>
+            <li><strong>High-yield savings account</strong> — earns interest while staying accessible. Best option for most people.</li>
+            <li><strong>Money market account</strong> — slightly higher rates, may have check-writing ability.</li>
+            <li><strong>NOT in stocks or crypto</strong> — your emergency fund needs to be there when you need it, regardless of market conditions.</li>
+          </ul>
+
+          <h3>How to Build Your Emergency Fund</h3>
+          <p>Start small. Even $500 makes a difference for minor emergencies. Set up automatic transfers from each paycheck into a dedicated savings account. Treat it like a non-negotiable bill. Once you reach your target, redirect that money to other goals like investing or paying off debt.</p>
+
+          <div class="highlight-box">
+            <p><strong>Receet Pro makes it automatic.</strong> Create a dedicated Emergency Fund envelope and track every contribution toward your goal. Progress updates in real time. <a href="#">Start building yours →</a></p>
+          </div>
+
+          <h3>Frequently Asked Questions</h3>
+
+          <h3>Should I pay off debt or build an emergency fund first?</h3>
+          <p>Most experts recommend saving a small starter emergency fund ($1,000-$2,000) first, then focusing on high-interest debt (over 8% APR). Once the debt is under control, build your full 3-6 month fund. Low-interest debt (like a mortgage) can wait until the emergency fund is complete.</p>
+
+          <h3>What counts as an emergency?</h3>
+          <p>True emergencies are unexpected, unavoidable, and urgent: job loss, medical emergencies, major car repairs, urgent home repairs (like a broken furnace in winter). Planned expenses like a new phone or vacation should come from your regular budget.</p>
+
+          <h3>Can I use my emergency fund for a down payment on a house?</h3>
+          <p>No. A house down payment is a planned goal, not an emergency. Keep your emergency fund separate from other savings. If you use it for a down payment, you'll have no safety net when something unexpected happens after you buy.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-col">
-        <h4>Spendly</h4>
+        <h4>Receet Pro</h4>
         <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
       </div>
       <div class="footer-col">
         <h4>Calculators</h4>
         <ul>
-          <li><a href="budget-calculator.html">Budget Planner</a></li>
-          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
-          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
-          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
-          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
-          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+          <li><a href="budget-calculator">Budget Planner</a></li>
+          <li><a href="paycheck-calculator">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator">Debt Payoff</a></li>
+          <li><a href="subscription-calculator">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator">50/30/20 Calculator</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Learn</h4>
         <ul>
-          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
-          <li><a href="index.html#how-it-works">How It Works</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="envelope-budgeting-guide">Envelope Budgeting Guide</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#pricing">Pricing</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="support.html">Contact Us</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Service</a></li>
-          <li><a href="delete-account.html">Delete Account</a></li>
+          <li><a href="support">Contact Us</a></li>
+          <li><a href="privacy">Privacy Policy</a></li>
+          <li><a href="terms">Terms of Service</a></li>
+          <li><a href="delete-account">Delete Account</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2026 Spendly. All rights reserved.
+      &copy; 2026 Receet Pro. All rights reserved.
     </div>
   </footer>
 

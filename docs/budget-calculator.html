@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Budget Planner Calculator - Spendly</title>
+  <title>Free Budget Planner Calculator - Receet Pro</title>
   <meta name="description" content="Use our free budget planner calculator to plan your monthly budget, track expenses, and see how much you can save.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -11,15 +11,13 @@
 <body>
   <header>
     <div class="header-inner">
-      <div class="logo"><a href="index.html">Spendly</a></div>
+      <div class="logo"><a href="/">Receet Pro</a></div>
       <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="budget-calculator.html">Calculators</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
-          <li><a href="support.html">Support</a></li>
-          <li><a href="#" class="btn-primary">Download</a></li>
-        </ul>
+        <a href="/">Home</a>
+        <a href="budget-calculator">Calculators</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="support">Support</a>
+        <a href="#" class="btn-primary">Download</a>
       </nav>
     </div>
   </header>
@@ -27,7 +25,7 @@
   <main>
     <div class="calc-page">
       <div class="container">
-        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Budget Planner</span></div>
+        <div class="breadcrumb"><a href="/">Home</a> / <span>Budget Planner</span></div>
         <div class="calc-header">
           <h1>Free Budget Planner</h1>
           <p>Enter your income and expenses below. See exactly where your money is going and how much you have left.</p>
@@ -84,11 +82,11 @@
               <label for="bp-other">Other Expenses</label>
               <input type="number" id="bp-other" min="0" step="25" value="100">
             </div>
-            <button class="btn-calc" onclick="calcBudget()">Calculate Budget</button>
+            
           </div>
 
           <div>
-            <div class="results-card" id="bp-results">
+            <div class="results-card">
               <h2>Your Budget Breakdown</h2>
               <div class="chart-container">
                 <canvas id="bp-donut"></canvas>
@@ -96,55 +94,93 @@
               <div class="chart-container">
                 <canvas id="bp-chart"></canvas>
               </div>
-              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your income and click "Calculate Budget"</p>
+              <div id="bp-content">
+                <div style="text-align:center;padding:20px 0">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="result-stat"><div class="value">Loading...</div><div class="label">Results appear automatically</div></div>
+                    <div class="result-stat"><div class="value">Loading...</div><div class="label">Results appear automatically</div></div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div id="bp-cta" class="hidden" style="margin-top:16px">
-              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track This Budget in Spendly →</a>
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track This Budget in Receet Pro →</a>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="section" style="padding-top:16px">
+      <div class="container">
+        <div class="guide-content">
+          <h2>How to Use a Budget Planner</h2>
+          <p>A budget planner helps you understand exactly where your money is going each month. By listing your income and all expenses side by side, you can see whether you're living within your means — and where adjustments are needed.</p>
+          <p>The most effective budgets follow some version of the <a href="50-30-20-calculator">50/30/20 rule</a>: 50% of income for needs (housing, utilities, groceries, insurance), 30% for wants (dining, entertainment, shopping), and 20% for savings and debt payments. But your actual numbers matter more than any rule. A budget planner shows <em>your</em> reality.</p>
+
+          <h3>Common Budgeting Mistakes</h3>
+          <ul>
+            <li><strong>Underestimating variable expenses.</strong> Groceries, gas, and utilities fluctuate. Use a 3-month average instead of guessing.</li>
+            <li><strong>Forgetting annual or quarterly bills.</strong> Insurance premiums, property taxes, and subscriptions often slip through monthly budgets. Divide annual costs by 12.</li>
+            <li><strong>Setting unrealistic savings goals.</strong> It's better to save $100 consistently than $500 for one month and nothing the next.</li>
+          </ul>
+
+          <div class="highlight-box">
+            <p><strong>Need a better way?</strong> Receet Pro automatically tracks every transaction and sorts it into budget categories. No manual entry. No spreadsheets. <a href="#">Try it free →</a></p>
+          </div>
+
+          <h3>Frequently Asked Questions</h3>
+
+          <h3>How much should I spend on housing?</h3>
+          <p>Most financial experts recommend keeping housing costs (rent or mortgage + utilities) under 30% of your gross monthly income. If your calculator shows more than that, consider whether a less expensive option or additional income is needed.</p>
+
+          <h3>What if my expenses exceed my income?</h3>
+          <p>You have two options: increase income or decrease expenses. Start with the largest expense categories — housing, transportation, and food — where the biggest savings opportunities usually are. Even small cuts in multiple categories add up.</p>
+
+          <h3>How often should I update my budget?</h3>
+          <p>A monthly review is ideal. Your income and expenses change over time, and your budget should reflect that. With an app like Receet Pro, your budget updates automatically as transactions come in, so you always know where you stand.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-col">
-        <h4>Spendly</h4>
+        <h4>Receet Pro</h4>
         <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
       </div>
       <div class="footer-col">
         <h4>Calculators</h4>
         <ul>
-          <li><a href="budget-calculator.html">Budget Planner</a></li>
-          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
-          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
-          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
-          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
-          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+          <li><a href="budget-calculator">Budget Planner</a></li>
+          <li><a href="paycheck-calculator">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator">Debt Payoff</a></li>
+          <li><a href="subscription-calculator">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator">50/30/20 Calculator</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Learn</h4>
         <ul>
-          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
-          <li><a href="index.html#how-it-works">How It Works</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="envelope-budgeting-guide">Envelope Budgeting Guide</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#pricing">Pricing</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="support.html">Contact Us</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Service</a></li>
-          <li><a href="delete-account.html">Delete Account</a></li>
+          <li><a href="support">Contact Us</a></li>
+          <li><a href="privacy">Privacy Policy</a></li>
+          <li><a href="terms">Terms of Service</a></li>
+          <li><a href="delete-account">Delete Account</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2026 Spendly. All rights reserved.
+      &copy; 2026 Receet Pro. All rights reserved.
     </div>
   </footer>
 

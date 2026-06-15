@@ -21,6 +21,9 @@ const val = id => parseFloat($(id).value) || 0;
 const fmtDec = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = n => n.toFixed(1) + '%';
 
+const ctxText = text => `<div class="info-note" style="margin-top:16px;font-size:0.85rem"><strong style="color:var(--text)">How Receet Pro helps:</strong> ${text}</div>`;
+const cmpText = `<div class="info-note" style="margin-top:12px;font-size:0.85rem"><strong style="color:var(--text)">Without Receet Pro:</strong> Recalculate manually. Spreadsheets. Stress.<br><br><strong style="color:var(--text)">With Receet Pro:</strong> Updates automatically from your transactions. Envelope balances refresh instantly. No math required.</div>`;
+
 const CHART_COLORS = ['#0d9488','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16'];
 
 function drawDonut(canvas, slices, size) {
@@ -51,14 +54,14 @@ function drawDonut(canvas, slices, size) {
   });
   ctx.beginPath();
   ctx.arc(cx, cy, ir, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#0b0f19';
   ctx.fill();
-  ctx.fillStyle = '#1c1917';
+  ctx.fillStyle = '#cbd5e1';
   ctx.font = `bold ${s*0.1}px Inter, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(fmtDec(total), cx, cy - 2);
-  ctx.fillStyle = '#78716c';
+  ctx.fillStyle = '#64748b';
   ctx.font = `${s*0.055}px Inter, sans-serif`;
   ctx.fillText('Total', cx, cy + s*0.07);
 }
@@ -94,12 +97,12 @@ function drawBars(canvas, bars, width, height) {
     ctx.beginPath();
     ctx.roundRect(x, y, bw, bh, [4, 4, 0, 0]);
     ctx.fill();
-    ctx.fillStyle = '#78716c';
+    ctx.fillStyle = '#64748b';
     ctx.font = '10px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillText(bar.label, x + bw / 2, h - pad.b + 8);
-    ctx.fillStyle = '#1c1917';
+    ctx.fillStyle = '#cbd5e1';
     ctx.font = 'bold 11px Inter, sans-serif';
     ctx.textBaseline = 'bottom';
     ctx.fillText(fmtDec(bar.value), x + bw / 2, y - 3);
@@ -130,6 +133,8 @@ function calcSpendingCapacity() {
   drawDonut($('sc-chart'), [
     { value: Math.max(0, bills) }, { value: Math.max(0, savings) }, { value: Math.max(0, capacity) }
   ], 220);
+  const scCtx = $('sc-ctx');
+  if (scCtx) scCtx.innerHTML = ctxText('Receet Pro automatically tracks your income, bills, and savings goals — so you always know your safe spending amount in one tap. No manual calculations needed.') + cmpText;
 }
 
 function calcBudget() {
@@ -140,7 +145,8 @@ function calcBudget() {
   const savings = val('bp-savings-goal'), entertainment = val('bp-entertainment'), other = val('bp-other');
   const totalExpenses = housing + utilities + food + transport + insurance + debt + entertainment + other;
   const remaining = income - totalExpenses - savings;
-  const results = $('bp-results');
+  const results = $('bp-content');
+  if (!results) return;
   if (!income) { results.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Enter your income to see your budget</p>'; return; }
   const categories = [
     { label: 'Housing', value: housing }, { label: 'Utilities', value: utilities },
@@ -167,6 +173,7 @@ function calcBudget() {
       <span class="value ${remaining >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${remaining >= 0 ? fmtDec(remaining) : '- ' + fmtDec(Math.abs(remaining))}</span>
     </div>
   `;
+  results.innerHTML += ctxText('Receet Pro automatically sorts every transaction into categories and shows your real-time budget breakdown. No manual data entry or spreadsheets.') + cmpText;
   const cta = $('bp-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -179,7 +186,8 @@ function calcPaycheck() {
   const monthlyIncome = perPaycheck * ppm;
   const afterBills = monthlyIncome - monthlyBills;
   const perPeriod = afterBills / ppm;
-  const results = $('pc-results');
+  const results = $('pc-content');
+  if (!results) return;
   if (!perPaycheck) { results.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Enter your paycheck amount</p>'; return; }
   const envelopes = [
     { label: 'Groceries', pct: 0.25 }, { label: 'Dining Out', pct: 0.10 },
@@ -203,6 +211,7 @@ function calcPaycheck() {
       `).join('')}
     </div>
   `;
+  results.innerHTML += ctxText('Receet Pro creates envelopes for each spending category and automatically distributes your paycheck. No manual splitting or spreadsheets.') + cmpText;
   const cta = $('pc-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -218,6 +227,7 @@ function calcEmergency() {
   if (!monthly) { results.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Enter your monthly expenses</p>'; return; }
   const isComplete = needed <= 0;
   results.innerHTML = `
+    <h2>Your Emergency Fund Plan</h2>
     <div class="results-grid">
       <div class="result-stat"><div class="value">${fmtDec(target)}</div><div class="label">Target Emergency Fund</div></div>
       <div class="result-stat"><div class="value" style="color:var(--text)">${fmtDec(current)}</div><div class="label">Current Savings</div></div>
@@ -236,6 +246,7 @@ function calcEmergency() {
       ${isComplete ? '✅ You\'ve fully funded your emergency fund!' : monthlySave > 0 ? `At <strong>${fmtDec(monthlySave)}/month</strong>, you'll reach your <strong>${months}-month</strong> emergency fund in <strong>${Math.ceil(timeMonths)} months</strong>.` : 'Set a monthly savings amount above to see how long it will take.'}
     </div>
   `;
+  results.innerHTML += ctxText('Receet Pro creates a dedicated Emergency Fund envelope and automatically tracks every contribution toward your goal. Progress updates in real time.') + cmpText;
   const cta = $('ef-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -244,6 +255,7 @@ let debtCount = 0;
 function addDebt() {
   debtCount++;
   const container = $('debt-entries');
+  if (!container) return;
   const div = document.createElement('div');
   div.className = 'debt-entry';
   div.id = 'debt-' + debtCount;
@@ -298,6 +310,12 @@ function calcDebt() {
   }
   const sb = simulate([...debts].sort((a, b) => a.balance - b.balance));
   const av = simulate([...debts].sort((a, b) => b.apr - a.apr));
+  const dfDate = new Date();
+  dfDate.setMonth(dfDate.getMonth() + sb.totalMonths);
+  const dfString = dfDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const methodSavings = Math.round(Math.abs(sb.totalInterest - av.totalInterest));
+  const fasterLabel = sb.totalMonths < av.totalMonths ? 'Snowball' : 'Avalanche';
+  const diffMonths = Math.abs(sb.totalMonths - av.totalMonths);
   const renderTable = (data, label) => `
     <div style="margin-top:20px">
       <h3 style="font-size:0.9375rem;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px">
@@ -314,16 +332,20 @@ function calcDebt() {
       </table>
     </div>
   `;
+  const bestLabel = sb.totalInterest <= av.totalInterest ? 'Snowball' : 'Avalanche';
   results.innerHTML = `
+    <h2>Your Debt Payoff Plan</h2>
     <div class="results-grid">
       <div class="result-stat"><div class="value">${debts.length}</div><div class="label">Debts</div></div>
       <div class="result-stat"><div class="value">${fmtDec(debts.reduce((s,d) => s+d.balance, 0))}</div><div class="label">Total Debt</div></div>
       <div class="result-stat"><div class="value">${fmtDec(monthlyPayment)}</div><div class="label">Monthly Payment</div></div>
-      <div class="result-stat"><div class="value" style="font-size:1rem">${sb.totalMonths} vs ${av.totalMonths} mo</div><div class="label">Snowball vs Avalanche</div></div>
+      <div class="result-stat"><div class="value" style="font-size:1rem;color:var(--success)">${dfString}</div><div class="label">Debt Free By (Snowball)</div></div>
     </div>
+    ${methodSavings > 0 ? `<div class="info-note" style="text-align:center;font-size:0.9rem">⚡ The <strong>${bestLabel}</strong> method saves you <strong>${fmtDec(methodSavings)}</strong> in interest${diffMonths > 0 ? ` and gets you debt free ${diffMonths} months sooner` : ''}.</div>` : ''}
     ${renderTable(sb, 'Snowball')}
     ${renderTable(av, 'Avalanche')}
   `;
+  results.innerHTML += ctxText('Receet Pro tracks every debt payment in real time and shows your progress toward being debt free. No spreadsheets required.') + cmpText;
   const cta = $('debt-cta');
   if (cta) cta.classList.remove('hidden');
 }
@@ -332,6 +354,7 @@ let subCount = 0;
 function addSub() {
   subCount++;
   const container = $('sub-entries');
+  if (!container) return;
   const div = document.createElement('div');
   div.className = 'sub-entry';
   div.id = 'sub-' + subCount;
@@ -365,6 +388,7 @@ function removeSub(id) { const el = $(id); if (el) el.remove(); }
 
 function calcSubs() {
   const entries = document.querySelectorAll('.sub-entry');
+  const income = val('sub-income');
   let monthlyTotal = 0;
   const subs = [];
   entries.forEach(e => {
@@ -377,9 +401,13 @@ function calcSubs() {
       subs.push({ name: document.getElementById('sub-name-' + id)?.value || 'Sub', monthly: m, freq });
     }
   });
-  const results = $('sub-results');
+  const results = $('sub-content');
+  if (!results) return;
   if (!subs.length) { results.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Add subscriptions above</p>'; return; }
   const yearlyTotal = monthlyTotal * 12;
+  const incomePct = income > 0 ? (monthlyTotal / income) * 100 : 0;
+  const biggest = subs.reduce((max, s) => s.monthly > max.monthly ? s : max, subs[0]);
+  const fiveYearSave = Math.round(biggest.monthly * 12 * 5);
   drawBars($('sub-chart'), subs.map(s => ({ label: s.name.length > 8 ? s.name.slice(0,7)+'…' : s.name, value: Math.round(s.monthly) })), 320, 200);
   results.innerHTML = `
     <div class="results-grid">
@@ -388,17 +416,23 @@ function calcSubs() {
       <div class="result-stat"><div class="value">${subs.length}</div><div class="label">Subscriptions</div></div>
       <div class="result-stat"><div class="value" style="color:var(--danger)">${fmtDec(Math.round(yearlyTotal * 5))}</div><div class="label">5-Year Cost</div></div>
     </div>
+    ${incomePct > 0 ? `<div class="info-note" style="text-align:center;font-size:0.9rem;margin-bottom:16px">Your subscriptions consume <strong>${pct(incomePct)}</strong> of your monthly income.</div>` : ''}
     ${subs.map(s => `
       <div class="result-row"><span class="label">${s.name}</span><span class="value">${fmtDec(s.monthly)}/mo${s.freq === 'yearly' ? ' (billed annually)' : ''}</span></div>
     `).join('')}
+    <div class="info-note" style="margin-top:16px;font-size:0.85rem">
+      💡 Cancel <strong>${biggest.name}</strong> and you'd save <strong>${fmtDec(fiveYearSave)}</strong> over 5 years.
+    </div>
   `;
+  results.innerHTML += ctxText('Receet Pro automatically detects recurring charges and tracks every subscription in one place. Know exactly what you\'re spending — and cancel what you don\'t need.') + cmpText;
   const cta = $('sub-cta');
   if (cta) cta.classList.remove('hidden');
 }
 
 function calc503020() {
   const income = val('fr-income'), needs = val('fr-needs'), wants = val('fr-wants'), savings = val('fr-savings');
-  const results = $('fr-results');
+  const results = $('fr-content');
+  if (!results) return;
   if (!income) { results.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Enter your after-tax income</p>'; return; }
   const tNeeds = income * 0.50, tWants = income * 0.30, tSavings = income * 0.20;
   drawDonut($('fr-chart'), [{ value: tNeeds }, { value: tWants }, { value: tSavings }], 200);
@@ -419,16 +453,58 @@ function calc503020() {
       ${needs + wants + savings > income ? '<br>⚠️ Your total spending exceeds your income.' : ''}
     </div>` : ''}
   `;
+  results.innerHTML += ctxText('Receet Pro automatically categorizes every transaction so you can see your exact needs/wants/savings split — without manual work or spreadsheets.') + cmpText;
   const cta = $('fr-cta');
   if (cta) cta.classList.remove('hidden');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  addDebt();
-  addSub(); addSub(); addSub();
+  if ($('debt-entries')) addDebt();
+  if ($('sub-entries')) { addSub(); addSub(); addSub(); }
   ['sc-income','sc-bills','sc-savings'].forEach(id => {
     const el = $(id);
     if (el) el.addEventListener('input', calcSpendingCapacity);
   });
   calcSpendingCapacity();
+
+  ['bp-income','bp-housing','bp-utilities','bp-food','bp-transport','bp-insurance','bp-debt','bp-savings-goal','bp-entertainment','bp-other'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', calcBudget);
+  });
+  ['pc-frequency','pc-income','pc-bills'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', calcPaycheck);
+  });
+  ['ef-monthly','ef-months','ef-current','ef-save'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', calcEmergency);
+  });
+  ['debt-payment'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', calcDebt);
+  });
+  ['sub-income'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', calcSubs);
+  });
+  ['fr-income','fr-needs','fr-wants','fr-savings'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', calc503020);
+  });
+  const debtEntries = $('debt-entries');
+  if (debtEntries) {
+    debtEntries.addEventListener('input', calcDebt);
+    const dp = $('debt-payment');
+    if (dp) dp.addEventListener('input', calcDebt);
+  }
+  const subEntries = $('sub-entries');
+  if (subEntries) {
+    subEntries.addEventListener('input', calcSubs);
+  }
+  if ($('bp-income')) calcBudget();
+  if ($('pc-income')) calcPaycheck();
+  if ($('ef-monthly')) calcEmergency();
+  if ($('debt-payment')) calcDebt();
+  if ($('sub-entries')) calcSubs();
+  if ($('fr-income')) calc503020();
 });

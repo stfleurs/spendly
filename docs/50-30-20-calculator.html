@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free 50/30/20 Budget Calculator - Spendly</title>
+  <title>Free 50/30/20 Budget Calculator - Receet Pro</title>
   <meta name="description" content="Use our free 50/30/20 budget calculator to apply the popular budgeting rule. See your ideal needs, wants, and savings split.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -11,15 +11,13 @@
 <body>
   <header>
     <div class="header-inner">
-      <div class="logo"><a href="index.html">Spendly</a></div>
+      <div class="logo"><a href="/">Receet Pro</a></div>
       <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="budget-calculator.html">Calculators</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
-          <li><a href="support.html">Support</a></li>
-          <li><a href="#" class="btn-primary">Download</a></li>
-        </ul>
+        <a href="/">Home</a>
+        <a href="budget-calculator">Calculators</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="support">Support</a>
+        <a href="#" class="btn-primary">Download</a>
       </nav>
     </div>
   </header>
@@ -27,7 +25,7 @@
   <main>
     <div class="calc-page">
       <div class="container">
-        <div class="breadcrumb"><a href="index.html">Home</a> / <span>50/30/20 Calculator</span></div>
+        <div class="breadcrumb"><a href="/">Home</a> / <span>50/30/20 Calculator</span></div>
         <div class="calc-header">
           <h1>50/30/20 Budget Calculator</h1>
           <p>The 50/30/20 rule is a simple budgeting framework: 50% for needs, 30% for wants, 20% for savings. See how your numbers compare.</p>
@@ -53,64 +51,108 @@
               <label for="fr-savings">Savings & Debt (extra payments, investments, savings)</label>
               <input type="number" id="fr-savings" min="0" step="50" value="0">
             </div>
-            <button class="btn-calc" onclick="calc503020()">Calculate</button>
+            
           </div>
 
           <div>
-            <div class="results-card" id="fr-results">
+            <div class="results-card">
               <h2>Your 50/30/20 Breakdown</h2>
               <div class="chart-container">
                 <canvas id="fr-chart"></canvas>
               </div>
-              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your income and click "Calculate"</p>
+              <div id="fr-content">
+                <div class="results-grid">
+                  <div class="result-stat"><div class="value">50%</div><div class="label">Needs</div></div>
+                  <div class="result-stat"><div class="value">30%</div><div class="label">Wants</div></div>
+                  <div class="result-stat"><div class="value">20%</div><div class="label">Savings</div></div>
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Enter income above</div></div>
+                </div>
+                <p style="color:var(--text-muted);font-size:0.85rem;text-align:center;margin-top:16px">The 50/30/20 rule divides after-tax income into needs, wants, and savings.</p>
+              </div>
             </div>
             <div id="fr-cta" class="hidden" style="margin-top:16px">
-              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Budget in Spendly →</a>
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Budget in Receet Pro →</a>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="section" style="padding-top:16px">
+      <div class="container">
+        <div class="guide-content">
+          <h2>What Is the 50/30/20 Budget Rule?</h2>
+          <p>The 50/30/20 rule is a simple budgeting framework popularized by Senator Elizabeth Warren in her book <em>All Your Worth</em>. It divides your after-tax income into three categories: 50% for needs, 30% for wants, and 20% for savings and debt repayment.</p>
+          <p>The beauty of this system is its simplicity. You don't need to track dozens of categories. Just three broad buckets. It's flexible enough to work for most income levels while providing enough structure to prevent overspending.</p>
+
+          <h3>What Counts as Needs?</h3>
+          <p>Needs are expenses you cannot avoid: rent or mortgage, utilities, groceries, insurance, minimum debt payments, transportation to work, and healthcare. If you're spending more than 50% on needs, you may need to reduce housing costs or increase income.</p>
+
+          <h3>What Counts as Wants?</h3>
+          <p>Wants are everything you could live without: dining out, entertainment, travel, shopping, gym memberships, streaming services, and hobbies. The 30% wants category is important — it's not "waste." It's the part of your budget that makes life enjoyable. The goal is balance, not deprivation.</p>
+
+          <h3>What Counts as Savings?</h3>
+          <p>Savings includes retirement contributions, emergency fund deposits, additional debt payments (above minimums), investments, and any money set aside for future goals. The 20% target ensures you're building financial security while living comfortably.</p>
+
+          <div class="highlight-box">
+            <p><strong>Receet Pro automatically categorizes every transaction</strong> so you can see your exact needs/wants/savings split at any time. No manual sorting. No spreadsheets. <a href="#">Try it free →</a></p>
+          </div>
+
+          <h3>Frequently Asked Questions</h3>
+
+          <h3>Should I include taxes in the 50/30/20 calculation?</h3>
+          <p>No. The 50/30/20 rule applies to your <strong>after-tax</strong> income — what actually hits your bank account. Taxes are already taken out before you start the calculation.</p>
+
+          <h3>What if my needs exceed 50% of my income?</h3>
+          <p>This is increasingly common, especially in high-cost cities. If your needs are 60% or more, adjust the other two categories accordingly — reduce wants to 20% and savings to 20%. The priority is covering needs first, then savings, then wants.</p>
+
+          <h3>Are debt payments needs or savings?</h3>
+          <p>Minimum debt payments count as needs. Any extra payments above the minimum count as savings (the 20% bucket). This incentivizes you to pay down debt faster while still covering your essential obligations.</p>
+
+          <h3>Can I customize the percentages?</h3>
+          <p>Absolutely. The 50/30/20 rule is a starting point, not a law. If you're aggressively paying off debt, you might do 50/20/30. If you're saving for a house, try 50/20/30. The tool lets you enter your actual spending to see how it compares to the guideline.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-col">
-        <h4>Spendly</h4>
+        <h4>Receet Pro</h4>
         <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
       </div>
       <div class="footer-col">
         <h4>Calculators</h4>
         <ul>
-          <li><a href="budget-calculator.html">Budget Planner</a></li>
-          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
-          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
-          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
-          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
-          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+          <li><a href="budget-calculator">Budget Planner</a></li>
+          <li><a href="paycheck-calculator">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator">Debt Payoff</a></li>
+          <li><a href="subscription-calculator">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator">50/30/20 Calculator</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Learn</h4>
         <ul>
-          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
-          <li><a href="index.html#how-it-works">How It Works</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="envelope-budgeting-guide">Envelope Budgeting Guide</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#pricing">Pricing</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="support.html">Contact Us</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Service</a></li>
-          <li><a href="delete-account.html">Delete Account</a></li>
+          <li><a href="support">Contact Us</a></li>
+          <li><a href="privacy">Privacy Policy</a></li>
+          <li><a href="terms">Terms of Service</a></li>
+          <li><a href="delete-account">Delete Account</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2026 Spendly. All rights reserved.
+      &copy; 2026 Receet Pro. All rights reserved.
     </div>
   </footer>
 

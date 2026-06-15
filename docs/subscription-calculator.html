@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Subscription Cost Calculator - Spendly</title>
+  <title>Free Subscription Cost Calculator - Receet Pro</title>
   <meta name="description" content="Use our free subscription cost calculator to see how much your subscriptions really cost per month and per year.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -11,15 +11,13 @@
 <body>
   <header>
     <div class="header-inner">
-      <div class="logo"><a href="index.html">Spendly</a></div>
+      <div class="logo"><a href="/">Receet Pro</a></div>
       <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="budget-calculator.html">Calculators</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
-          <li><a href="support.html">Support</a></li>
-          <li><a href="#" class="btn-primary">Download</a></li>
-        </ul>
+        <a href="/">Home</a>
+        <a href="budget-calculator">Calculators</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="support">Support</a>
+        <a href="#" class="btn-primary">Download</a>
       </nav>
     </div>
   </header>
@@ -27,7 +25,7 @@
   <main>
     <div class="calc-page">
       <div class="container">
-        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Subscription Cost Calculator</span></div>
+        <div class="breadcrumb"><a href="/">Home</a> / <span>Subscription Cost Calculator</span></div>
         <div class="calc-header">
           <h1>Subscription Cost Calculator</h1>
           <p>Most people underestimate what they spend on subscriptions. Add yours below and see the real total — monthly, yearly, and beyond.</p>
@@ -35,67 +33,111 @@
 
         <div class="calc-layout">
           <div class="calc-card">
-            <h2>Your Subscriptions</h2>
+            <h2>Your Income & Subscriptions</h2>
+            <div class="form-group">
+              <label for="sub-income">Monthly Income (after tax)</label>
+              <div class="hint">Optional — shows what % of income goes to subscriptions</div>
+              <input type="number" id="sub-income" min="0" step="100" value="4200" placeholder="e.g. 4200">
+            </div>
             <div id="sub-entries"></div>
             <button class="btn-add" onclick="addSub()">+ Add Another Subscription</button>
-            <button class="btn-calc" onclick="calcSubs()" style="margin-top:16px">Calculate Total</button>
+            
           </div>
 
           <div>
-            <div class="results-card" id="sub-results">
+            <div class="results-card">
               <h2>Your Subscription Cost</h2>
               <div class="chart-container">
                 <canvas id="sub-chart"></canvas>
               </div>
-              <p class="result-label" style="text-align:center;color:var(--gray-400)">Add your subscriptions and click "Calculate Total"</p>
+              <div id="sub-content">
+                <div class="results-grid">
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Per Month</div></div>
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Per Year</div></div>
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Subscriptions</div></div>
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">5-Year Cost</div></div>
+                </div>
+              </div>
             </div>
             <div id="sub-cta" class="hidden" style="margin-top:16px">
-              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Subscriptions Automatically in Spendly →</a>
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Subscriptions Automatically in Receet Pro →</a>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="section" style="padding-top:16px">
+      <div class="container">
+        <div class="guide-content">
+          <h2>The Real Cost of Subscription Creep</h2>
+          <p>Most people significantly underestimate how much they spend on subscriptions. A $10 monthly charge feels insignificant, but across multiple services — streaming, cloud storage, fitness apps, software, boxes — the total can easily reach hundreds of dollars per month.</p>
+          <p>This phenomenon is called "subscription creep": small, recurring charges that fly under the radar because they're automatic. Unlike one-time purchases, subscriptions never end unless you cancel them. A $15/month subscription costs $180 per year and $900 over five years. Your calculator shows the real math.</p>
+
+          <h3>How to Audit Your Subscriptions</h3>
+          <ul>
+            <li><strong>Review your bank and credit card statements</strong> for recurring charges. Look for charges you don't recognize.</li>
+            <li><strong>Ask yourself: Am I using this regularly?</strong> If you haven't used a service in the past 30 days, cancel it.</li>
+            <li><strong>Look for duplicates.</strong> Many people subscribe to multiple streaming services and only use one or two.</li>
+            <li><strong>Check for annual billing discounts.</strong> Many services offer 15-25% off if you switch from monthly to annual billing.</li>
+          </ul>
+
+          <div class="highlight-box">
+            <p><strong>Receet Pro automatically detects your recurring charges</strong> and categorizes them. See every subscription in one place and know exactly what you're spending. <a href="#">Try it free →</a></p>
+          </div>
+
+          <h3>Frequently Asked Questions</h3>
+
+          <h3>How many subscriptions does the average person have?</h3>
+          <p>Studies show the average person has 4-6 active subscriptions and underestimates their total monthly cost by 2-3x. Streaming services, cloud storage, and software are the most common categories.</p>
+
+          <h3>What subscriptions should I cancel first?</h3>
+          <p>Start with services you haven't used in the past month. Next, look for overlapping services (multiple streaming platforms, multiple cloud storage services). Finally, consider whether you can replace paid services with free alternatives.</p>
+
+          <h3>How can I prevent subscription creep?</h3>
+          <p>Schedule a quarterly subscription audit. Set a calendar reminder every 3 months to review all recurring charges. Using an app like Receet Pro automates this — it tracks subscriptions continuously so you always know what's coming out of your account.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-col">
-        <h4>Spendly</h4>
+        <h4>Receet Pro</h4>
         <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
       </div>
       <div class="footer-col">
         <h4>Calculators</h4>
         <ul>
-          <li><a href="budget-calculator.html">Budget Planner</a></li>
-          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
-          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
-          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
-          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
-          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+          <li><a href="budget-calculator">Budget Planner</a></li>
+          <li><a href="paycheck-calculator">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator">Debt Payoff</a></li>
+          <li><a href="subscription-calculator">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator">50/30/20 Calculator</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Learn</h4>
         <ul>
-          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
-          <li><a href="index.html#how-it-works">How It Works</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="envelope-budgeting-guide">Envelope Budgeting Guide</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#pricing">Pricing</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="support.html">Contact Us</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Service</a></li>
-          <li><a href="delete-account.html">Delete Account</a></li>
+          <li><a href="support">Contact Us</a></li>
+          <li><a href="privacy">Privacy Policy</a></li>
+          <li><a href="terms">Terms of Service</a></li>
+          <li><a href="delete-account">Delete Account</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2026 Spendly. All rights reserved.
+      &copy; 2026 Receet Pro. All rights reserved.
     </div>
   </footer>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Debt Payoff Calculator - Snowball vs Avalanche - Spendly</title>
+  <title>Free Debt Payoff Calculator - Snowball vs Avalanche - Receet Pro</title>
   <meta name="description" content="Use our free debt payoff calculator to compare snowball and avalanche methods. Find the fastest way to become debt-free.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -11,15 +11,13 @@
 <body>
   <header>
     <div class="header-inner">
-      <div class="logo"><a href="index.html">Spendly</a></div>
+      <div class="logo"><a href="/">Receet Pro</a></div>
       <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="budget-calculator.html">Calculators</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
-          <li><a href="support.html">Support</a></li>
-          <li><a href="#" class="btn-primary">Download</a></li>
-        </ul>
+        <a href="/">Home</a>
+        <a href="budget-calculator">Calculators</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="support">Support</a>
+        <a href="#" class="btn-primary">Download</a>
       </nav>
     </div>
   </header>
@@ -27,7 +25,7 @@
   <main>
     <div class="calc-page">
       <div class="container">
-        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Debt Payoff Calculator</span></div>
+        <div class="breadcrumb"><a href="/">Home</a> / <span>Debt Payoff Calculator</span></div>
         <div class="calc-header">
           <h1>Debt Payoff Calculator</h1>
           <p>Compare the snowball and avalanche methods side by side. Add your debts below and see which strategy saves you the most.</p>
@@ -44,61 +42,98 @@
                 <input type="number" id="debt-payment" min="0" step="50" value="600" placeholder="e.g. 600">
               </div>
             </div>
-            <button class="btn-calc" onclick="calcDebt()">Calculate Payoff Plan</button>
+            
           </div>
 
           <div>
             <div class="results-card" id="debt-results">
               <h2>Your Debt Payoff Plan</h2>
-              <p class="result-label" style="text-align:center;color:var(--gray-400)">Add your debts, enter your monthly payment, and click "Calculate"</p>
+              <div class="results-grid">
+                <div class="result-stat"><div class="value">Loading...</div><div class="label">Debts</div></div>
+                <div class="result-stat"><div class="value">Loading...</div><div class="label">Total Debt</div></div>
+                <div class="result-stat"><div class="value">Loading...</div><div class="label">Monthly Payment</div></div>
+                <div class="result-stat"><div class="value">Loading...</div><div class="label">Debt Free By</div></div>
+              </div>
             </div>
             <div id="debt-cta" class="hidden" style="margin-top:16px">
-              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Debt Free Journey in Spendly →</a>
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Track Your Debt Free Journey in Receet Pro →</a>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="section" style="padding-top:16px">
+      <div class="container">
+        <div class="guide-content">
+          <h2>Snowball vs. Avalanche: Which Debt Payoff Method Is Best?</h2>
+          <p>Both the snowball and avalanche methods help you pay off debt faster than making minimum payments. The difference is in the order you tackle your debts. The snowball method focuses on smallest balances first for psychological wins. The avalanche method targets highest interest rates first to save the most money.</p>
+          <p>Your calculator above compared both methods side by side. Here's how to choose which one is right for you.</p>
+
+          <h3>Snowball Method</h3>
+          <p>List debts from smallest to largest balance. Pay minimums on everything, then throw all extra money at the smallest debt. When it's paid off, roll that payment to the next smallest. This builds momentum — each paid-off debt motivates you to keep going.</p>
+          <p><strong>Best for:</strong> People who need motivation and behavioral wins. The snowball method costs slightly more in interest but has a higher success rate because you see progress faster.</p>
+
+          <h3>Avalanche Method</h3>
+          <p>List debts from highest to lowest APR. Pay minimums on everything, then put all extra money toward the highest-interest debt. This saves the most money mathematically.</p>
+          <p><strong>Best for:</strong> People who are disciplined and want to minimize total interest paid. If the highest-interest debt also has the largest balance, it may take months before you see a debt fully paid off.</p>
+
+          <div class="highlight-box">
+            <p><strong>Track your progress automatically.</strong> Receet Pro tracks every debt payment and shows your real-time progress. Know exactly when you'll be debt free without updating a spreadsheet. <a href="#">Start your journey →</a></p>
+          </div>
+
+          <h3>Frequently Asked Questions</h3>
+
+          <h3>Which method should I use?</h3>
+          <p>The best method is the one you'll stick with. If you're motivated by seeing debts disappear, use the snowball method. If you want to save the most money, use the avalanche method. The calculator shows both — compare the interest and timeline differences to decide.</p>
+
+          <h3>What if I can't afford the minimum payments?</h3>
+          <p>Contact your creditors immediately. Many offer hardship programs, reduced interest rates, or payment deferrals. Consider credit counseling from a non-profit agency. The worst thing you can do is ignore the problem.</p>
+
+          <h3>Should I invest or pay off debt?</h3>
+          <p>In general, pay off debt with interest rates above 8-10% before investing beyond your employer's 401(k) match. For lower-rate debt (mortgage, student loans), investing may make more sense since market returns historically exceed those rates.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-col">
-        <h4>Spendly</h4>
+        <h4>Receet Pro</h4>
         <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
       </div>
       <div class="footer-col">
         <h4>Calculators</h4>
         <ul>
-          <li><a href="budget-calculator.html">Budget Planner</a></li>
-          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
-          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
-          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
-          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
-          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+          <li><a href="budget-calculator">Budget Planner</a></li>
+          <li><a href="paycheck-calculator">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator">Debt Payoff</a></li>
+          <li><a href="subscription-calculator">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator">50/30/20 Calculator</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Learn</h4>
         <ul>
-          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
-          <li><a href="index.html#how-it-works">How It Works</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="envelope-budgeting-guide">Envelope Budgeting Guide</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#pricing">Pricing</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="support.html">Contact Us</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Service</a></li>
-          <li><a href="delete-account.html">Delete Account</a></li>
+          <li><a href="support">Contact Us</a></li>
+          <li><a href="privacy">Privacy Policy</a></li>
+          <li><a href="terms">Terms of Service</a></li>
+          <li><a href="delete-account">Delete Account</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2026 Spendly. All rights reserved.
+      &copy; 2026 Receet Pro. All rights reserved.
     </div>
   </footer>
 

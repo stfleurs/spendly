@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Paycheck Budget Calculator - Spendly</title>
+  <title>Free Paycheck Budget Calculator - Receet Pro</title>
   <meta name="description" content="Use our free paycheck budget calculator to budget by paycheck. Know how much you can spend each period with suggested envelope allocations.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -11,15 +11,13 @@
 <body>
   <header>
     <div class="header-inner">
-      <div class="logo"><a href="index.html">Spendly</a></div>
+      <div class="logo"><a href="/">Receet Pro</a></div>
       <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="budget-calculator.html">Calculators</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
-          <li><a href="support.html">Support</a></li>
-          <li><a href="#" class="btn-primary">Download</a></li>
-        </ul>
+        <a href="/">Home</a>
+        <a href="budget-calculator">Calculators</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="support">Support</a>
+        <a href="#" class="btn-primary">Download</a>
       </nav>
     </div>
   </header>
@@ -27,7 +25,7 @@
   <main>
     <div class="calc-page">
       <div class="container">
-        <div class="breadcrumb"><a href="index.html">Home</a> / <span>Paycheck Budget Calculator</span></div>
+        <div class="breadcrumb"><a href="/">Home</a> / <span>Paycheck Budget Calculator</span></div>
         <div class="calc-header">
           <h1>Paycheck Budget Calculator</h1>
           <p>Budget by paycheck instead of by month. Perfect for envelope budgeting. See exactly how much you can allocate to each category per pay period.</p>
@@ -54,64 +52,109 @@
               <div class="hint">Rent, utilities, debt payments, insurance, etc.</div>
               <input type="number" id="pc-bills" min="0" step="50" value="1800" placeholder="e.g. 1800">
             </div>
-            <button class="btn-calc" onclick="calcPaycheck()">Calculate Budget</button>
+            
           </div>
 
           <div>
-            <div class="results-card" id="pc-results">
+            <div class="results-card">
               <h2>Your Paycheck Budget</h2>
               <div class="chart-container">
                 <canvas id="pc-chart"></canvas>
               </div>
-              <p class="result-label" style="text-align:center;color:var(--gray-400)">Enter your paycheck details and click "Calculate Budget"</p>
+              <div id="pc-content">
+                <div class="results-grid" style="margin-bottom:12px">
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Per Paycheck</div></div>
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Monthly Income</div></div>
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Monthly Bills</div></div>
+                  <div class="result-stat"><div class="value">Loading...</div><div class="label">Per Period to Spend</div></div>
+                </div>
+              </div>
             </div>
             <div id="pc-cta" class="hidden" style="margin-top:16px">
-              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Automate This in Spendly →</a>
+              <a href="#" class="btn-calc" style="text-align:center;display:block;text-decoration:none;color:white">Automate This in Receet Pro →</a>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="section" style="padding-top:16px">
+      <div class="container">
+        <div class="guide-content">
+          <h2>How to Budget by Paycheck</h2>
+          <p>Most budgeting advice assumes you get paid once a month. But if you're paid weekly, biweekly, or semi-monthly, a monthly budget doesn't match your cash flow. Paycheck budgeting solves this by allocating each paycheck to specific categories — so you always know what money is available right now.</p>
+          <p>The key insight: your monthly bills are fixed, but your spending money arrives in chunks. By dividing your monthly budget by your pay frequency, you create spending limits that match your actual cash flow. This is the same approach used by envelope budgeting systems like <a href="envelope-budgeting-guide">Receet Pro</a>.</p>
+
+          <h3>Why Paycheck Budgeting Works</h3>
+          <ul>
+            <li><strong>It matches reality.</strong> Your bills come monthly, but your money arrives more often. Budgeting per paycheck prevents you from spending next month's rent money.</li>
+            <li><strong>It's less overwhelming.</strong> Instead of managing one large monthly number, you focus on smaller, per-paycheck amounts that are easier to track.</li>
+            <li><strong>It works with irregular income.</strong> If your pay varies, budget based on your lowest expected paycheck and treat anything extra as surplus.</li>
+          </ul>
+
+          <h3>Common Paycheck Budgeting Mistakes</h3>
+          <ul>
+            <li><strong>Forgetting about "extra" paycheck months.</strong> If you're paid biweekly, you get 26 paychecks per year — meaning two months will have three paychecks instead of two. Plan for those.</li>
+            <li><strong>Not accounting for timing.</strong> If rent is due on the 1st but your first paycheck of the month arrives on the 5th, you need to keep a buffer.</li>
+            <li><strong>Setting unrealistic per-paycheck limits.</strong> Be honest about what you actually spend in each category.</li>
+          </ul>
+
+          <div class="highlight-box">
+            <p><strong>Automate it with Receet Pro.</strong> Receet Pro creates envelopes for each category and automatically distributes your paycheck. You always know exactly what's available. <a href="#">Start free →</a></p>
+          </div>
+
+          <h3>Frequently Asked Questions</h3>
+
+          <h3>What's the difference between biweekly and semi-monthly?</h3>
+          <p>Biweekly means you're paid every two weeks (26 paychecks per year). Semi-monthly means you're paid twice a month on specific dates (24 paychecks per year). The difference matters: with biweekly pay, two months per year will have three paychecks instead of two, which can be used for savings or extra debt payments.</p>
+
+          <h3>Can I use paycheck budgeting with irregular income?</h3>
+          <p>Yes. Use your lowest monthly income as your base and treat every extra dollar as surplus to be allocated to savings or debt. This conservative approach ensures you never overspend during lean months.</p>
+
+          <h3>What about expenses that don't fit in a pay period?</h3>
+          <p>Annual or quarterly expenses (insurance, subscriptions, taxes) should be divided by 12 and set aside from each paycheck into a dedicated "sinking fund" envelope. Receet Pro makes this automatic.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-col">
-        <h4>Spendly</h4>
+        <h4>Receet Pro</h4>
         <p>The envelope-based budgeting app that tells you exactly how much money is available for everything in your life.</p>
       </div>
       <div class="footer-col">
         <h4>Calculators</h4>
         <ul>
-          <li><a href="budget-calculator.html">Budget Planner</a></li>
-          <li><a href="paycheck-calculator.html">Paycheck Calculator</a></li>
-          <li><a href="emergency-fund-calculator.html">Emergency Fund</a></li>
-          <li><a href="debt-payoff-calculator.html">Debt Payoff</a></li>
-          <li><a href="subscription-calculator.html">Subscription Cost</a></li>
-          <li><a href="50-30-20-calculator.html">50/30/20 Calculator</a></li>
+          <li><a href="budget-calculator">Budget Planner</a></li>
+          <li><a href="paycheck-calculator">Paycheck Calculator</a></li>
+          <li><a href="emergency-fund-calculator">Emergency Fund</a></li>
+          <li><a href="debt-payoff-calculator">Debt Payoff</a></li>
+          <li><a href="subscription-calculator">Subscription Cost</a></li>
+          <li><a href="50-30-20-calculator">50/30/20 Calculator</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Learn</h4>
         <ul>
-          <li><a href="envelope-budgeting-guide.html">Envelope Budgeting Guide</a></li>
-          <li><a href="index.html#how-it-works">How It Works</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
+          <li><a href="envelope-budgeting-guide">Envelope Budgeting Guide</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#pricing">Pricing</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="support.html">Contact Us</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Service</a></li>
-          <li><a href="delete-account.html">Delete Account</a></li>
+          <li><a href="support">Contact Us</a></li>
+          <li><a href="privacy">Privacy Policy</a></li>
+          <li><a href="terms">Terms of Service</a></li>
+          <li><a href="delete-account">Delete Account</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2026 Spendly. All rights reserved.
+      &copy; 2026 Receet Pro. All rights reserved.
     </div>
   </footer>
 
