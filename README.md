@@ -127,7 +127,7 @@ flutter run
 
 ## Website
 
-The marketing website and free budgeting tools are in the `docs/` directory (served via GitHub Pages at [stfleurs.github.io/spendly](https://stfleurs.github.io/spendly)):
+The marketing website and free budgeting tools are in the `docs/` directory (live at [receetpro.web.app](https://receetpro.web.app)):
 
 ```
 docs/
