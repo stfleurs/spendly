@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://receetpro.web.app/sitemap.xml
